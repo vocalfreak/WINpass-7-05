@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS admin (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     mmu_id TEXT NOT NULL,
+    password TEXT NOT NULL,
     email TEXT
 )
 ''')
