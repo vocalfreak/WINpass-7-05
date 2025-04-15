@@ -101,11 +101,16 @@ def get_decode_face_data(db_path):
     print(f"Loaded {len(known_face_encodings)} face encodings from {len(users)} users")
     return known_face_encodings, known_face_names, known_face_ids
 
-def real_time_recognition():
+def real_time_recognition(db_path):
 
     cap = cv2.VideoCapture(2)
 
     while True:
+        known_face_encodings, known_face_names, known_face_ids = get_decode_face_data(db_path)
+
+        video_capture = cv2.VideoCapture(0)
+
+        
         
 
 
