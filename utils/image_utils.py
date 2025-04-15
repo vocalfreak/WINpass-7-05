@@ -50,9 +50,26 @@ def get_face_encodings(image_folder_path, db_path):
                     
             except Exception as e:
                 print(f"Error processing {person_name} - {image_name}: {e}")
+        
+        if all_encodings:
 
+            all_encodings_array = np.array(all_encodings)
+            encodings_blob = all_encodings_array.tobytes()
 
-    
+            cursor.execute("SELECT id FROM user WHERE name = ?", (person_name,))
+            existing_user = cursor.fetchone()
+            
+            if existing_user:
+                cursor.execute("UPDATE user SET face_data = ? WHERE id = ?", 
+                              (encodings_blob, existing_user[0]))
+                print(f"Updated face data for {person_name} with {len(all_encodings)} encodings")
+            else:
+                cursor.execute('''
+                INSERT INTO user (name, face_data)
+                VALUES (?, ?)
+                ''', (person_name, encodings_blob))
+                print(f"Added new user {person_name} with {len(all_encodings)} encodings")
+                      
     conn.commit()
     conn.close()
     print(f"\nTotal encodings collected and stored: {total_encodings}")
