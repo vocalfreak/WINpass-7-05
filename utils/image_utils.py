@@ -4,6 +4,7 @@ import face_recognition as fr
 import sqlite3
 import numpy as np
 import cv2 
+import time 
 
 def resize_image(img_path, size=(250, 250), fill_color=(0, 0, 0)):
 
@@ -101,25 +102,142 @@ def get_decode_face_data(db_path):
     print(f"Loaded {len(known_face_encodings)} face encodings from {len(users)} users")
     return known_face_encodings, known_face_names, known_face_ids
 
+def load_known_faces_from_db(db_path):
+    """Load all face encodings from the database"""
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    
+    # Get all users with face data
+    cursor.execute("SELECT id, name, face_data FROM user WHERE face_data IS NOT NULL")
+    users = cursor.fetchall()
+    conn.close()
+    
+    known_face_encodings = []
+    known_face_names = []
+    known_face_ids = []
+    
+    for user_id, name, face_data_blob in users:
+        if face_data_blob:
+            # Convert BLOB back to numpy array
+            encodings_array = np.frombuffer(face_data_blob, dtype=np.float64)
+            # Reshape to get individual encodings (each is 128 values)
+            stored_encodings = encodings_array.reshape(-1, 128)
+            
+            # Add each encoding separately with the same name
+            for encoding in stored_encodings:
+                known_face_encodings.append(encoding)
+                known_face_names.append(name)
+                known_face_ids.append(user_id)
+    
+    print(f"Loaded {len(known_face_encodings)} face encodings from {len(users)} users")
+    return known_face_encodings, known_face_names, known_face_ids
+
 def real_time_recognition(db_path):
-
-    cap = cv2.VideoCapture(2)
-
+    known_face_encodings, known_face_names, known_face_ids = load_known_faces_from_db(db_path)
+    
+    video_capture = cv2.VideoCapture(0)
+    
+    if not video_capture.isOpened():
+        print("Error: Could not open camera.")
+        return
+    
+    video_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    
+    frame_count = 0
+    start_time = time.time()
+    fps = 0
+    
+    processed_users = set()
+    
+    print("Starting real-time face recognition. Press 'q' to quit.")
+    
+    process_this_frame = True
+    
     while True:
-        known_face_encodings, known_face_names, known_face_ids = get_decode_face_data(db_path)
-
-        video_capture = cv2.VideoCapture(0)
-
+        ret, frame = video_capture.read()
+        if not ret:
+            print("Failed to grab frame")
+            break
         
+        if process_this_frame:
+            small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
+            
+            rgb_small_frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
+
+            face_locations = fr.face_locations(rgb_small_frame)
+            
+            face_names = []
+            face_user_ids = []
+            
+            if face_locations:
+                try:
+                    face_encodings = fr.face_encodings(rgb_small_frame, face_locations)
+                    
+                    for face_encoding in face_encodings:
+                        matches = fr.compare_faces(known_face_encodings, face_encoding)
+                        name = "Unknown"
+                        user_id = None
+                        
+                        if True in matches:
+                            first_match_index = matches.index(True)
+                            name = known_face_names[first_match_index]
+                            user_id = known_face_ids[first_match_index]
+                            
+                            if user_id and user_id not in processed_users:
+                                processed_users.add(user_id)
+                                print(f"New user detected: {name} (ID: {user_id})")
+                        
+                        face_names.append(name)
+                        face_user_ids.append(user_id)
+                
+                except Exception as e:
+                    print(f"Error processing face encodings: {e}")
+                    face_names = ["Error"] * len(face_locations)
+                    face_user_ids = [None] * len(face_locations)
+            
+            # CONNECT TO DATABASE LATER
+            for (top, right, bottom, left), name in zip(face_locations, face_names):
+                top *= 4
+                right *= 4
+                bottom *= 4
+                left *= 4
+                
+                cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
+                
+                cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (0, 255, 0), cv2.FILLED)
+                font = cv2.FONT_HERSHEY_DUPLEX
+                cv2.putText(frame, name, (left + 6, bottom - 6), font, 0.8, (255, 255, 255), 1)
         
+        process_this_frame = not process_this_frame
+        
+        frame_count += 1
+        elapsed_time = time.time() - start_time
+        if elapsed_time >= 1.0:
+            fps = frame_count / elapsed_time
+            frame_count = 0
+            start_time = time.time()
+        
+        cv2.putText(frame, f"FPS: {fps:.2f}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        
+        cv2.imshow('Face Recognition', frame)
 
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
-
-
-
-
+    video_capture.release()
+    cv2.destroyAllWindows()
 
 # Paths
 dataset_path = r"C:\Users\chiam\Downloads\winpass_training_set"
 database_path = r"C:\Users\chiam\Projects\WINpass-7-05\app\winpass.db"
+
+db_path = database_path 
+        
+if __name__ == "__main__":
+    real_time_recognition(db_path)
+
+
+
+
 
