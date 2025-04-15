@@ -103,11 +103,9 @@ def get_decode_face_data(db_path):
     return known_face_encodings, known_face_names, known_face_ids
 
 def load_known_faces_from_db(db_path):
-    """Load all face encodings from the database"""
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    
-    # Get all users with face data
+
     cursor.execute("SELECT id, name, face_data FROM user WHERE face_data IS NOT NULL")
     users = cursor.fetchall()
     conn.close()
@@ -118,12 +116,9 @@ def load_known_faces_from_db(db_path):
     
     for user_id, name, face_data_blob in users:
         if face_data_blob:
-            # Convert BLOB back to numpy array
             encodings_array = np.frombuffer(face_data_blob, dtype=np.float64)
-            # Reshape to get individual encodings (each is 128 values)
             stored_encodings = encodings_array.reshape(-1, 128)
             
-            # Add each encoding separately with the same name
             for encoding in stored_encodings:
                 known_face_encodings.append(encoding)
                 known_face_names.append(name)
