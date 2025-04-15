@@ -145,8 +145,6 @@ def real_time_recognition(db_path):
     
     processed_users = set()
     
-    print("Starting real-time face recognition. Press 'q' to quit.")
-    
     process_this_frame = True
     
     while True:
@@ -230,8 +228,8 @@ database_path = r"C:\Users\chiam\Projects\WINpass-7-05\app\winpass.db"
 db_path = database_path 
         
 if __name__ == "__main__":
+    #get_face_encodings_folders(dataset_path, db_path)
     real_time_recognition(db_path)
-
 
 
 
