@@ -1,8 +1,16 @@
 import os
-import cv2
+from PIL import Image, ImageOps
 import face_recognition as fr
 import sqlite3
 import numpy as np
+
+def resize_image(img_path, size=(250, 250), fill_color=(0, 0, 0)):
+    img = Image.open(img_path)
+    img.thumbnail(size, Image.LANCZOS)
+    delta_w = size[0] - img.size[0]
+    delta_h = size[1] - img.size[1]
+    padding = (delta_w // 2, delta_h // 2, delta_w - delta_w // 2, delta_h - delta_h // 2)
+    return ImageOps.expand(img, padding, fill=fill_color)
 
 def get_face_encodings(image_folder_path, db_path):
     
@@ -19,11 +27,13 @@ def get_face_encodings(image_folder_path, db_path):
         person_name = person_folder.replace('_', ' ')
         
         all_encodings = []
-        pass
+        continue 
     
     conn.commit()
     conn.close()
     print(f"\nTotal encodings collected and stored: {total_encodings}")
+
+def 
 
 # Paths
 dataset_path = r"C:\Users\chiam\Downloads\winpass_training_set"
