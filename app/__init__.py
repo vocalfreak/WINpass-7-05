@@ -7,11 +7,11 @@ cursor = conn.cursor()
 
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS user (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    mmu_id TEXT UNIQUE NOT NULL,
-    email TEXT NOT NULL,
-    password TEXT NOT NULL,
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    name TEXT,
+    mmu_id TEXT,
+    email TEXT,
+    password TEXT,
     hall TEXT,
     career TEXT,
     faculty TEXT,
