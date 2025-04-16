@@ -4,7 +4,6 @@ import face_recognition as fr
 import sqlite3
 import numpy as np
 import cv2 
-import time 
 
 def resize_image(img_path, size=(250, 250), fill_color=(0, 0, 0)):
 
@@ -114,10 +113,6 @@ def real_time_recognition(db_path):
     video_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     
-    frame_count = 0
-    start_time = time.time()
-    fps = 0
-    
     processed_users = set()
     
     process_this_frame = True
@@ -179,14 +174,6 @@ def real_time_recognition(db_path):
         
         process_this_frame = not process_this_frame
         
-        frame_count += 1
-        elapsed_time = time.time() - start_time
-        if elapsed_time >= 1.0:
-            fps = frame_count / elapsed_time
-            frame_count = 0
-            start_time = time.time()
-        
-        cv2.putText(frame, f"FPS: {fps:.2f}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
         
         cv2.imshow('Face Recognition', frame)
 
