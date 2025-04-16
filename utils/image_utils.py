@@ -102,33 +102,8 @@ def get_decode_face_data(db_path):
     print(f"Loaded {len(known_face_encodings)} face encodings from {len(users)} users")
     return known_face_encodings, known_face_names, known_face_ids
 
-def load_known_faces_from_db(db_path):
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT id, name, face_data FROM user WHERE face_data IS NOT NULL")
-    users = cursor.fetchall()
-    conn.close()
-    
-    known_face_encodings = []
-    known_face_names = []
-    known_face_ids = []
-    
-    for user_id, name, face_data_blob in users:
-        if face_data_blob:
-            encodings_array = np.frombuffer(face_data_blob, dtype=np.float64)
-            stored_encodings = encodings_array.reshape(-1, 128)
-            
-            for encoding in stored_encodings:
-                known_face_encodings.append(encoding)
-                known_face_names.append(name)
-                known_face_ids.append(user_id)
-    
-    print(f"Loaded {len(known_face_encodings)} face encodings from {len(users)} users")
-    return known_face_encodings, known_face_names, known_face_ids
-
 def real_time_recognition(db_path):
-    known_face_encodings, known_face_names, known_face_ids = load_known_faces_from_db(db_path)
+    known_face_encodings, known_face_names, known_face_ids = get_decode_face_data(db_path)
     
     video_capture = cv2.VideoCapture(0)
     
