@@ -138,7 +138,7 @@ def real_time_recognition(db_path):
                     face_encodings = fr.face_encodings(rgb_small_frame, face_locations)
                     
                     for face_encoding in face_encodings:
-                        matches = fr.compare_faces(known_face_encodings, face_encoding)
+                        matches = fr.compare_faces(known_face_encodings, face_encoding, tolerance=0.4)
                         name = "Unknown"
                         user_id = None
                         
@@ -190,8 +190,8 @@ database_path = r"C:\Users\chiam\Projects\WINpass-7-05\app\winpass.db"
 db_path = database_path 
         
 if __name__ == "__main__":
-    #get_face_encodings_folders(dataset_path, db_path)
-    real_time_recognition(db_path)
+    get_face_encodings_folders(dataset_path, db_path)
+    #real_time_recognition(db_path)
 
 
 
