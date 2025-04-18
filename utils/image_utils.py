@@ -183,15 +183,6 @@ def real_time_recognition(db_path):
     video_capture.release()
     cv2.destroyAllWindows()
 
-# Paths
-dataset_path = r"C:\Users\chiam\Downloads\winpass_training_set"
-database_path = r"C:\Users\chiam\Projects\WINpass-7-05\app\winpass.db"
-
-db_path = database_path 
-        
-if __name__ == "__main__":
-    get_face_encodings_folders(dataset_path, db_path)
-    #real_time_recognition(db_path)
 
 
 

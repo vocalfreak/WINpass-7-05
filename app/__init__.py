@@ -1,7 +1,7 @@
 import sqlite3
 import os 
 
-db_path = os.path.join(os.path.dirname(__file__), 'winpass.db')
+db_path = os.path.join(os.path.dirname("WINPASS-7-05"), 'winpass.db')
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
