@@ -44,3 +44,17 @@
     font-family: "Trirong", serif;
     color: red;
   }
+
+  nav {
+    background-color: white;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  nav ul {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+    list-style: none;
+    gap: 40px;
+  }
