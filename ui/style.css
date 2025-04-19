@@ -8,3 +8,39 @@
   body {
     background-color: #f2f2f2;
   }
+
+  .top-bar {
+    background-color: #e6e6e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 30px;
+  }
+
+  .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  p.one {
+    border-right-style: solid;
+    border-right-width: 5px 5px; 
+    border-right-color: rgb(28, 27, 27);
+  }
+
+  .logo {
+    height: 50px;
+  }
+  
+  .win {
+    font-family: "Trirong", serif;
+    font-size: 24px;
+    font-weight: bold;
+    color: #0047ba;
+  }
+  
+  .pass {
+    font-family: "Trirong", serif;
+    color: red;
+  }
