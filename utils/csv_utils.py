@@ -36,12 +36,6 @@ def import_csv_init(df_path, db_path):
 
     conn.close()
 
-# Paths
-df_path = r"C:\Users\chiam\Downloads\Test_George.csv"
-db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
-
-
-import_csv_init(df_path, db_path)
 
 
                 
