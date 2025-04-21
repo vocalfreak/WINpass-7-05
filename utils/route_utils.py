@@ -36,6 +36,11 @@ def import_csv_init(df_path, db_path):
 
     conn.close()
 
+def get_conection():
+    conn = sqlite3.connect('winpass.db')
+    conn.row_factory = sqlite3.Row 
+    return conn
+
 
 
                 

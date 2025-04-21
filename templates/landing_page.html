@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>WINpass</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css?family=Trirong" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <div class="top-bar">
+      <div class="logo-area">
+        <img src="{{ url_for('static', filename='img/img_mmu.png') }}" alt="MMU Logo" class="logo"/>
+        <span class="win">WIN<span class="pass">pass</span></span>
+      </div>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="{{ url_for('homepage') }}">Start Here</a></li>
+        <li><a href="{{ url_for('student_profile') }}">Student Profile</a></li>
+        <li><a href="{{ url_for('booth_info') }}">Booth Information</a></li>
+        <li><a href="{{ url_for('digital_ticket') }}">Digital Ticket View</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="background">
+    <div class="overlay">
+      <h1>WELCOME TO WIN 2025!</h1>
+      <p>We are excited to have you here!</p>
+    </div>
+  </main>
+</body>
+</html>
