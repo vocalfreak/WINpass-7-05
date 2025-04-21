@@ -3,21 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <title>WINpass</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css?family=Trirong">
 </head>
 <body>
-    <header>
+     <header>
       <div class="top-bar">
         <div class="logo-area">
-          <p class="one"> <img src="img_mmu.png" alt="MMU Logo" class="logo"/> </p> 
+          <img src="{{ url_for('static', filename='img/img_mmu.png') }}" alt="MMU Logo" class="logo"/>
           <span class="win">WIN<span class="pass">pass</span></span>
         </div>
       </div>
       <nav>
         <ul>
-          <li><a href="#">Admin Page</a></li>
-          <li><a href="#">Booth Information</a></li>
-          <li><a href="#">Face Verification</a></li>
+            <li><a href="{{ url_for('admin_page') }}">Admin Page</a></li>
+          <li><a href="{{ url_for('booth_info') }}">Booth Information</a></li>
+          <li><a href="{{ url_for('face_verification') }}">Face Verification</a></li>
         </ul>
       </nav>
     </header>
