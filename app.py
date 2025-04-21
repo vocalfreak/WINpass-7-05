@@ -14,7 +14,7 @@ app = Flask(__name__)
 def homepage():
     return render_template("landing_page.html")
 
-@app.route('/student-profile')
+@app.route('/Student-Profile')
 def student_profile():
     real_time_recognition(db_path)
     return redirect(url_for('homepage'))
