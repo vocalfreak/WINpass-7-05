@@ -27,6 +27,23 @@ def booth_info():
 def digital_ticket():
     return render_template('digital-ticket.html')
 
+@app.route('/Face-Verification')
+def face_verification():
+    pass
+
+@app.route('/Pre-Registration')
+def pre_registration():
+    pass
+
+@app.route('/Admin-Page')
+def admin_page():
+    pass
+
+@app.route('/Self-CheckIn')
+def self_checkin():
+    pass
+
+
 if __name__ == '__main__':
     app.run(debug=True)
 
