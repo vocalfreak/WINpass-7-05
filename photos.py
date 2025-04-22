@@ -13,7 +13,8 @@ while True:
         print("Failed to grab the frame")
         break
 
-    cv2.imshow("test",frame)
+    cv2.imshow("Photobooth",frame)
+
 
     k=cv2.waitKey(1)
 
