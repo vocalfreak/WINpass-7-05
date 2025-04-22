@@ -29,4 +29,4 @@ while True:
 
 cam.release()
 
-cam.destroyAllWindows()
+cv2.destroyAllWindows()
