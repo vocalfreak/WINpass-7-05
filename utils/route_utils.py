@@ -17,10 +17,11 @@ def import_csv_init(df_path, db_path):
 
             for row in reader:
                 cursor.execute("""
-                INSERT INTO user (name, mmu_id, email, career, faculty, campus)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO user (name, password, mmu_id, email, career, faculty, campus)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 """, (
                     row['name'],
+                    row['password'],
                     row['mmu_id'],
                     row['email'],
                     row['career'],
