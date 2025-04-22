@@ -186,6 +186,10 @@ def real_time_recognition(db_path):
 
 def photobooth():
     
+    folder_name = "pictures"
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+
     cam = cv2.VideoCapture(0)
 
     cv2.namedWindow("Photobooth")
@@ -208,7 +212,7 @@ def photobooth():
             break
         
         elif k%256 == 32:
-            img_name = "opencv_frame_{}.png".format(img_counter)
+            img_name = os.path.join(folder_name,"opencv_frame_{}.png".format(img_counter))
             cv2.imwrite(img_name,frame)
             print("Photo taken")
             img_counter+=1
