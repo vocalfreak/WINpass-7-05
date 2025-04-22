@@ -29,7 +29,7 @@ def digital_ticket():
 
 @app.route('/Face-Verification')
 def face_verification():
-    real_time_recognition(db_path)
+    #real_time_recognition(db_path)
     return redirect(url_for('homepage'))
 
 @app.route('/Pre-Registration')
