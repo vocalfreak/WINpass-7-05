@@ -1,6 +1,6 @@
 from utils.route_utils import import_csv_init
 from flask import Flask, render_template, redirect, url_for, request, flash 
-#from utils.image_utils import real_time_recognition
+from utils.image_utils import real_time_recognition
 import sqlite3
 
 # Paths 
@@ -73,7 +73,7 @@ def digital_ticket():
 
 @app.route('/Face-Verification')
 def face_verification():
-    #real_time_recognition(db_path)
+    real_time_recognition(db_path)
     return redirect(url_for('homepage'))
 
 @app.route('/Pre-Registration')

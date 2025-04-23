@@ -4,6 +4,7 @@ import face_recognition as fr
 import sqlite3
 import numpy as np
 import cv2 
+from route_utils import check_ticket_status 
 
 def resize_image(img_path, size=(250, 250), fill_color=(0, 0, 0)):
 
@@ -14,6 +15,26 @@ def resize_image(img_path, size=(250, 250), fill_color=(0, 0, 0)):
     padding = (delta_w // 2, delta_h // 2, delta_w - delta_w // 2, delta_h - delta_h // 2)
     return ImageOps.expand(img, padding, fill=fill_color)
 
+def create_winpass(name, mmu_id, image_folder_path):
+    person_folder_path = os.path.join(image_folder_path, name.replace(' ', '_'))
+    if os.path.exists(person_folder_path):
+        image_files = [f for f in os.listdir(person_folder_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+        
+        for i, img_file in enumerate(image_files):
+            img_path = os.path.join(person_folder_path, img_file)
+            try:
+                img = cv2.imread(img_path)
+                if img is not None:
+                    window_name = "Reference Images"
+                    label = f"{name} - Image {i+1}"
+                    font = cv2.FONT_HERSHEY_SIMPLEX
+                    cv2.putText(img, label, (10, 30), font, 1, (0, 255, 0), 2)
+                    cv2.imshow(window_name, img)
+                    cv2.waitKey(1000)
+            except Exception as e:
+                print(f"Error displaying image {img_path}: {e}")
+
+    
 def get_face_encodings_folders(image_folder_path, db_path):
 
     conn = sqlite3.connect(db_path)
@@ -80,15 +101,15 @@ def get_decode_face_data(db_path):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    cursor.execute("SELECT id, name, face_data FROM user WHERE face_data IS NOT NULL")
+    cursor.execute("SELECT mmu_id, name, face_data FROM user WHERE face_data IS NOT NULL")
     users = cursor.fetchall()
     conn.close()
 
     known_face_encodings = []
     known_face_names = []
-    known_face_ids = []
+    known_mmu_ids = []
 
-    for user_id,name, face_data_blob in users:
+    for mmu_id, name, face_data_blob in users:
         if face_data_blob:
             encodings_array = np.frombuffer(face_data_blob, dtype=np.float64)
             stored_encodings = encodings_array.reshape(-1, 128)
@@ -96,13 +117,13 @@ def get_decode_face_data(db_path):
             for encoding in stored_encodings:
                 known_face_encodings.append(encoding)
                 known_face_names.append(name)
-                known_face_ids.append(user_id)
+                known_mmu_ids.append(mmu_id)
 
     print(f"Loaded {len(known_face_encodings)} face encodings from {len(users)} users")
-    return known_face_encodings, known_face_names, known_face_ids
+    return known_face_encodings, known_face_names, known_mmu_ids
 
-def real_time_recognition(db_path):
-    known_face_encodings, known_face_names, known_face_ids = get_decode_face_data(db_path)
+def real_time_recognition(db_path, image_folder_path):
+    known_face_encodings, known_face_names, known_mmu_ids = get_decode_face_data(db_path)
     
     video_capture = cv2.VideoCapture(0)
     
@@ -113,14 +134,11 @@ def real_time_recognition(db_path):
     video_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     
-    processed_users = set()
-    
     process_this_frame = True
     
     while True:
         ret, frame = video_capture.read()
         if not ret:
-            print("Failed to grab frame")
             break
         
         if process_this_frame:
@@ -131,7 +149,7 @@ def real_time_recognition(db_path):
             face_locations = fr.face_locations(rgb_small_frame)
             
             face_names = []
-            face_user_ids = []
+            mmu_ids = []
             
             if face_locations:
                 try:
@@ -140,26 +158,35 @@ def real_time_recognition(db_path):
                     for face_encoding in face_encodings:
                         matches = fr.compare_faces(known_face_encodings, face_encoding, tolerance=0.4)
                         name = "Unknown"
-                        user_id = None
+                        mmu_id = None
                         
                         if True in matches:
-                            first_match_index = matches.index(True)
-                            name = known_face_names[first_match_index]
-                            user_id = known_face_ids[first_match_index]
                             
-                            if user_id and user_id not in processed_users:
-                                processed_users.add(user_id)
-                                print(f"New user detected: {name} (ID: {user_id})")
-                        
+                            check_ticket_status(db_path)
+                            
+                            if True:
+                                first_match_index = matches.index(True)
+                                mmu_id = known_mmu_ids[first_match_index]
+                                name = known_face_names[first_match_index]
+
+                                print(f"Match found: {name} (MMU ID: {mmu_id})")
+
+                                video_capture.release()
+                                cv2.destroyAllWindows()
+
+                                cv2.waitKey(0)
+                                cv2.destroyAllWindows()
+
+                                create_winpass(name, mmu_id, image_folder_path)
+                                                                
                         face_names.append(name)
-                        face_user_ids.append(user_id)
+                        mmu_ids.append(mmu_id)
                 
                 except Exception as e:
                     print(f"Error processing face encodings: {e}")
                     face_names = ["Error"] * len(face_locations)
-                    face_user_ids = [None] * len(face_locations)
+                    mmu_ids = [None] * len(face_locations)
             
-            # CONNECT TO DATABASE LATER
             for (top, right, bottom, left), name in zip(face_locations, face_names):
                 top *= 4
                 right *= 4
@@ -183,6 +210,16 @@ def real_time_recognition(db_path):
     video_capture.release()
     cv2.destroyAllWindows()
 
+# Paths
+dataset_path = r"C:\Users\chiam\Downloads\winpass_training_set"
+database_path = "winpass.db"
+image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
+
+db_path = database_path 
+
+if __name__ == "__main__":
+    #get_face_encodings_folders(dataset_path, db_path)
+    real_time_recognition(db_path, image_folder_path)
 
 
 
