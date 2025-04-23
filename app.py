@@ -1,6 +1,6 @@
 from utils.route_utils import import_csv_init
 from flask import Flask, render_template, redirect, url_for, request, flash 
-from utils.image_utils import real_time_recognition 
+#from utils.image_utils import real_time_recognition
 import sqlite3
 
 # Paths 
@@ -11,7 +11,7 @@ db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
 
 app = Flask(__name__)
 
-@app.route('/')
+@app.route('/Landing-Page')
 def homepage():
     return render_template("landing_page.html")
 
@@ -29,16 +29,20 @@ def digital_ticket():
 
 @app.route('/Face-Verification')
 def face_verification():
-    #real_time_recognition(db_path)
+    real_time_recognition(db_path)
     return redirect(url_for('homepage'))
 
 @app.route('/Pre-Registration')
 def pre_registration():
     pass
 
-@app.route('/Admin-Page')
+@app.route('/')
 def admin_page():
-    pass
+    return render_template('admin_page.html')
+
+@app.route('/Admin-Ui')
+def admin_ui():
+    return render_template('admin_ui.html')
 
 @app.route('/Self-Service', methods=['GET', 'POST'])
 def self_service():
