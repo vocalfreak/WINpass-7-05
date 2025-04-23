@@ -73,10 +73,10 @@ def upload_csv():
     pass
 
 
-@app.route('/Photobooth')
-def photo_booth():
+@app.route('/Photobooth_Page')
+def photobooth_page():
     photobooth()
-    return render_template('photobooth.html')
+    return render_template('photobooth_page.html')
 
 
 if __name__ == '__main__':
