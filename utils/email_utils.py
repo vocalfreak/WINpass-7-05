@@ -1,28 +1,75 @@
 import smtplib 
-import getpass
+import os 
+import imghdr
+from email.mime.text import MIMEText 
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart 
+from dotenv import load_dotenv 
+import sqlite3
 
-HOST = "smtp-mail.outlook.com"
-PORT = 587
+load_dotenv()
 
-FROM_EMAIL = "vocalfreak525@gmail.com"
-TO_EMAIL = "vocalfreak525@outlook.com"
-PASSWORD = getpass.getpass("Enter your password: ")
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
+EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
-MESSAGE = """Subject: Mail sent using python 
-Hi bitch,
+def send_email(recipient_email, subject, body, image_path):
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = EMAIL_ADDRESS
+        msg['To'] = recipient_email 
+        msg['Subject'] = subject 
 
-This email is sent using python's smtplib and getpass module. 
+        msg.attach(MIMEText(body, 'plain'))
 
-Thanks,
-Chiam Juin Hoong"""
+        if image_path and os.path.exists(image_path):
+            with open(image_path, 'rb') as img:
+                img_data = img.read()
+                img_type = imghdr.what(img.name)
+                img_name = os.path.basename(img.name)
+                image = MIMEImage(img_data, _subtype=img_type)
+                image.add_header('Content-Disposition', 'attachment', filename=img_name)
+                msg.attach(image)
 
-smtp = smtplib.SMTP(HOST, PORT)
 
-status_code, response = smtp.ehlo()
-print(f"[*] Starting TLS connection: {status_code} {response}")
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
+            server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+            server.sendmail(EMAIL_ADDRESS, recipient_email, msg.as_string())
 
-status_code, response * smtp.login(FROM_EMAIL, PASSWORD)
-print(f"[*] Loggin in: {status_code} {response}")
+        print("Email sent successfully!")
 
-smtp.sendmail(FROM_EMAIL, TO_EMAIL, MESSAGE)
-smtp.quit()
+    except Exception as e:
+        print(f"Error sending email: {e}")
+
+def get_email_address(db_path):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT email, name FROM user")
+    users = cursor.fetchall()
+    conn.close()
+
+    recipients = []
+    names = []
+
+    for email in users:
+        recipients.append(email)
+    
+    for name in users:
+        names.append(name)
+
+    return recipients, names
+
+
+if __name__ == "__main__":
+    recipients = get_email_address("winpass.db")
+    subject = "Win MMU is approaching!"
+    body = "this is a test email"
+    image_path = r"C:\Users\chiam\Projects\WINpass-7-05\static\email.png"
+
+    
+    for recipient_tuple in recipients:
+        recipient_email = recipient_tuple[0]  
+        send_email(recipient_email, subject, body, image_path)

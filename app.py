@@ -86,7 +86,7 @@ def admin_page():
 
 @app.route('/Admin-Ui')
 def admin_ui():
-    return render_template('admin_ui.html')
+    return render_template('admin_page.html')
 
 @app.route('/Self-Service', methods=['GET', 'POST'])
 def self_service():
