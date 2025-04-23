@@ -2,8 +2,10 @@ from utils.route_utils import import_csv_init
 from flask import Flask, render_template, redirect, url_for, request, flash 
 from utils.image_utils import real_time_recognition
 import sqlite3
+import csv
 
 app = Flask(__name__)
+app.secret_key = '1q2w3xde'
 
 @app.route('/Landing-Page')
 def homepage():
@@ -54,7 +56,6 @@ def login_admin():
 def logout():
     pass
 
-
 @app.route('/Student-Profile')
 def student_profile():
     return render_template('student_profile.html')
@@ -77,12 +78,22 @@ def pre_registration():
     pass
 
 @app.route('/')
-def admin_page():
-    return render_template('admin_page.html')
+def admin_landing():
+    return render_template('admin_landing.html')
 
-@app.route('/Admin-Ui')
-def admin_ui():
-    return render_template('admin_page.html')
+@app.route('/Admin-Page')
+def admin_page():
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT mmu_id, name, career, email, faculty, ticket_status, goodies_status, badge_status FROM user")
+    students = cursor.fetchall()
+    conn.close()
+    return render_template('admin_page.html', students=students)
+
+@app.route('/Admin-Home')
+def home():
+    return render_template('admin_landing.html')
 
 @app.route('/Self-Service', methods=['GET', 'POST'])
 def self_service():
@@ -107,12 +118,43 @@ def self_service():
     # UNCOMMENT ONCE self_service.html IS DONE
     #return render_template('self_service.html')
 
-@app.route('/Upload-CSV')
-def upload_csv():
-    import_csv_init(df_path, db_path)
-    # UNCOMMENT ONCE admin_page.html IS DONE
-    #return render_template('admin_page.html')
-    pass
+@app.route('/Import-CSV', methods=['POST'])
+def import_csv():
+    if 'csv_file' not in request.files:
+        flash('No file uploaded.')
+        return redirect(url_for('admin_page'))
+
+    file = request.files['csv_file']
+    if file.filename == '':
+        flash('No selected file.')
+        return redirect(url_for('admin_page'))
+
+    if file and file.filename.endswith('.csv'):
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        reader = csv.DictReader(file.read().decode('utf-8').splitlines())
+        
+        try:
+            for row in reader:
+                cursor.execute("""
+                    INSERT INTO user (name, mmu_id, email, career, faculty, campus)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (
+                    row['name'],
+                    row['mmu_id'],
+                    row['email'],
+                    row['career'],
+                    row['faculty'],
+                    row['campus']
+                ))
+            conn.commit()
+            flash('CSV import successful!')
+        except Exception as e:
+            flash(f"Error importing CSV: {e}")
+        finally:
+            conn.close()
+
+    return redirect(url_for('admin_page'))
 
 @app.route('/Send-Invite')
 def spend_invite():
