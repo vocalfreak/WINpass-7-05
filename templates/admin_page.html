@@ -2,32 +2,65 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>WINpass</title>
+  <title>ADMIN PAGE</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <link href="https://fonts.googleapis.com/css?family=Trirong">
 </head>
 <body>
-     <header>
-      <div class="top-bar">
-        <div class="logo-area">
-          <img src="{{ url_for('static', filename='img/img_mmu.png') }}" alt="MMU Logo" class="logo"/>
-          <span class="win">WIN<span class="pass">pass</span></span>
-        </div>
+    <header>
+     <div class="top-bar">
+       <div class="logo-area">
+         <img src="{{ url_for('static', filename='img_mmu.png') }}" alt="MMU Logo" class="logo"/>
+         <span class="win">WIN<span class="pass">pass</span></span>
+       </div>
+     </div>
+     <nav>
+       <ul>
+           <li><a href="{{ url_for('admin_ui') }}">Home</a></li>
+         <li><a href="{{ url_for('booth_info') }}">Booth Information</a></li>
+         <li><a href="{{ url_for('face_verification') }}">Face Verification</a></li>
+       </ul>
+     </nav>
+   </header>
+   
+   <main>
+     <h2 class="admin-title">ADMIN PAGE</h2>
+     <div class="search-box">
+        <label for="search">Search:</label>
+        <input type="text" id="search"/>
       </div>
-      <nav>
-        <ul>
-            <li><a href="{{ url_for('admin_page') }}">Admin Page</a></li>
-          <li><a href="{{ url_for('booth_info') }}">Booth Information</a></li>
-          <li><a href="{{ url_for('face_verification') }}">Face Verification</a></li>
-        </ul>
-      </nav>
-    </header>
-       
- <main class="background">
-    <div class="overlay">
-      <h1>WELCOME TO WIN 2025!</h1>
-      <p>We are excited to have you here!</p>
-    </div>
-  </main>
+      <!-- figure this out once you have the flask running, and needs alya's part. -->
+
+      <div class="table-container"> 
+        <button class="import-button">IMPORT</button> <!-- an import button for admin's to add data manually. -->
+        <table>
+          <thead>
+            <tr>
+              <th>Student ID ▸</th>
+              <th>Name ▸</th>
+              <th>Career ▸</th>
+              <th>Faculty ▸</th>
+              <th>Hall Assignment ▸</th>
+              <th>Booth Check-ins ▸</th>
+            </tr>
+          </thead>
+
+             <tbody>
+                 <tr>
+                 <td></td>
+                 <td></td>
+                 <td></td>
+                 <td></td>
+                 <td></td>
+                    <td></td>
+                 </tr>
+             </tbody>
+        </table>
+          <!-- a placeholder for the table until alya makes it functional. -->
+          
+         <button class="edit-button">EDIT</button>
+      </div>
+   </main>
 </body>
 </html>
+
