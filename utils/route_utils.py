@@ -36,23 +36,6 @@ def import_csv_init(df_path, db_path):
 
     conn.close()
 
-def check_ticket_status(db_path):
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    
-    try:
-        cursor.execute("SELECT ticket_status FROM user")
-        ticket_status = cursor.fetchall()
-        conn.close()
-        for status in ticket_status:
-            if status == 'collected':
-                return False
-            else:
-                return True 
-    
-    except Exception as e:
-        print(f"Error fetching ticket status: {e}")
-
 def get_conection():
     conn = sqlite3.connect('winpass.db')
     conn.row_factory = sqlite3.Row 

@@ -4,7 +4,6 @@ import face_recognition as fr
 import sqlite3
 import numpy as np
 import cv2 
-from route_utils import check_ticket_status 
 
 def resize_image(img_path, size=(250, 250), fill_color=(0, 0, 0)):
 
@@ -15,6 +14,23 @@ def resize_image(img_path, size=(250, 250), fill_color=(0, 0, 0)):
     padding = (delta_w // 2, delta_h // 2, delta_w - delta_w // 2, delta_h - delta_h // 2)
     return ImageOps.expand(img, padding, fill=fill_color)
 
+def check_ticket_status(db_path):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("SELECT ticket_status FROM user")
+        ticket_status = cursor.fetchall()
+        conn.close()
+        for status in ticket_status:
+            if status == 'collected':
+                return False
+            else:
+                return True 
+    
+    except Exception as e:
+        print(f"Error fetching ticket status: {e}")
+        
 def create_winpass(name, mmu_id, image_folder_path):
     person_folder_path = os.path.join(image_folder_path, name.replace(' ', '_'))
     if os.path.exists(person_folder_path):
