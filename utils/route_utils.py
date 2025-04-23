@@ -1,6 +1,5 @@
 import os
 from PIL import Image, ImageOps
-import face_recognition as fr
 import sqlite3
 import numpy as np
 import cv2 
