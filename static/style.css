@@ -169,3 +169,16 @@
 .import-button:hover {
     background-color: hsl(198, 53%, 78%);
 }
+
+.email-button {
+  margin-bottom: 10px;
+  padding: 8px 16px;
+  background-color: hsl(195, 3%, 53%);
+  color: white;
+  border: none;
+  border-radius: 15px;
+  font-weight: bold;
+  font-size: 16px; 
+  cursor: pointer;
+  transition: background-color 0.3s ease; 
+}
