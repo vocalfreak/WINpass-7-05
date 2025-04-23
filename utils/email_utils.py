@@ -1,28 +1,37 @@
 import smtplib 
-import getpass
+import os 
+from email.mime.text import MIMEText 
+from email.mime.multipart import MIMEMultipart 
+from dotenv import load_dotenv 
 
-HOST = "smtp-mail.outlook.com"
-PORT = 587
+load_dotenv()
 
-FROM_EMAIL = "vocalfreak525@gmail.com"
-TO_EMAIL = "vocalfreak525@outlook.com"
-PASSWORD = getpass.getpass("Enter your password: ")
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
+EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
-MESSAGE = """Subject: Mail sent using python 
-Hi bitch,
+def send_email(recipient_email, subject, body):
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = EMAIL_ADDRESS
+        msg['To'] = recipient_email 
+        msg['Subject'] = subject 
 
-This email is sent using python's smtplib and getpass module. 
+        msg.attach(MIMEText(body, 'plain'))
 
-Thanks,
-Chiam Juin Hoong"""
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
+            server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+            server.sendmail(EMAIL_ADDRESS, recipient_email, msg.as_string())
 
-smtp = smtplib.SMTP(HOST, PORT)
+        print("Email sent successfully!")
 
-status_code, response = smtp.ehlo()
-print(f"[*] Starting TLS connection: {status_code} {response}")
+    except Exception as e:
+        print(f"Error sending email: {e}")
 
-status_code, response * smtp.login(FROM_EMAIL, PASSWORD)
-print(f"[*] Loggin in: {status_code} {response}")
-
-smtp.sendmail(FROM_EMAIL, TO_EMAIL, MESSAGE)
-smtp.quit()
+if __name__ == "__main__":
+    recipient = "vocalfreak525@gmail.com"
+    subject = "Test Email From Python"
+    body = "This is a test email sent using Python and Gmail SMTP"
+    send_email(recipient, subject, body)
