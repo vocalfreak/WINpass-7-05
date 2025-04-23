@@ -7,8 +7,6 @@ import sqlite3
 df_path = r"C:\Users\chiam\Downloads\Test_George.csv"
 db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
 
-
-
 app = Flask(__name__)
 
 @app.route('/Landing-Page')
@@ -75,7 +73,7 @@ def digital_ticket():
 
 @app.route('/Face-Verification')
 def face_verification():
-    real_time_recognition(db_path)
+    #real_time_recognition(db_path)
     return redirect(url_for('homepage'))
 
 @app.route('/Pre-Registration')
@@ -123,10 +121,6 @@ def upload_csv():
 @app.route('/Send-Invite')
 def spend_invite():
     pass
-
-
-
-
 
 
 if __name__ == '__main__':
