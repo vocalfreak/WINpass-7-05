@@ -96,3 +96,25 @@
     font-size: 38px;
     font-weight: bold;
   }
+
+  /* Photobooh css */
+  .Camera{
+    text-align: center;
+    padding: 40px;
+    margin: 40px auto;
+  }
+  
+  .Camera h1{
+    font-size: 50px;
+    /* color: */
+    margin-bottom: 20px;
+      font-family: Georgia, 'Times New Roman', Times, serif;
+    }
+
+  button{
+    padding: 5px;
+    cursor: pointer;
+    background-color: #4281e7;
+    color: #fff;
+    font-size: 25px;
+  }

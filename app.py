@@ -75,6 +75,10 @@ def upload_csv():
 
 @app.route('/Photobooth_Page')
 def photobooth_page():
+    return render_template('photobooth_page.html')
+
+@app.route('/Photobooth_Camera')
+def photobooth_camera():
     photobooth()
     return render_template('photobooth_page.html')
 
