@@ -20,6 +20,7 @@
             <li><a href="{{ url_for('student_profile') }}">Student Profile</a></li>
             <li><a href="{{ url_for('booth_info') }}">Booth Information</a></li>
             <li><a href="{{ url_for('digital_ticket') }}">Digital Ticket View</a></li>
+          <li><a href="{{ url_for('photobooth') }}">Photobooth</a></li>
           </ul>
         </nav>
       </header>
@@ -28,12 +29,12 @@
         <h1>READY? SMILEEE!!</h1>
       </section>
 
-      <form method="POST" action="{{ url_for('capture')}}">
+      <!-- <form method="POST" action="{{ url_for('capture')}}">
         <input type="submit" value="Stop/Start" name="stop"/>
         <input type="submit" value="capture"/>
         <input type="submit" value="Rec" name="rec"/>
       </form>
-    <br>
+    <br> -->
 
 </body>
 </html>
