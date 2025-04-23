@@ -4,6 +4,7 @@ import face_recognition as fr
 import sqlite3
 import numpy as np
 import cv2 
+from route_utils import check_ticket_status 
 
 def resize_image(img_path, size=(250, 250), fill_color=(0, 0, 0)):
 
@@ -14,25 +15,26 @@ def resize_image(img_path, size=(250, 250), fill_color=(0, 0, 0)):
     padding = (delta_w // 2, delta_h // 2, delta_w - delta_w // 2, delta_h - delta_h // 2)
     return ImageOps.expand(img, padding, fill=fill_color)
 
-def check_ticket_status(db_path):
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    
-    try:
-        cursor.execute("SELECT ticket_status FROM user")
-        ticket_status = cursor.fetchall()
-        conn.close()
-        for status in ticket_status:
-            if status == 'collected':
-                return False
-            else:
-                return True 
-    
-    except Exception as e:
-        print(f"Error fetching ticket status: {e}")
-    
+def create_winpass(name, mmu_id, image_folder_path):
+    person_folder_path = os.path.join(image_folder_path, name.replace(' ', '_'))
+    if os.path.exists(person_folder_path):
+        image_files = [f for f in os.listdir(person_folder_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+        
+        for i, img_file in enumerate(image_files):
+            img_path = os.path.join(person_folder_path, img_file)
+            try:
+                img = cv2.imread(img_path)
+                if img is not None:
+                    window_name = "Reference Images"
+                    label = f"{name} - Image {i+1}"
+                    font = cv2.FONT_HERSHEY_SIMPLEX
+                    cv2.putText(img, label, (10, 30), font, 1, (0, 255, 0), 2)
+                    cv2.imshow(window_name, img)
+                    cv2.waitKey(1000)
+            except Exception as e:
+                print(f"Error displaying image {img_path}: {e}")
 
-
+    
 def get_face_encodings_folders(image_folder_path, db_path):
 
     conn = sqlite3.connect(db_path)
@@ -137,7 +139,6 @@ def real_time_recognition(db_path, image_folder_path):
     while True:
         ret, frame = video_capture.read()
         if not ret:
-            print("Failed to grab frame")
             break
         
         if process_this_frame:
@@ -165,16 +166,19 @@ def real_time_recognition(db_path, image_folder_path):
                             
                             if True:
                                 first_match_index = matches.index(True)
-                                first_match_index = matches.index(True)
+                                mmu_id = known_mmu_ids[first_match_index]
                                 name = known_face_names[first_match_index]
 
                                 print(f"Match found: {name} (MMU ID: {mmu_id})")
 
                                 video_capture.release()
                                 cv2.destroyAllWindows()
-                                                                       
-        
-                        
+
+                                cv2.waitKey(0)
+                                cv2.destroyAllWindows()
+
+                                create_winpass(name, mmu_id, image_folder_path)
+                                                                
                         face_names.append(name)
                         mmu_ids.append(mmu_id)
                 
