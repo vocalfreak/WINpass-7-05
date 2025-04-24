@@ -1,9 +1,10 @@
-# from utils.route_utils import import_csv_init
+from utils.route_utils import import_csv_init
 from flask import Flask, render_template, redirect, url_for, request, flash 
 from utils.image_utils import real_time_recognition
 import sqlite3
 import csv
 from utils.route_utils import photobooth 
+import os
 
 app = Flask(__name__)
 app.secret_key = '1q2w3xde'
@@ -87,7 +88,7 @@ def admin_page():
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    cursor.execute("SELECT mmu_id, name, career, email, faculty, ticket_status, goodies_status, badge_status FROM user")
+    cursor.execute("SELECT mmu_id, name, career, faculty, campus, email, goodies_status, badge_status, ticket_status FROM user")
     students = cursor.fetchall()
     conn.close()
     return render_template('admin_page.html', students=students)
@@ -121,41 +122,12 @@ def self_service():
 
 @app.route('/Import-CSV', methods=['POST'])
 def import_csv():
-    if 'csv_file' not in request.files:
-        flash('No file uploaded.')
-        return redirect(url_for('admin_page'))
+    if request.method == 'POST':
+        import_csv_init(df_path, db_path)
+        flash('CSV imported successfully!', 'success')
+    return admin_page()
 
-    file = request.files['csv_file']
-    if file.filename == '':
-        flash('No selected file.')
-        return redirect(url_for('admin_page'))
 
-    if file and file.filename.endswith('.csv'):
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        reader = csv.DictReader(file.read().decode('utf-8').splitlines())
-        
-        try:
-            for row in reader:
-                cursor.execute("""
-                    INSERT INTO user (name, mmu_id, email, career, faculty, campus)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                """, (
-                    row['name'],
-                    row['mmu_id'],
-                    row['email'],
-                    row['career'],
-                    row['faculty'],
-                    row['campus']
-                ))
-            conn.commit()
-            flash('CSV import successful!')
-        except Exception as e:
-            flash(f"Error importing CSV: {e}")
-        finally:
-            conn.close()
-
-    return redirect(url_for('admin_page'))
 
 @app.route('/Photobooth_Page')
 def photobooth_page():
