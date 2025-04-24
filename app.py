@@ -1,9 +1,9 @@
-from utils.route_utils import import_csv_init
-from flask import Flask, render_template, redirect, url_for, request, flash 
+from utils.route_utils import import_csv_init, photobooth
 from utils.image_utils import real_time_recognition
+from utils.email_utils import send_email
+from flask import Flask, render_template, redirect, url_for, request, flash 
 import sqlite3
 import csv
-from utils.route_utils import photobooth 
 import os
 
 app = Flask(__name__)
@@ -139,9 +139,15 @@ def photobooth_camera():
     return render_template('photobooth_page.html')
 
 
-@app.route('/Send-Invite')
-def spend_invite():
-    pass
+@app.route('/Send-Email')
+def email_button():
+    subject    = "Win MMU is approaching!"
+    body       = "We’re excited to see you at WIN 2025! Here are the details."
+    image_path = r"C:\Users\chiam\Projects\WINpass-7-05\static\email.png"
+
+    send_email(subject, body, image_path, db_path)
+    flash("Invitations sent to all users!", "success")
+    return redirect(url_for('admin_page'))
 
 if __name__ == '__main__':
 

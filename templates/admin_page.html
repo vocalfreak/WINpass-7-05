@@ -71,6 +71,9 @@
           <!-- a placeholder for the table until alya makes it functional. -->
           
          <button class="edit-button">EDIT</button>
+         <form action="{{ url_for('email_button') }}" method="get">
+          <button type="submit" class="email_button">SEND EMAIL</button>
+        </form>
       </div>
    </main>
 </body>
