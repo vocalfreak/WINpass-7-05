@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Booth Information</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css?family=Trirong">
+</head>
+<body>
+     <header>
+      <div class="top-bar">
+        <div class="logo-area">
+          <img src="{{ url_for('static', filename='img_mmu.png') }}" alt="MMU Logo" class="logo"/>
+          <span class="win">WIN<span class="pass">pass</span></span>
+        </div>
+      </div>
+      <nav>
+        <ul>
+            <li><a href="{{ url_for('landing_page') }}">Home</a></li>
+            <li><a href="{{ url_for('student_profile') }}">Student Profile</a></li>
+            <li><a href="{{ url_for('digital_ticket') }}">Digital Ticket View</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main>
+        <div class="main">
+           <h2>BOOTH INFORMATION</h2>
+           <p class="booth-desc">The booths are Inside Dewan Tun Canselor.</p>
+           
+           <h3>1. Digital Ticket Booth</h3>
+           <p>For students who have completed their student account's registration, head to the Digital Ticket Booth in order to get a physical print of your ticket. The ticket includes your student information and is needed in order to get all the necessities during the day.</p>
+           
+           <h3>2. Goodies Booth</h3>
+           <p>After getting the physical print of your ticket, head over to the goodies booth to get MMU/WIN t-shirt along with MMU tote bag.</p>
+           
+           <h3>3. Badge Booth</h3>
+           <p>Head over to the Badge Booth in order to get your student-ID.</p>
+           
+           <div class="checklist">
+             <div class="checklist-item">
+                   <input type="checkbox" id="ticket">
+                   <label for="ticket">Digital Ticket</label>
+             </div>
+             <div class="checklist-item">
+               <input type="checkbox" id="goodies">
+               <label for="goodies">Goodies Booth</label>
+             </div>
+             <div class="checklist-item">
+               <input type="checkbox" id="badge">
+               <label for="badge">Badge Booth</label>
+             </div>
+
+             <img src="{{ url_for('static', filename='img_mmu.png') }}" alt="MMU Logo" width="735px">
+             
+            </div>
+        </div>
+   </main>
+</body>
+</html>
