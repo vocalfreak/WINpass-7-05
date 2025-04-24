@@ -62,7 +62,7 @@ def logout():
 def student_profile():
     return render_template('student_profile.html')
 
-@app.route('/Booth-Information')
+@app.route('/Booth-Informations')
 def booth_info():
     return render_template('booth_info.html')
 
