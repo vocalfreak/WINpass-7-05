@@ -97,6 +97,43 @@
     font-weight: bold;
   }
 
+  /* Photobooh css */
+  .Camera{
+    height: 75vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    margin: 40px auto;
+  }
+  
+  .Camera h1{
+    font-size: 60px;
+    /* color: */
+    margin-bottom: 50px;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    }
+
+  .Camera h4{
+    margin-top: 50px;
+    text-align: center;
+    font-size: 13px;
+    font-family: Verdana;
+  }
+
+  button{
+    padding: 13px;
+    cursor: pointer;
+    background-color: #4281e7;
+    color: #fff;
+    font-size: 22px;
+    border-radius: 12px;
+  }
+  
+  button:hover {
+    background-color: #1652b3;
+  }
   .admin-title {
     color: red;
     padding: 20px;

@@ -1,8 +1,9 @@
-from utils.route_utils import import_csv_init
+# from utils.route_utils import import_csv_init
 from flask import Flask, render_template, redirect, url_for, request, flash 
 from utils.image_utils import real_time_recognition
 import sqlite3
 import csv
+from utils.route_utils import photobooth 
 
 app = Flask(__name__)
 app.secret_key = '1q2w3xde'
@@ -156,10 +157,19 @@ def import_csv():
 
     return redirect(url_for('admin_page'))
 
+@app.route('/Photobooth_Page')
+def photobooth_page():
+    return render_template('photobooth_page.html')
+
+@app.route('/Photobooth_Camera')
+def photobooth_camera():
+    photobooth()
+    return render_template('photobooth_page.html')
+
+
 @app.route('/Send-Invite')
 def spend_invite():
     pass
-
 
 if __name__ == '__main__':
 
