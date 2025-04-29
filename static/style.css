@@ -256,3 +256,27 @@ a:hover {
 .register-button:hover {
   background-color: #b71c1c;
 }
+
+hr {
+  border: none;
+  border-top: 1px solid #444;
+  margin: 20px 0;
+}
+
+.header {
+  background: linear-gradient(to right, #004080, #00bfff);
+  text-align: center;
+}
+
+.header img {
+  width: 1525px;
+  max-width: 100%;
+  height: auto;
+}
+
+section {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #1e1e1e;
+  color: white;
+}
