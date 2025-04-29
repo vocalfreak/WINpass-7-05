@@ -1,8 +1,8 @@
-# from utils.route_utils import import_csv_init
+#from utils.route_utils import import_csv_init
 from flask import Flask, render_template, redirect, url_for, request, flash 
 #from utils.image_utils import real_time_recognition
 import sqlite3
-from utils.route_utils import photobooth 
+from utils.route_utils import photobooth
 
 # Paths 
 df_path = r"C:\Users\chiam\Downloads\Test_George.csv"
@@ -74,7 +74,6 @@ def digital_ticket():
 
 @app.route('/Face-Verification')
 def face_verification():
-    # real_time_recognition(db_path)
     #real_time_recognition(db_path)
     return redirect(url_for('homepage'))
 
@@ -136,7 +135,6 @@ def editing_page():
 @app.route('/Send-Invite')
 def spend_invite():
     pass
-
 
 if __name__ == '__main__':
     app.run(debug=True)
