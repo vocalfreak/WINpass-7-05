@@ -74,7 +74,10 @@ def digital_ticket():
 
 @app.route('/Face-Verification')
 def face_verification():
+<<<<<<< HEAD
     # real_time_recognition(db_path)
+=======
+>>>>>>> a7c5fb6c8513bcb3a999e6dd34f8e092cb782cd5
     #real_time_recognition(db_path)
     return redirect(url_for('homepage'))
 
@@ -88,7 +91,7 @@ def admin_page():
 
 @app.route('/Admin-Ui')
 def admin_ui():
-    return render_template('admin_ui.html')
+    return render_template('admin_page.html')
 
 @app.route('/Self-Service', methods=['GET', 'POST'])
 def self_service():
