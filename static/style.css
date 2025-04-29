@@ -214,3 +214,45 @@
   margin: 20px auto;
   border-radius: 10px;
 }
+
+.contact-info {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #bbb;
+}
+
+a {
+  color: #00bfff;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+.blue-container {
+  background-color: hwb(211 18% 74%); 
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  color: white;
+  margin-top: 20px;
+}
+
+.register-button {
+  background-color: #d32f2f;
+  color: white;
+  padding: 12px 20px;
+  text-align: center;
+  align-items: center;
+  display: block;
+  margin: 20px auto;
+  border: none;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: bold;
+  width: 80%;
+}
+
+.register-button:hover {
+  background-color: #b71c1c;
+}
