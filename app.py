@@ -1,7 +1,7 @@
 from utils.route_utils import import_csv_init, photobooth
 from utils.image_utils import real_time_recognition
 from utils.email_utils import send_email
-from flask import Flask, render_template, redirect, url_for, request, flash 
+from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory 
 import sqlite3
 import csv
 import os
@@ -70,14 +70,17 @@ def booth_info():
 def digital_ticket():
     return render_template('digital_ticket.html')
 
+@app.route('/photos/<path:filename>')
+def photos(filename):
+    return send_from_directory(image_folder_path, filename)
+
 @app.route('/Face-Verification')
 def face_verification():
     result = real_time_recognition(db_path, image_folder_path)
     name, mmu_id, hall, career, img_path = result
 
     photo_filename = os.path.basename(img_path)
-    photo_path = os.path.join('static', 'photos', photo_filename)
-    photo_url = url_for('static', filename=f"photos/{photo_filename}")
+    photo_url = url_for('photos', filename=photo_filename)
 
     student = {
         "name": name,
