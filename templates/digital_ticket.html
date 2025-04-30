@@ -13,17 +13,17 @@
                 <h1 class="student-name">{{ Name }}</h1>
                 <div class="student-info">
                     <div class="student-details">
-                        <p class="student-id">{{ Student ID }}</p>
-                        <p class="career">{{ Career }}</p>
+                        <p class="student-id">{{ student.id }}</p>
+                        <p class="foundation-text">{{ student.program }}</p>
                     </div>
                     <div class="student-photo">
                         <img src="{{ student.photo_path }}" alt="Student Photo">
                     </div>
                 </div>
             </div>
-            <div class="batik-container">
-                <img class="batik-image" src="{{ url_for('static', filename='images/batik/' + student.hall_code + '.jpg') }}" alt="Batik Image">
-                <div class="qr-code-container">
+            <div class="batik-section">
+                <img class="batik-image" src="{{ url_for('static', filename='images/batik/' + student.hall_code + '.jpg') }}" alt="Batik Pattern">
+                <div class="qr-code">
                     <img src="{{ student.qr_code_path }}" alt="QR Code">
                 </div>
             </div>
