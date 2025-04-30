@@ -76,16 +76,17 @@ def face_verification():
     name, mmu_id, hall, career, img_path = result
 
     photo_filename = os.path.basename(img_path)
-    photo_path     = url_for('static', filename=f"photos/{photo_filename}")
+    photo_path = os.path.join('static', 'photos', photo_filename)
+    photo_url = url_for('static', filename=f"photos/{photo_filename}")
 
     student = {
-        "student-name": name,
-        "student-id": mmu_id,
+        "name": name,
+        "mmu_id": mmu_id,
         "hall": hall,       
         "career": career,
-        "photo_path": photo_path,
+        "photo_path": photo_url,
     }
-    return redirect(url_for('homepage, student=student'))
+    return render_template("digital_ticket.html", student=student)
 
 @app.route('/Pre-Registration')
 def pre_registration():

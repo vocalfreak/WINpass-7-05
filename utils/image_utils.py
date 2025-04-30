@@ -31,7 +31,7 @@ def check_ticket_status(db_path):
     except Exception as e:
         print(f"Error fetching ticket status: {e}")
         
-def create_digital_ticket(name, mmu_id, db_path, image_folder_path):
+def get_winpass_info(name, mmu_id, db_path, image_folder_path):
     person_folder_path = os.path.join(image_folder_path, name.replace(' ', '_'))
     if os.path.exists(person_folder_path):
         image_files = [f for f in os.listdir(person_folder_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))][:1]
@@ -199,7 +199,7 @@ def real_time_recognition(db_path, image_folder_path):
                                 cv2.waitKey(0)
                                 cv2.destroyAllWindows()
 
-                                create_digital_ticket(name, mmu_id, db_path, image_folder_path)
+                                return get_winpass_info(name, mmu_id, db_path, image_folder_path)
                                                                 
                         face_names.append(name)
                         mmu_ids.append(mmu_id)
