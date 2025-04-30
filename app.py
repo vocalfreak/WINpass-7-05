@@ -136,6 +136,31 @@ def editing_page():
 def spend_invite():
     pass
 
+@app.route('/Pre_Registration_page', methods=['POST', 'GET'])
+def pre_registration_page():
+    if request.method == 'POST':
+        if 'student-name' not in request.form or 'ID' not in request.form or 'email-address' not in request.form or 'phone-number' not in request.form:
+            return "Some required fields are missing", 400
+        
+        print("Form Data:", request.form)
+
+        full_name = request.form['student-name']
+        student_id = request.form['ID']
+        email_address = request.form['email-address']
+        phone_num = request.form['phone-number']
+
+        print(f"Full Name: {full_name}")
+        print(f"Student ID: {student_id}")
+        print(f"Email: {email_address}")
+        print(f"Phone: {phone_num}")
+
+        return "Form submitted successfully!"
+
+    return render_template('pre_registration_page.html')
+
+
+
+
 if __name__ == '__main__':
     app.run(debug=True)
 
