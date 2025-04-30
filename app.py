@@ -3,6 +3,7 @@ from flask import Flask, render_template, redirect, url_for, request, flash
 #from utils.image_utils import real_time_recognition
 import sqlite3
 from utils.route_utils import photobooth
+from flask_sqlalchemy import SQLAlchemy
 import os
 from werkzeug.utils import secure_filename
 
@@ -146,14 +147,10 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
 @app.route('/Pre_Registration_page', methods=['POST', 'GET'])
 def pre_registration_page():
     if request.method == 'POST':
-        if 'student-name' not in request.form or 'ID' not in request.form or 'email-address' not in request.form or 'phone-number' not in request.form:
-            return "Some required fields are missing", 400
-        
-        print("Form Data:", request.form)
-
         full_name = request.form['student-name']
         student_id = request.form['ID']
         email_address = request.form['email-address']
@@ -171,11 +168,7 @@ def pre_registration_page():
         print(f"Student ID: {student_id}")
         print(f"Email: {email_address}")
         print(f"Phone: {phone_num}")
-        print(f"File path: {filepath}")
-
-        # new_student = Student(full_name=full_name, student_id=student_id, ...)
-        # db.session.add(new_student)
-        # db.session.commit()
+        print(f"File path: {filepath}") 
 
         return "Form submitted successfully!"
 
