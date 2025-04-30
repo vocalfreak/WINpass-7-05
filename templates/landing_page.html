@@ -10,8 +10,13 @@
   <header>
     <div class="top-bar">
       <div class="logo-area">
-        <img src="{{ url_for('static', filename='img/img_mmu.png') }}" alt="MMU Logo" class="logo"/>
+        <img src="{{ url_for('static', filename='img_mmu.png') }}" alt="MMU Logo" class="logo"/>
         <span class="win">WIN<span class="pass">pass</span></span>
+      </div>
+      <div class="user-icon">
+        <a href="{{ url_for('login_users') }}">
+        <img src="{{ url_for('static', filename='img_user.png') }}" alt="User Icon"  class="user-avatar">
+        </a>
       </div>
     </div>
     <nav>

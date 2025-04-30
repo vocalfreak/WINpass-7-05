@@ -206,3 +206,14 @@
 .import-button:hover {
     background-color: hsl(198, 53%, 78%);
 }
+
+.user-icon {
+  position: relative;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+}
