@@ -14,9 +14,15 @@
         <span class="win">WIN<span class="pass">pass</span></span>
       </div>
       <div class="user-icon">
+        {% if 'mmu_id' in session %}
+        <form action="{{ url_for('logout') }}" method="POST">
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+    {% else %}
         <a href="{{ url_for('login_users') }}">
-        <img src="{{ url_for('static', filename='img_user.png') }}" alt="User Icon"  class="user-avatar">
+            <img src="{{ url_for('static', filename='img_user.png') }}" alt="User Icon" class="user-avatar">
         </a>
+    {% endif %}
       </div>
     </div>
     <nav>
@@ -36,6 +42,37 @@
       <img src="{{ url_for('static', filename='img_user.png') }}" alt="User Icon">
     </div>
 
+    {% if session['mmu_id'] %}
+    <table class="profile-table">
+      <tr>
+        <td class="subject">NAME</td>
+        <td>{{ session['name'] }}</td>
+      </tr>
+      <tr>
+        <td class="subject">STUDENT ID</td>
+        <td>{{ session['mmu_id'] }}</td>
+      </tr>
+      <tr>
+        <td class="subject">MMU EMAIL</td>
+        <td>{{ session['email'] }}</td>
+      </tr>
+      <tr>
+        <td class="subject">CAREER</td>
+        <td>{{ session['career'] }}</td>
+      </tr>
+      <tr>
+        <td class="subject">FACULTY</td>
+        <td>{{ session['faculty'] }}</td>
+      </tr>
+      <tr>
+        <td class="subject">HALL ASSIGNMENT</td>
+        <td>{{ session['hall'] }}</td>
+      </tr>
+    </table>
+  {% else %}
+    <p>Please <a href="{{ url_for('login_users') }}">log in</a> to view your profile.</p>
+  {% endif %}
+</section>
    
   </body>
   </html>

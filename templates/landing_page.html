@@ -14,9 +14,15 @@
         <span class="win">WIN<span class="pass">pass</span></span>
       </div>
       <div class="user-icon">
+        {% if 'mmu_id' in session %}
+        <form action="{{ url_for('logout') }}" method="POST">
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+    {% else %}
         <a href="{{ url_for('login_users') }}">
-        <img src="{{ url_for('static', filename='img_user.png') }}" alt="User Icon"  class="user-avatar">
+            <img src="{{ url_for('static', filename='img_user.png') }}" alt="User Icon" class="user-avatar">
         </a>
+    {% endif %}
       </div>
     </div>
     <nav>

@@ -1,14 +1,15 @@
 from utils.route_utils import import_csv_init
-from flask import Flask, render_template, redirect, url_for, request, flash 
+from flask import Flask, render_template, redirect, url_for, request, flash, session
 from utils.image_utils import real_time_recognition
 import sqlite3
 from utils.route_utils import photobooth 
 
 # Paths 
-df_path = r"C:\Users\chiam\Downloads\Test_George.csv"
-db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+df_path = r"C:\Users\adria\Downloads\Test_George.csv"
+db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
 
 app = Flask(__name__)
+app.secret_key = 'xp9nfcZcGQuDuoG4'
 
 @app.route('/Landing-Page')
 def homepage():
@@ -23,10 +24,16 @@ def login_users():
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
 
-        cursor.execute("SELECT id FROM user WHERE mmu_id = ? AND password = ?", (mmu_id, password))
+        cursor.execute("SELECT id, name, email, career, faculty, hall FROM user WHERE mmu_id = ? AND password = ?", (mmu_id, password))
         user = cursor.fetchone() 
 
         if user:
+            session['mmu_id'] = mmu_id
+            session['name'] = user[1]
+            session['email'] = user[2] 
+            session['career'] = user[3] 
+            session['faculty'] = user[4] 
+            session['hall'] = user[5]
             cursor.execute("UPDATE user SET ticket_status='colllected' WHERE mmu_id = ?", (mmu_id,))
             conn.commit()
             conn.close()
@@ -34,8 +41,8 @@ def login_users():
             # CHANGE TO TICKET PAGE LATER
             return redirect(url_for('homepage'))
     
-    # UNCOMMENT ONCE self_service.html IS DONE
-    #return render_template('self_service.html')
+    
+    return render_template('login_users.html')
 
 @app.route('/Login-Admin', methods=['GET', 'POST'])
 def login_admin():
@@ -55,14 +62,42 @@ def login_admin():
             # CHANGE TO admin_page.html LATER 
             return redirect(url_for('homepage'))
         
-@app.route('/Logout')
+@app.route('/Logout', methods=['POST'])
 def logout():
-    pass
-
+    session.clear()  
+    
+    flash("You have been logged out.", "success")
+    
+    return redirect(url_for('homepage'))
 
 @app.route('/Student-Profile')
 def student_profile():
-    return render_template('student_profile.html')
+    if 'mmu_id' not in session:
+        return redirect(url_for('login_users')) 
+    
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT name, mmu_id, email, career, faculty, hall FROM user WHERE mmu_id = ?",
+        (session['mmu_id'],)
+    )
+    user = cursor.fetchone()
+    conn.close()
+
+    if user:
+        user_data = {
+            'name': user[0],
+            'mmu_id': user[1],
+            'email': user[2],
+            'career': user[3],
+            'faculty': user[4],
+            'hall': user[5]
+        }
+    else:
+        user_data = None
+
+    return render_template('student_profile.html', user=user_data)
 
 @app.route('/Booth-Information')
 def booth_info():
@@ -103,7 +138,7 @@ def self_service():
         user = cursor.fetchone() 
 
         if user:
-            cursor.execute("UPDATE user SET ticket_status='colllected' WHERE mmmu_id = ?", (mmu_id,))
+            cursor.execute("UPDATE user SET ticket_status='colllected' WHERE mmu_id = ?", (mmu_id,))
             conn.commit()
             conn.close()
             
