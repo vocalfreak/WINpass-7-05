@@ -31,22 +31,24 @@ def check_ticket_status(db_path):
     except Exception as e:
         print(f"Error fetching ticket status: {e}")
         
-def create_winpass(name, mmu_id, image_folder_path):
+def create_digital_ticket(name, mmu_id, db_path, image_folder_path):
     person_folder_path = os.path.join(image_folder_path, name.replace(' ', '_'))
     if os.path.exists(person_folder_path):
-        image_files = [f for f in os.listdir(person_folder_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+        image_files = [f for f in os.listdir(person_folder_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))][:1]
         
         for i, img_file in enumerate(image_files):
             img_path = os.path.join(person_folder_path, img_file)
             try:
                 img = cv2.imread(img_path)
                 if img is not None:
-                    window_name = "Reference Images"
-                    label = f"{name} - Image {i+1}"
-                    font = cv2.FONT_HERSHEY_SIMPLEX
-                    cv2.putText(img, label, (10, 30), font, 1, (0, 255, 0), 2)
-                    cv2.imshow(window_name, img)
-                    cv2.waitKey(1000)
+                    conn = sqlite3.connect(db_path)
+                    cursor = conn.cursor()
+
+                    cursor.execute("SELECT hall, career FROM user WHERE mmu_id = ?", (mmu_id,))
+                    existing_user = cursor.fetchone()
+
+                    
+
             except Exception as e:
                 print(f"Error displaying image {img_path}: {e}")
 
@@ -188,12 +190,14 @@ def real_time_recognition(db_path, image_folder_path):
                                 print(f"Match found: {name} (MMU ID: {mmu_id})")
 
                                 video_capture.release()
+
+
                                 cv2.destroyAllWindows()
 
                                 cv2.waitKey(0)
                                 cv2.destroyAllWindows()
 
-                                create_winpass(name, mmu_id, image_folder_path)
+                                create_digital_ticket(name, mmu_id, db_path, image_folder_path)
                                                                 
                         face_names.append(name)
                         mmu_ids.append(mmu_id)
