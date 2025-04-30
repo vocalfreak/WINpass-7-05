@@ -3,7 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MMU WinPass</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='digital_ticket.css') }}">
+    <title>MMU Winpass</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/digital_ticket.css') }}">
 </head>
 <body>
+    <div class="container">
+        <div class="ticket-container">
+            <div class="ticket-header">
+                <h1 class="student-name">{{ Name }}</h1>
+                <div class="student-info">
+                    <div class="student-details">
+                        <p class="student-id">{{ student.id }}</p>
+                        <p class="foundation-text">{{ student.program }}</p>
+                    </div>
+                    <div class="student-photo">
+                        <img src="{{ student.photo_path }}" alt="Student Photo">
+                    </div>
+                </div>
+            </div>
+            <div class="batik-section">
+                <img class="batik-image" src="{{ url_for('static', filename='images/batik/' + student.hall_code + '.jpg') }}" alt="Batik Pattern">
+                <div class="qr-code">
+                    <img src="{{ student.qr_code_path }}" alt="QR Code">
+                </div>
+            </div>
+            <div class="footer">
+                <img class="mmu-logo" src="{{ url_for('static', filename='images/mmu-logo.png') }}" alt="MMU Logo">
+                <img class="hall-logo" src="{{ url_for('static', filename='images/hall-logos/' + student.hall_code + '.png') }}" alt="Hall Logo">
+            </div>
+        </div>
+    </div>
+</body>
+</html>
