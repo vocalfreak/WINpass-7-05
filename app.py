@@ -79,8 +79,8 @@ def face_verification():
     result = real_time_recognition(db_path, image_folder_path)
     name, mmu_id, hall, career, img_path = result
 
-    photo_filename = os.path.basename(img_path)
-    photo_url = url_for('photos', filename=photo_filename)
+    rel_path = os.path.relpath(img_path, start=image_folder_path).replace('\\','/')
+    photo_url = url_for('photos', filename=rel_path)
 
     student = {
         "name": name,
