@@ -1,6 +1,6 @@
-# from utils.route_utils import import_csv_init
+from utils.route_utils import import_csv_init
 from flask import Flask, render_template, redirect, url_for, request, flash 
-#from utils.image_utils import real_time_recognition
+from utils.image_utils import real_time_recognition
 import sqlite3
 from utils.route_utils import photobooth 
 

@@ -217,3 +217,15 @@
   border-radius: 50%;
   cursor: pointer;
 }
+
+.profile-section {
+  margin: 40px auto;
+}
+
+.profile-section h2 {
+ padding-left: 50px;
+ font-weight: bolder;
+ font-size: 28px;
+ color: red;
+
+}
