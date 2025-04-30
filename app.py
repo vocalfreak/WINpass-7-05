@@ -72,8 +72,20 @@ def digital_ticket():
 
 @app.route('/Face-Verification')
 def face_verification():
-    real_time_recognition(db_path, image_folder_path)
-    return redirect(url_for('homepage'))
+    result = real_time_recognition(db_path, image_folder_path)
+    name, mmu_id, hall, career, img_path = result
+
+    photo_filename = os.path.basename(img_path)
+    photo_path     = url_for('static', filename=f"photos/{photo_filename}")
+
+    student = {
+        "student-name": name,
+        "student-id": mmu_id,
+        "hall": hall,       
+        "career": career,
+        "photo_path": photo_path,
+    }
+    return redirect(url_for('homepage, student=student'))
 
 @app.route('/Pre-Registration')
 def pre_registration():
