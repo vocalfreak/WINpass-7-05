@@ -3,6 +3,8 @@ from flask import Flask, render_template, redirect, url_for, request, flash
 #from utils.image_utils import real_time_recognition
 import sqlite3
 from utils.route_utils import photobooth
+import os
+from werkzeug.utils import secure_filename
 
 # Paths 
 df_path = r"C:\Users\chiam\Downloads\Test_George.csv"
@@ -136,6 +138,14 @@ def editing_page():
 def spend_invite():
     pass
 
+app.config['UPLOAD_FOLDER'] = 'face'
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 @app.route('/Pre_Registration_page', methods=['POST', 'GET'])
 def pre_registration_page():
     if request.method == 'POST':
@@ -148,11 +158,24 @@ def pre_registration_page():
         student_id = request.form['ID']
         email_address = request.form['email-address']
         phone_num = request.form['phone-number']
+        face_pic = request.files['filename']
+
+        if face_pic and allowed_file(face_pic.filename):
+            filename = secure_filename(face_pic.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            face_pic.save(filepath)
+        else:
+            filepath = None  
 
         print(f"Full Name: {full_name}")
         print(f"Student ID: {student_id}")
         print(f"Email: {email_address}")
         print(f"Phone: {phone_num}")
+        print(f"File path: {filepath}")
+
+        # new_student = Student(full_name=full_name, student_id=student_id, ...)
+        # db.session.add(new_student)
+        # db.session.commit()
 
         return "Form submitted successfully!"
 
