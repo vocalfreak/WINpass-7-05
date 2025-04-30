@@ -45,10 +45,12 @@ def create_digital_ticket(name, mmu_id, db_path, image_folder_path):
                     cursor = conn.cursor()
 
                     cursor.execute("SELECT hall, career FROM user WHERE mmu_id = ?", (mmu_id,))
-                    existing_user = cursor.fetchone()
+                    hall, career = cursor.fetchone()
 
-                    
+                    conn.close()
 
+                    return name, mmu_id, hall, career, img_path
+                
             except Exception as e:
                 print(f"Error displaying image {img_path}: {e}")
 
