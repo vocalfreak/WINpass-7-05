@@ -176,4 +176,8 @@ def spend_invite():
 if __name__ == '__main__':
     app.run(debug=True)
 
+@app.route('/Email')
+def email():
+    return render_template("email.html")
+
 
