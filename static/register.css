@@ -1,0 +1,63 @@
+*{
+  background-color: #e4ecf8;
+}
+
+h1 {
+    display: flex;
+    justify-content: center;
+    margin-top: 10vh;
+}
+
+.Register{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+ }
+ 
+.Register label {
+  background-color: #ffffff;
+}
+   
+ .Register form{
+   background-color: #ffffff;
+   padding: 30px;
+   border-radius: 8px;
+   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+   height: auto;
+   max-width: 500px;
+   box-sizing: border-box;
+ }
+
+ .Register form input {
+  background-color: #ffffff;
+ }
+   
+ .Register form input[type="text"],
+ input[type="email"],
+ form input[type="file"] {
+   width: 100%;
+   padding: 10px;
+   border: 1px solid #ddd;
+   border-radius: 4px;
+   margin-top: 5px;
+   margin-bottom: 10px;
+   /* margin-bottom: 15px; */
+ }
+ 
+ .Register form input[type="file"] {
+   width: 100%;
+   padding: 10px;
+   border: none;
+   margin-top: 0px;
+   margin-bottom: 15px;
+ }
+
+ .Register form input[type='submit'] {
+  padding: 4px;
+  color: rgb(255, 255, 255);
+  background-color: #0047ba;
+ }
+ 
+ 
+   

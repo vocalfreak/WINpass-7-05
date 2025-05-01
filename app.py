@@ -1,8 +1,11 @@
 from utils.route_utils import import_csv_init
-from flask import Flask, render_template, redirect, url_for, request, flash, session
+from flask import Flask, render_template, redirect, url_for, request, flash 
 from utils.image_utils import real_time_recognition
 import sqlite3
-from utils.route_utils import photobooth 
+from utils.route_utils import photobooth
+from flask_sqlalchemy import SQLAlchemy
+import os
+from werkzeug.utils import secure_filename
 
 # Paths 
 df_path = r"C:\Users\adria\Downloads\Test_George.csv"
@@ -171,6 +174,43 @@ def editing_page():
 @app.route('/Send-Invite')
 def spend_invite():
     pass
+
+app.config['UPLOAD_FOLDER'] = 'face'
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@app.route('/Pre_Registration_page', methods=['POST', 'GET'])
+def pre_registration_page():
+    if request.method == 'POST':
+        full_name = request.form['student-name']
+        student_id = request.form['ID']
+        email_address = request.form['email-address']
+        phone_num = request.form['phone-number']
+        face_pic = request.files['filename']
+
+        if face_pic and allowed_file(face_pic.filename):
+            filename = secure_filename(face_pic.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            face_pic.save(filepath)
+        else:
+            filepath = None  
+
+        print(f"Full Name: {full_name}")
+        print(f"Student ID: {student_id}")
+        print(f"Email: {email_address}")
+        print(f"Phone: {phone_num}")
+        print(f"File path: {filepath}") 
+
+        return "Form submitted successfully!"
+
+    return render_template('pre_registration_page.html')
+
+
 
 @app.route('/Email')
 def email():
