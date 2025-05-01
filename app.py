@@ -1,5 +1,5 @@
 from utils.route_utils import import_csv_init
-from flask import Flask, render_template, redirect, url_for, request, flash 
+from flask import Flask, render_template, redirect, url_for, request, flash, session
 from utils.image_utils import real_time_recognition
 import sqlite3
 from utils.route_utils import photobooth
