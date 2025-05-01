@@ -165,6 +165,32 @@ def email_button():
     flash("Invitations sent to all users!", "success")
     return redirect(url_for('admin_page'))
 
+@app.route('/')
+def home():
+    if 'ID' in session:
+        return render_template('home.html', ID=session['ID'])
+    return redirect(url_for('login'))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        ID = request.form['ID']
+        password = request.form['password'] 
+        
+        user = check_credentials(ID, password)
+        if user:
+            session['ID'] = ID
+            return redirect(url_for('home'))
+        else:
+            return "Incorrect ID or Password."
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('ID', None)
+    return redirect(url_for('login'))
+
+
 if __name__ == '__main__':
 
     #Paths 
