@@ -77,7 +77,7 @@ def photos(filename):
 @app.route('/Face-Verification')
 def face_verification():
     result = real_time_recognition(db_path, image_folder_path)
-    name, mmu_id, hall, career, img_path = result
+    name, mmu_id, hall, career, img_path, qr_path = result
 
     rel_path = os.path.relpath(img_path, start=image_folder_path).replace('\\','/')
     photo_url = url_for('photos', filename=rel_path)
@@ -88,6 +88,7 @@ def face_verification():
         "hall": hall,       
         "career": career,
         "photo_path": photo_url,
+        "qr_path": qr_path
     }
     return render_template("digital_ticket.html", student=student)
 
@@ -142,8 +143,6 @@ def import_csv():
         import_csv_init(df_path, db_path)
         flash('CSV imported successfully!', 'success')
     return admin_page()
-
-
 
 @app.route('/Photobooth_Page')
 def photobooth_page():

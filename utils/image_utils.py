@@ -4,6 +4,8 @@ import face_recognition as fr
 import sqlite3
 import numpy as np
 import cv2 
+import qrcode
+from flask import current_app
 
 def resize_image(img_path, size=(250, 250), fill_color=(0, 0, 0)):
 
@@ -13,6 +15,16 @@ def resize_image(img_path, size=(250, 250), fill_color=(0, 0, 0)):
     delta_h = size[1] - img.size[1]
     padding = (delta_w // 2, delta_h // 2, delta_w - delta_w // 2, delta_h - delta_h // 2)
     return ImageOps.expand(img, padding, fill=fill_color)
+
+def generate_qr(mmu_id, data):
+    qr = qrcode.make(data).resize((160, 160))
+    qr_folder = os.path.join(current_app.root_path, 'static', 'qr_codes')
+    os.makedirs(qr_folder, exist_ok=True)
+
+    qr_path = os.path.join(qr_folder, f'{mmu_id}.png')
+    qr.save(qr_path)
+
+    return f'qrcodes/{mmu_id}.png'
 
 def check_ticket_status(db_path):
     conn = sqlite3.connect(db_path)
@@ -46,10 +58,12 @@ def get_winpass_info(name, mmu_id, db_path, image_folder_path):
 
                     cursor.execute("SELECT hall, career FROM user WHERE mmu_id = ?", (mmu_id,))
                     hall, career = cursor.fetchone()
-
                     conn.close()
 
-                    return name, mmu_id, hall, career, img_path
+                    generate_qr(mmu_id, f"http://127.0.0.1:5000/{mmu_id}")
+                    qr_path = f"qr_codes/{mmu_id}.png"
+
+                    return name, mmu_id, hall, career, img_path, qr_path
                 
             except Exception as e:
                 print(f"Error displaying image {img_path}: {e}")

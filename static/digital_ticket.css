@@ -2,7 +2,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    margin-bottom: 4px;
+    font-family: 'Roboto', sans-serif;
 }
 
 .container {
@@ -27,8 +27,8 @@
 }
 
 .container .student-name {
-    font-size: 26px;
-    font-weight: 900; 
+    font-size: 28px;
+    font-weight: 900;
     margin-bottom: 4px;
 }
 
@@ -43,15 +43,13 @@
 }
 
 .container .student-id {
-    margin-top: 45px;
-    font-weight: 600; 
     color: #606060;
     font-size: 16px;
     margin-bottom: 10px;
+    margin-top: 20px;
 }
 
 .container .career {
-    font-weight: 600; 
     color: #606060;
     font-size: 16px;
 }
@@ -62,7 +60,6 @@
     border-radius: 8px;
     overflow: hidden;
     margin-left: 15px;
-    margin-top: 35px;
 }
 
 .container .student-photo img {
@@ -75,7 +72,7 @@
     position: relative;
     height: 188px;
     width: 407px;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .container .batik-image {
@@ -95,6 +92,7 @@
     padding: 5px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     z-index: 10;
+    overflow: hidden;
 }
 
 .container .qr-code img {

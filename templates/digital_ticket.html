@@ -25,7 +25,7 @@
             <div class="batik-container">
                 <img class="batik-image" src="{{ url_for('static', filename='images/' ~ student.hall ~ '_batik.png') }}" alt="Batik-Image">
                 <div class="qr-code-container">
-                    <img src="{{ student.qr_code_path }}" alt="QR Code">
+                    <img class="qr-code" img src="{{ url_for('static', filename=student.qr_path) }}", alt="Qr Code">
                 </div>
             </div>
             <div class="footer">
