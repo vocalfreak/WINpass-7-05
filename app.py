@@ -133,7 +133,7 @@ def pre_registration():
 
 @app.route('/')
 def admin_landing():
-    return render_template('admin_landing.html')
+    return redirect(url_for('homepage'))
 
 @app.route('/Admin-Page')
 def admin_page():
