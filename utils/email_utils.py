@@ -11,30 +11,29 @@ load_dotenv()
 
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
-EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
-EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+EMAIL_ADDRESS = "vocalfreak525@gmail.com"
+EMAIL_PASSWORD = "frmu enzt celh dpvj"
 
 def send_email(subject, body, image_path, db_path):
-    """
-    Fetches all (email, name) pairs from the user table,
-    personalizes the body, attaches image if provided,
-    and sends one email per user.
-    """
-    conn   = sqlite3.connect(db_path)
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("SELECT email, name FROM user")
+    cursor.execute("SELECT email FROM user")
     users = cursor.fetchall()
     conn.close()
 
-    for recipient_email, name in users:
-        try:
-            personalized_body = f"Hi {name},\n\n{body}"
+    html_template_path = r'C:\Users\chiam\Projects\WINpass-7-05\templates\email.html'
+    with open(html_template_path, 'r', encoding='utf-8') as f:
+        html_content = f.read()
 
-            msg = MIMEMultipart()
-            msg['From']    = EMAIL_ADDRESS
-            msg['To']      = recipient_email 
+    for recipient_email_tuple in users:
+        recipient_email = recipient_email_tuple[0]
+        try:
+            msg = MIMEMultipart('related')
+            msg['From'] = EMAIL_ADDRESS
+            msg['To'] = recipient_email
             msg['Subject'] = subject
-            msg.attach(MIMEText(personalized_body, 'plain'))
+
+            msg.attach(MIMEText(html_content, 'html'))
 
             if image_path and os.path.exists(image_path):
                 with open(image_path, 'rb') as img:
@@ -59,5 +58,6 @@ def send_email(subject, body, image_path, db_path):
                 )
         except Exception as e:
             print(f"Error sending to {recipient_email}: {e}")
+
 
 

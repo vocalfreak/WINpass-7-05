@@ -1,13 +1,14 @@
 from utils.route_utils import import_csv_init, photobooth
 from utils.image_utils import real_time_recognition
 from utils.email_utils import send_email
-from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory 
+from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory, session 
 import sqlite3
-import csv
+from flask_sqlalchemy import SQLAlchemy
 import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-app.secret_key = '1q2w3xde'
+app.secret_key = 'xp9nfcZcGQuDuoG4'
 
 @app.route('/Landing-Page')
 def homepage():
@@ -22,19 +23,24 @@ def login_users():
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
 
-        cursor.execute("SELECT id FROM user WHERE mmu_id = ? AND password = ?", (mmu_id, password))
+        cursor.execute("SELECT id, name, email, career, faculty, hall FROM user WHERE mmu_id = ? AND password = ?", (mmu_id, password))
         user = cursor.fetchone() 
 
         if user:
+            session['mmu_id'] = mmu_id
+            session['name'] = user[1]
+            session['email'] = user[2] 
+            session['career'] = user[3] 
+            session['faculty'] = user[4] 
+            session['hall'] = user[5]
             cursor.execute("UPDATE user SET ticket_status='colllected' WHERE mmu_id = ?", (mmu_id,))
             conn.commit()
             conn.close()
             
-            # CHANGE TO TICKET PAGE LATER
             return redirect(url_for('homepage'))
     
-    # UNCOMMENT ONCE self_service.html IS DONE
-    #return render_template('self_service.html')
+    
+    return render_template('login_users.html')
 
 @app.route('/Login-Admin', methods=['GET', 'POST'])
 def login_admin():
@@ -54,13 +60,42 @@ def login_admin():
             # CHANGE TO admin_page.html LATER 
             return redirect(url_for('homepage'))
         
-@app.route('/Logout')
+@app.route('/Logout', methods=['POST'])
 def logout():
-    pass
+    session.clear()  
+    
+    flash("You have been logged out.", "success")
+    
+    return redirect(url_for('homepage'))
 
 @app.route('/Student-Profile')
 def student_profile():
-    return render_template('student_profile.html')
+    if 'mmu_id' not in session:
+        return redirect(url_for('login_users')) 
+    
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT name, mmu_id, email, career, faculty, hall FROM user WHERE mmu_id = ?",
+        (session['mmu_id'],)
+    )
+    user = cursor.fetchone()
+    conn.close()
+
+    if user:
+        user_data = {
+            'name': user[0],
+            'mmu_id': user[1],
+            'email': user[2],
+            'career': user[3],
+            'faculty': user[4],
+            'hall': user[5]
+        }
+    else:
+        user_data = None
+
+    return render_template('student_profile.html', user=user_data)
 
 @app.route('/Booth-Informations')
 def booth_info():
@@ -98,7 +133,7 @@ def pre_registration():
 
 @app.route('/')
 def admin_landing():
-    return render_template('admin_landing.html')
+    return redirect(url_for('homepage'))
 
 @app.route('/Admin-Page')
 def admin_page():
@@ -127,7 +162,7 @@ def self_service():
         user = cursor.fetchone() 
 
         if user:
-            cursor.execute("UPDATE user SET ticket_status='colllected' WHERE mmmu_id = ?", (mmu_id,))
+            cursor.execute("UPDATE user SET ticket_status='colllected' WHERE mmu_id = ?", (mmu_id,))
             conn.commit()
             conn.close()
             
@@ -153,6 +188,10 @@ def photobooth_camera():
     photobooth()
     return render_template('photobooth_page.html')
 
+@app.route('/Editing_Page')
+def editing_page():
+    return render_template('editing_page.html')
+
 
 @app.route('/Send-Email')
 def email_button():
@@ -163,6 +202,46 @@ def email_button():
     send_email(subject, body, image_path, db_path)
     flash("Invitations sent to all users!", "success")
     return redirect(url_for('admin_page'))
+app.config['UPLOAD_FOLDER'] = 'face'
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@app.route('/Pre_Registration_page', methods=['POST', 'GET'])
+def pre_registration_page():
+    if request.method == 'POST':
+        full_name = request.form['student-name']
+        student_id = request.form['ID']
+        email_address = request.form['email-address']
+        phone_num = request.form['phone-number']
+        face_pic = request.files['filename']
+
+        if face_pic and allowed_file(face_pic.filename):
+            filename = secure_filename(face_pic.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            face_pic.save(filepath)
+        else:
+            filepath = None  
+
+        print(f"Full Name: {full_name}")
+        print(f"Student ID: {student_id}")
+        print(f"Email: {email_address}")
+        print(f"Phone: {phone_num}")
+        print(f"File path: {filepath}") 
+
+        return "Form submitted successfully!"
+
+    return render_template('pre_registration_page.html')
+
+
+
+@app.route('/Email')
+def email():
+    return render_template("email.html")
 
 if __name__ == '__main__':
 
@@ -172,5 +251,7 @@ if __name__ == '__main__':
     image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
 
     app.run(debug=True)
+
+
 
 

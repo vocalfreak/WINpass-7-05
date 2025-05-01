@@ -1,0 +1,157 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background-color: #f2f2f2;
+}
+
+.top-bar {
+  background-color: #e6e6e6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 30px;
+}
+
+.logo-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+p.one {
+  border-right-style: solid;
+  border-right-width: 5px 5px; 
+  border-right-color: rgb(28, 27, 27);
+}
+
+.logo {
+  height: 50px;
+}
+
+.win {
+  font-family: "Trirong", serif;
+  font-size: 24px;
+  font-weight: bold;
+  color: #0047ba;
+}
+
+.pass {
+  font-family: "Trirong", serif;
+  color: red;
+}
+
+nav {
+  background-color: white;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+}
+
+nav ul {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0;
+  list-style: none;
+  gap: 40px;
+}
+
+nav a {
+  color: red;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.background {
+  background-image: url(img_win.jpeg); 
+  background-size: cover;
+  background-position: center;
+  height: 80vh;
+  position: relative;
+}
+
+.overlay {
+  background-color: rgba(255, 255, 255, 0.7);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+}
+
+.overlay h1 {
+  color: #0012a9;
+  font-size: 58px;
+  font-weight: 800;
+  margin-bottom: 20px;
+}
+
+.overlay p {
+  color: red;
+  font-size: 38px;
+  font-weight: bold;
+}
+h1 {
+    display: flex;
+    justify-content: center;
+    margin-top: 10vh;
+}
+
+.Register{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+ }
+ 
+.Register label {
+  background-color: #ffffff;
+}
+   
+ .Register form{
+   background-color: #ffffff;
+   padding: 30px;
+   border-radius: 8px;
+   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+   height: auto;
+   max-width: 500px;
+   box-sizing: border-box;
+ }
+
+ .Register form input {
+  background-color: #ffffff;
+ }
+   
+ .Register form input[type="text"],
+ input[type="email"],
+ form input[type="file"] {
+   width: 100%;
+   padding: 10px;
+   border: 1px solid #ddd;
+   border-radius: 4px;
+   margin-top: 5px;
+   margin-bottom: 10px;
+   /* margin-bottom: 15px; */
+ }
+ 
+ .Register form input[type="file"] {
+   width: 100%;
+   padding: 10px;
+   border: none;
+   margin-top: 0px;
+   margin-bottom: 15px;
+ }
+
+ .Register form input[type='submit'] {
+  padding: 4px;
+  color: rgb(255, 255, 255);
+  background-color: #0047ba;
+ }
+ 
+ 
+   
