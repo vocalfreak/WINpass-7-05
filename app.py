@@ -172,12 +172,13 @@ def editing_page():
 def spend_invite():
     pass
 
+@app.route('/Email')
+def email():
+    return render_template("email.html")
 
 if __name__ == '__main__':
     app.run(debug=True)
 
-@app.route('/Email')
-def email():
-    return render_template("email.html")
+
 
 
