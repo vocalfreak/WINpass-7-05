@@ -8,7 +8,9 @@ import os
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+
 app.secret_key = 'xp9nfcZcGQuDuoG4'
+
 
 @app.route('/Landing-Page')
 def homepage():
@@ -191,7 +193,6 @@ def photobooth_camera():
 @app.route('/Editing_Page')
 def editing_page():
     return render_template('editing_page.html')
-
 
 @app.route('/Send-Email')
 def email_button():
