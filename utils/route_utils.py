@@ -16,17 +16,16 @@ def import_csv_init(df_path, db_path):
 
             for row in reader:
                 cursor.execute("""
-                INSERT INTO user (name, password, mmu_id, email, career, faculty, campus)
+                INSERT INTO user (mmu_id, name, password, career, faculty, campus, email)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 """, (
-                    row['name'],
-                    row['password'],
                     row['mmu_id'],
-                    row['email'],
+                    row['name'],
                     row['career'],
+                    row['password'],
                     row['faculty'],
-                    row['campus']
-                    
+                    row['campus'],
+                    row['email'],
            ))
         
         conn.commit()
