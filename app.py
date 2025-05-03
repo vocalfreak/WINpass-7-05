@@ -133,7 +133,7 @@ def pre_registration():
 
 @app.route('/')
 def admin_landing():
-    return redirect(url_for('homepage'))
+    return render_template('admin_landing.html')
 
 @app.route('/Admin-Page')
 def admin_page():
@@ -147,7 +147,7 @@ def admin_page():
 
 @app.route('/Admin-Home')
 def home():
-    return render_template('admin_landing.html')
+    return render_template('landing_page.html')
 
 @app.route('/Self-Service', methods=['GET', 'POST'])
 def self_service():
@@ -236,7 +236,6 @@ def pre_registration_page():
         return "Form submitted successfully!"
 
     return render_template('pre_registration_page.html')
-
 
 
 @app.route('/Email')
