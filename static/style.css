@@ -143,6 +143,23 @@
   .search-box {
     padding: 0 20px 20px 20px;
   }
+
+  .search-button {
+    padding: 5px 5px;
+    background-color: hsl(195, 3%, 53%);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-weight: bolder;
+    cursor: pointer;
+    margin-bottom: 20px;
+    font-size: small;
+
+  }
+
+  .search-button:hover {
+     background-color: hsl(198, 53%, 78%);
+  }
   
   input[type="text"] {
     padding: 8px;
