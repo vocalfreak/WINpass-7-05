@@ -203,6 +203,7 @@ def email_button():
     send_email(subject, body, image_path, db_path)
     flash("Invitations sent to all users!", "success")
     return redirect(url_for('admin_page'))
+
 app.config['UPLOAD_FOLDER'] = 'face'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -211,6 +212,12 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def update_user(mmu_id, face_front, face_left, face_right):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE user SET face_front = ?, face_left = ?, face_right = ? WHERE mmu_id = ?", (face_front, face_left, face_right, mmu_id))
+    conn.commit()
+    conn.close()
 
 @app.route('/Pre_Registration_page', methods=['POST', 'GET'])
 def pre_registration_page():
@@ -248,6 +255,9 @@ def pre_registration_page():
         print(f"File path: {filepath_left}") 
         print(f"File path: {filepath_right}") 
 
+        update_user(mmu_id, filepath_front, filepath_left, filepath_right)
+
+
         return "Form submitted successfully!"
 
     return render_template('pre_registration_page.html')
@@ -262,6 +272,7 @@ if __name__ == '__main__':
     #Paths 
     df_path = r"C:\Users\chiam\Downloads\Test_George.csv"
     db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+    #db_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass.db"
     image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
 
     app.run(debug=True)
