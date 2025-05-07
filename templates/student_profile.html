@@ -31,16 +31,48 @@
         <li><a href="{{ url_for('student_profile') }}">Student Profile</a></li>
         <li><a href="{{ url_for('booth_info') }}">Booth Information</a></li>
         <li><a href="{{ url_for('digital_ticket') }}">Digital Ticket View</a></li>
-        <li><a href="{{ url_for('email') }}">Email</a></li>
+        <li><a href="{{ url_for('photobooth_page') }}">Photobooth</a></li>
       </ul>
     </nav>
   </header>
 
-  <main class="background">
-    <div class="overlay">
-      <h1>WELCOME TO WIN 2025!</h1>
-      <p>We are excited to have you here!</p>
+  <section class="profile-section">
+    <h2>STUDENT PROFILE</h2>
+    <div class="avatar">
+      <img src="{{ url_for('static', filename='img_user.png') }}" alt="User Icon">
     </div>
-  </main>
-</body>
-</html>
+
+    {% if session['mmu_id'] %}
+    <table class="profile-table">
+      <tr>
+        <td class="subject">NAME</td>
+        <td>{{ session['name'] }}</td>
+      </tr>
+      <tr>
+        <td class="subject">STUDENT ID</td>
+        <td>{{ session['mmu_id'] }}</td>
+      </tr>
+      <tr>
+        <td class="subject">MMU EMAIL</td>
+        <td>{{ session['email'] }}</td>
+      </tr>
+      <tr>
+        <td class="subject">CAREER</td>
+        <td>{{ session['career'] }}</td>
+      </tr>
+      <tr>
+        <td class="subject">FACULTY</td>
+        <td>{{ session['faculty'] }}</td>
+      </tr>
+      <tr>
+        <td class="subject">HALL ASSIGNMENT</td>
+        <td>{{ session['hall'] }}</td>
+      </tr>
+    </table>
+  {% else %}
+    <p>Please <a href="{{ url_for('login_users') }}">log in</a> to view your profile.</p>
+  {% endif %}
+</section>
+   
+  </body>
+  </html>
