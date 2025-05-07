@@ -139,10 +139,15 @@ def admin_landing():
 
 @app.route('/Admin-Page')
 def admin_page():
+    search_query = request.args.get('search' , '')
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    cursor.execute("SELECT mmu_id, name, career, faculty, campus, email, goodies_status, badge_status, ticket_status FROM user")
+    if search_query:
+        cursor.execute("SELECT mmu_id, name, career, faculty, campus, email, goodies_status, badge_status, ticket_status FROM user WHERE name LIKE ?", ('%' + search_query + '%',))
+    else:
+        cursor.execute("SELECT mmu_id, name, career, faculty, campus, email, goodies_status, badge_status, ticket_status FROM user")
+
     students = cursor.fetchall()
     conn.close()
     return render_template('admin_page.html', students=students)
