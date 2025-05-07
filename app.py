@@ -38,10 +38,16 @@ def login_users():
             cursor.execute("UPDATE user SET ticket_status='colllected' WHERE mmu_id = ?", (mmu_id,))
             conn.commit()
             conn.close()
-            
+            flash('Login successful!', 'success')  
+
             return redirect(url_for('homepage'))
-    
-    
+        
+        else:
+            conn.close()
+            flash('Invalid MMU ID or password. Please try again.', 'error')
+
+            return redirect(url_for('login_users'))
+        
     return render_template('login_users.html')
 
 @app.route('/Login-Admin', methods=['GET', 'POST'])
