@@ -1,6 +1,6 @@
 from utils.route_utils import import_csv_init, photobooth
 from utils.image_utils import real_time_recognition
-from utils.email_utils import send_email
+#from utils.email_utils import send_email
 from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory, session 
 import sqlite3
 from flask_sqlalchemy import SQLAlchemy
@@ -215,7 +215,7 @@ def allowed_file(filename):
 @app.route('/Pre_Registration_page', methods=['POST', 'GET'])
 def pre_registration_page():
     if request.method == 'POST':
-        student_id = request.form['ID']
+        mmu_id = request.form['ID']
         face_front = request.files['filename_front']
         face_left = request.files['filename_left']
         face_right = request.files['filename_right']
@@ -243,7 +243,7 @@ def pre_registration_page():
         else:
             print("Unable to save the 'right' picture")
 
-        print(f"Student ID: {student_id}")
+        print(f"Student ID: {mmu_id}")
         print(f"File path: {filepath_front}") 
         print(f"File path: {filepath_left}") 
         print(f"File path: {filepath_right}") 
@@ -261,7 +261,8 @@ if __name__ == '__main__':
 
     #Paths 
     df_path = r"C:\Users\chiam\Downloads\Test_George.csv"
-    db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+    #db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+    db_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass.db"
     image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
 
     app.run(debug=True)
