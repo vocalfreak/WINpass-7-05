@@ -38,7 +38,6 @@ def login_users():
             cursor.execute("UPDATE user SET ticket_status='colllected' WHERE mmu_id = ?", (mmu_id,))
             conn.commit()
             conn.close()
-            flash('Login successful!', 'success')  
 
             return redirect(url_for('homepage'))
         
