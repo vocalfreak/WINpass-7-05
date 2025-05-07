@@ -169,28 +169,36 @@
   }
   
   .table-container {
-    padding: 0 20px 40px 20px;
+    padding: 0 20px 40px 20px; 
     position: relative;
-  }
-  
-  table {
+}
+
+table {
     width: 100%;
     border-collapse: collapse;
     background-color: #aaa;
     color: black;
-  }
-  
-  th, td {
-    padding: 12px;
+    table-layout: fixed; 
+}
+
+th, td {
+    padding: 10px; 
     text-align: left;
     border-bottom: 2px solid #ddd;
-  }
-  
-  th {
+    overflow: hidden; 
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+th {
     background-color: #e4eaf3;
-    cursor: pointer;
-  }
-  
+    font-weight: bold;
+}
+
+th, td {
+    width: 16.66%; 
+}
+
   .edit-button {
     position: absolute;
     top: -12px;

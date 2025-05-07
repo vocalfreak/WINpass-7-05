@@ -144,9 +144,9 @@ def admin_page():
     cursor = conn.cursor()
 
     if search_query:
-        cursor.execute("SELECT mmu_id, name, career, faculty, campus, email, goodies_status, badge_status, ticket_status FROM user WHERE name LIKE ?", ('%' + search_query + '%',))
+        cursor.execute("SELECT mmu_id, name, career, faculty, campus, email FROM user WHERE name LIKE ?", ('%' + search_query + '%',))
     else:
-        cursor.execute("SELECT mmu_id, name, career, faculty, campus, email, goodies_status, badge_status, ticket_status FROM user")
+        cursor.execute("SELECT mmu_id, name, career, faculty, campus, email FROM user")
 
     students = cursor.fetchall()
     conn.close()
