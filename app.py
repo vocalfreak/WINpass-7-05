@@ -1,6 +1,6 @@
 from utils.route_utils import import_csv_init, photobooth
 from utils.image_utils import real_time_recognition
-from utils.email_utils import send_email
+#from utils.email_utils import send_email
 from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory, session 
 import sqlite3
 from flask_sqlalchemy import SQLAlchemy
@@ -139,10 +139,15 @@ def admin_landing():
 
 @app.route('/Admin-Page')
 def admin_page():
+    search_query = request.args.get('search' , '')
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    cursor.execute("SELECT mmu_id, name, career, faculty, campus, email, goodies_status, badge_status, ticket_status FROM user")
+    if search_query:
+        cursor.execute("SELECT mmu_id, name, career, faculty, campus, email FROM user WHERE name LIKE ?", ('%' + search_query + '%',))
+    else:
+        cursor.execute("SELECT mmu_id, name, career, faculty, campus, email FROM user")
+
     students = cursor.fetchall()
     conn.close()
     return render_template('admin_page.html', students=students)
@@ -271,8 +276,10 @@ if __name__ == '__main__':
 
     #Paths 
     df_path = r"C:\Users\chiam\Downloads\Test_George.csv"
-    db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
-    #db_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass.db"
+    #db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
+    #image_folder_path = r"C:\Users\adria\Downloads\winpass_training_set"
+    #db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+    db_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass.db"
     image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
 
     app.run(debug=True)

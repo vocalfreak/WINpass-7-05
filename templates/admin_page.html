@@ -24,12 +24,14 @@
    </header>
    
    <main>
-     <h2>ADMIN PAGE</h2>
-     <div class="search-box">
-        <label for="search">Search:</label>
-        <input type="text" id="search"/>
-      </div>
-      <!-- figure this out once you have the flask running, and needs alya's part. -->
+    <h2>ADMIN PAGE</h2>
+    <div class="search-box">
+       <form method="GET" action="{{ url_for('admin_page') }}">
+         <label for="search">Search:</label>
+         <input type="text" name="search" id="search" value="{{ request.args.get('search', '') }}" placeholder="{% if not request.args.get('search') %}Enter Name{% endif %}"/>
+         <button class="search-button" type="submit">SEARCH</button>
+       </form>
+     </div>
 
       <div class="table-container"> 
         <form action="{{ url_for('import_csv') }}" method="POST" enctype="multipart/form-data">
@@ -39,15 +41,12 @@
         <table>
           <thead>
             <tr>
-              <th>Student ID ▸</th>
-              <th>Name ▸</th>
-              <th>Career ▸</th>
-              <th>Faculty ▸</th>
-              <th>Campus ▸</th>
-              <th>Email ▸</th>
-              <th>goodies status ▸</th>
-              <th>badge status ▸</th>
-              <th>ticket status ▸</th>
+              <th>Student ID</th>
+              <th>Name</th>
+              <th>Career</th>
+              <th>Faculty</th>
+              <th>Campus</th>
+              <th>Email</th>
             </tr>
           </thead>
 
