@@ -143,6 +143,23 @@
   .search-box {
     padding: 0 20px 20px 20px;
   }
+
+  .search-button {
+    padding: 5px 5px;
+    background-color: hsl(195, 3%, 53%);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-weight: bolder;
+    cursor: pointer;
+    margin-bottom: 20px;
+    font-size: small;
+
+  }
+
+  .search-button:hover {
+     background-color: hsl(198, 53%, 78%);
+  }
   
   input[type="text"] {
     padding: 8px;
@@ -152,40 +169,48 @@
   }
   
   .table-container {
-    padding: 0 20px 40px 20px;
+    padding: 0 20px 40px 20px; 
     position: relative;
-  }
-  
-  table {
+}
+
+table {
     width: 100%;
     border-collapse: collapse;
     background-color: #aaa;
     color: black;
-  }
-  
-  th, td {
-    padding: 12px;
+    table-layout: fixed; 
+}
+
+th, td {
+    padding: 10px; 
     text-align: left;
     border-bottom: 2px solid #ddd;
-  }
-  
-  th {
+    overflow: hidden; 
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+th {
     background-color: #e4eaf3;
-    cursor: pointer;
-  }
-  
+    font-weight: bold;
+}
+
+th, td {
+    width: 16.66%; 
+}
+
   .edit-button {
     position: absolute;
-    top: 10px;
+    top: -12px;
     right: 10px;
     background-color: hsl(195, 3%, 53%);
     color: white;
     border: none;
     border-radius: 15px;
-    padding: 8px 16px;
+    padding: 4px 8px;
     font-weight: bold;
     cursor: pointer;
-    margin-bottom: 10px;
+    font-size: large;
   }
 
   .edit-button:hover {
@@ -193,14 +218,22 @@
   }
 
   .import-button {
-    padding: 8px 16px;
+    position: absolute;
+    top: -12px;
+    left: 200px;
+    padding: 4px 8px;
     background-color: hsl(195, 3%, 53%);
     color: white;
     border: none;
     border-radius: 15px;
     cursor: pointer;
     font-weight: bold;
-    margin-bottom: 10px;
+    margin-bottom: auto;
+    font-size: large;
+
+  .import-button:hover {
+     background-color: hsl(198, 53%, 78%);
+  }
 
     body {
     background: url("/static/mmu_bg_image.png") no-repeat center center fixed;
