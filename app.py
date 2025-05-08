@@ -234,10 +234,10 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def update_user(mmu_id, face_front, face_left, face_right):
+def update_user(mmu_id, face_1, face_2, face_3):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("UPDATE user SET face_front = ?, face_left = ?, face_right = ? WHERE mmu_id = ?", (face_front, face_left, face_right, mmu_id))
+    cursor.execute("UPDATE user SET face_1 = ?, face_2 = ?, face_3 = ? WHERE mmu_id = ?", (face_1, face_2, face_3, mmu_id))
     conn.commit()
     conn.close()
 
@@ -245,39 +245,39 @@ def update_user(mmu_id, face_front, face_left, face_right):
 def pre_registration_page():
     if request.method == 'POST':
         mmu_id = request.form['ID']
-        face_front = request.files['filename_front']
-        face_left = request.files['filename_left']
-        face_right = request.files['filename_right']
+        face_1 = request.files['filename1']
+        face_2 = request.files['filename2']
+        face_3 = request.files['filename3']
 
 
-        if face_front and allowed_file(face_front.filename):
-            filename_front = secure_filename(face_front.filename)
-            filepath_front = os.path.join(app.config['UPLOAD_FOLDER'], filename_front)
-            face_front.save(filepath_front)
+        if face_1 and allowed_file(face_1.filename):
+            filename1 = secure_filename(face_1.filename)
+            filepath_1 = os.path.join(app.config['UPLOAD_FOLDER'], filename1)
+            face_1.save(filepath_1)
         else:
-            print("Unable to save the 'front' picture")
+            print("Unable to save the first picture")
  
-        if face_left and allowed_file(face_left.filename):
-            filename_left = secure_filename(face_left.filename)
-            filepath_left = os.path.join(app.config['UPLOAD_FOLDER'], filename_left)
-            face_left.save(filepath_left)
+        if face_2 and allowed_file(face_2.filename):
+            filename2 = secure_filename(face_2.filename)
+            filepath_2 = os.path.join(app.config['UPLOAD_FOLDER'], filename2)
+            face_2.save(filepath_2)
         else:
-            print("Unable to save the 'left' picture")
+            print("Unable to save the second picture")
  
          
-        if face_right and allowed_file(face_right.filename):
-            filename_right = secure_filename(face_right.filename)
-            filepath_right = os.path.join(app.config['UPLOAD_FOLDER'], filename_right)
-            face_right.save(filepath_right)
+        if face_3 and allowed_file(face_3.filename):
+            filename3 = secure_filename(face_3.filename)
+            filepath_3 = os.path.join(app.config['UPLOAD_FOLDER'], filename3)
+            face_3.save(filepath_3)
         else:
-            print("Unable to save the 'right' picture")
+            print("Unable to save the third picture")
 
         print(f"Student ID: {mmu_id}")
-        print(f"File path: {filepath_front}") 
-        print(f"File path: {filepath_left}") 
-        print(f"File path: {filepath_right}") 
+        print(f"File path: {filepath_1}") 
+        print(f"File path: {filepath_2}") 
+        print(f"File path: {filepath_3}") 
 
-        update_user(mmu_id, filepath_front, filepath_left, filepath_right)
+        update_user(mmu_id, filepath_1, filepath_2, filepath_3)
 
 
         return "Form submitted successfully!"
