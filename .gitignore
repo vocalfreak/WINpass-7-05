@@ -8,3 +8,8 @@ venv/
 
 winpass_training_set
 .env
+
+posts_img
+dataset_instagram-post-scraper_2025-05-07_08-55-02-774.json
+
+qr_codes
