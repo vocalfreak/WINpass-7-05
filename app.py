@@ -272,37 +272,15 @@ def pre_registration_page():
 def email():
     return render_template("email.html")
 
-DATABASE = 'winpass.db'
-
-def get_leaderboard():
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT hall, SUM(points) as total_points
-        FROM user
-        GROUP BY hall
-        ORDER BY total_points DESC
-    ''')
-    leaderboard = cursor.fetchall()
-    conn.close()
-    return leaderboard
-
-@app.route('/hall_leaderboard')
-def leaderboard():
-    halls = get_leaderboard()
-    return render_template('hall_leaderboard.html', halls=halls)
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
 
     #Paths 
     df_path = r"C:\Users\chiam\Downloads\Test_George.csv"
     #db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
     #image_folder_path = r"C:\Users\adria\Downloads\winpass_training_set"
-    #db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
-    db_path = "winpass.db"
+    db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
     image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
 
     app.run(debug=True)
