@@ -209,6 +209,23 @@ def email_button():
     flash("Invitations sent to all users!", "success")
     return redirect(url_for('admin_page'))
 
+@app.route('/Checklist_page', methods=['POST', 'GET'])
+def register_checklist():
+    if request.method == 'POST':
+        mmu_id = request.form.get('ID')
+        goodies_status = request.form.get('goodies_status')
+        badge_status = request.form.get('badge_status')
+        ticket_status = request.form.get('ticket_status')
+
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("UPDATE user set goodies_status = ?, badge_status = ?, ticket_status = ? WHERE mmu_id = ?", (goodies_status, badge_status, ticket_status, mmu_id))
+        user = cursor.fetchone() 
+
+        return "Checklist updated successfully!"
+    return render_template('qr.html')
+    
+
 app.config['UPLOAD_FOLDER'] = 'face'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
