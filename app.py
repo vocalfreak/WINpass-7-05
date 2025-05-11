@@ -1,5 +1,6 @@
 from utils.route_utils import import_csv_init, photobooth
 from utils.image_utils import real_time_recognition
+from utils.image_utils import get_decode_face_data
 #from utils.email_utils import send_email
 from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory, session 
 import sqlite3
@@ -10,7 +11,7 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 
 app.secret_key = 'xp9nfcZcGQuDuoG4'
-
+db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
 
 @app.route('/Landing-Page')
 def homepage():
@@ -38,10 +39,15 @@ def login_users():
             cursor.execute("UPDATE user SET ticket_status='colllected' WHERE mmu_id = ?", (mmu_id,))
             conn.commit()
             conn.close()
-            
+
             return redirect(url_for('homepage'))
-    
-    
+        
+        else:
+            conn.close()
+            flash('Invalid MMU ID or password. Please try again.', 'error')
+
+            return redirect(url_for('login_users'))
+        
     return render_template('login_users.html')
 
 @app.route('/Login-Admin', methods=['GET', 'POST'])
@@ -226,7 +232,8 @@ def register_checklist():
     return render_template('qr.html')
     
 
-app.config['UPLOAD_FOLDER'] = 'face'
+Picture_folder = 'face'
+app.config['UPLOAD_FOLDER'] = Picture_folder
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -245,29 +252,32 @@ def update_user(mmu_id, face_1, face_2, face_3):
 def pre_registration_page():
     if request.method == 'POST':
         mmu_id = request.form['ID']
+        name = request.form['name'].strip().replace(" ", "_")
+        user_folder = os.path.join(app.config['UPLOAD_FOLDER'], name)
+        os.makedirs(user_folder, exist_ok=True)
         face_1 = request.files['filename1']
         face_2 = request.files['filename2']
         face_3 = request.files['filename3']
 
 
         if face_1 and allowed_file(face_1.filename):
-            filename1 = secure_filename(face_1.filename)
-            filepath_1 = os.path.join(app.config['UPLOAD_FOLDER'], filename1)
+            filename1 = f"{name}_0001.jpg"
+            filepath_1 = os.path.join(user_folder, filename1)
             face_1.save(filepath_1)
         else:
             print("Unable to save the first picture")
  
         if face_2 and allowed_file(face_2.filename):
-            filename2 = secure_filename(face_2.filename)
-            filepath_2 = os.path.join(app.config['UPLOAD_FOLDER'], filename2)
+            filename2 = f"{name}_0002.jpg"
+            filepath_2 = os.path.join(user_folder, filename2)
             face_2.save(filepath_2)
         else:
             print("Unable to save the second picture")
  
          
         if face_3 and allowed_file(face_3.filename):
-            filename3 = secure_filename(face_3.filename)
-            filepath_3 = os.path.join(app.config['UPLOAD_FOLDER'], filename3)
+            filename3 = f"{name}_0003.jpg"
+            filepath_3 = os.path.join(user_folder, filename3)
             face_3.save(filepath_3)
         else:
             print("Unable to save the third picture")
@@ -277,8 +287,15 @@ def pre_registration_page():
         print(f"File path: {filepath_2}") 
         print(f"File path: {filepath_3}") 
 
+        # global db_path
+        # face_data1, face_data2, face_data3 = get_decode_face_data(db_path)
+
         update_user(mmu_id, filepath_1, filepath_2, filepath_3)
 
+        # print(f"Student ID: {mmu_id}")
+        # print(f"File path: {face_data1}") 
+        # print(f"File path: {face_data2}") 
+        # print(f"File path: {face_data3}") 
 
         return "Form submitted successfully!"
 
@@ -289,10 +306,13 @@ def pre_registration_page():
 def email():
     return render_template("email.html")
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     #Paths 
     df_path = r"C:\Users\chiam\Downloads\Test_George.csv"
+    #db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
+    #image_folder_path = r"C:\Users\adria\Downloads\winpass_training_set"
+    #db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
     #db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
     #image_folder_path = r"C:\Users\adria\Downloads\winpass_training_set"
     #db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
