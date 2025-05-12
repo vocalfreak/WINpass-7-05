@@ -1,6 +1,6 @@
 from utils.route_utils import import_csv_init, photobooth
 from utils.image_utils import real_time_recognition
-from utils.image_utils import get_decode_face_data
+from utils.image_utils import get_face_encodings_folders
 #from utils.email_utils import send_email
 from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory, session 
 import sqlite3
@@ -219,20 +219,21 @@ def email_button():
 def register_checklist():
     if request.method == 'POST':
         mmu_id = request.form.get('ID')
-        goodies_status = request.form.get('goodies_status')
-        badge_status = request.form.get('badge_status')
-        ticket_status = request.form.get('ticket_status')
+        goodies_status = request.form.get('goodies_status', 'Pending')
+        badge_status = request.form.get('badge_status', 'Pending')
+        ticket_status = request.form.get('ticket_status', 'Pending')
 
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute("UPDATE user set goodies_status = ?, badge_status = ?, ticket_status = ? WHERE mmu_id = ?", (goodies_status, badge_status, ticket_status, mmu_id))
-        user = cursor.fetchone() 
+        conn.commit()
+        conn.close()
 
         return "Checklist updated successfully!"
     return render_template('qr.html')
     
 
-Picture_folder = 'face'
+Picture_folder = 'winpass_training_set'
 app.config['UPLOAD_FOLDER'] = Picture_folder
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -241,10 +242,10 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def update_user(mmu_id, face_1, face_2, face_3):
+def update_user(mmu_id, face_1, face_2):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("UPDATE user SET face_1 = ?, face_2 = ?, face_3 = ? WHERE mmu_id = ?", (face_1, face_2, face_3, mmu_id))
+    cursor.execute("UPDATE user SET face_1 = ?, face_2 = ? WHERE mmu_id = ?", (face_1, face_2, mmu_id))
     conn.commit()
     conn.close()
 
@@ -253,49 +254,51 @@ def pre_registration_page():
     if request.method == 'POST':
         mmu_id = request.form['ID']
         name = request.form['name'].strip().replace(" ", "_")
-        user_folder = os.path.join(app.config['UPLOAD_FOLDER'], name)
-        os.makedirs(user_folder, exist_ok=True)
+        image_folder_path = os.path.join(app.config['UPLOAD_FOLDER'], name)
+        os.makedirs(image_folder_path, exist_ok=True)
         face_1 = request.files['filename1']
         face_2 = request.files['filename2']
-        face_3 = request.files['filename3']
+        # face_3 = request.files['filename3']
+
+        filepath_1 = filepath_2 = None
 
 
         if face_1 and allowed_file(face_1.filename):
             filename1 = f"{name}_0001.jpg"
-            filepath_1 = os.path.join(user_folder, filename1)
+            filepath_1 = os.path.join(image_folder_path, filename1)
             face_1.save(filepath_1)
         else:
             print("Unable to save the first picture")
  
         if face_2 and allowed_file(face_2.filename):
             filename2 = f"{name}_0002.jpg"
-            filepath_2 = os.path.join(user_folder, filename2)
+            filepath_2 = os.path.join(image_folder_path, filename2)
             face_2.save(filepath_2)
         else:
             print("Unable to save the second picture")
  
          
-        if face_3 and allowed_file(face_3.filename):
-            filename3 = f"{name}_0003.jpg"
-            filepath_3 = os.path.join(user_folder, filename3)
-            face_3.save(filepath_3)
-        else:
-            print("Unable to save the third picture")
+        # if face_3 and allowed_file(face_3.filename):
+        #     filename3 = f"{name}_0003.jpg"
+        #     filepath_3 = os.path.join(image_folder_path, filename3)
+        #     face_3.save(filepath_3)
+        # else:
+        #     print("Unable to save the third picture")
 
         print(f"Student ID: {mmu_id}")
         print(f"File path: {filepath_1}") 
         print(f"File path: {filepath_2}") 
-        print(f"File path: {filepath_3}") 
+        # print(f"File path: {filepath_3}") 
 
-        # global db_path
-        # face_data1, face_data2, face_data3 = get_decode_face_data(db_path)
+        face_code1, face_code2 = get_face_encodings_folders(image_folder_path, db_path)
 
-        update_user(mmu_id, filepath_1, filepath_2, filepath_3)
+        print(f"Student ID: {mmu_id}")
+        print(f"File path: {face_code1}") 
+        print(f"File path: {face_code2}") 
+        # print(f"File path: {face_code3}") 
 
-        # print(f"Student ID: {mmu_id}")
-        # print(f"File path: {face_data1}") 
-        # print(f"File path: {face_data2}") 
-        # print(f"File path: {face_data3}") 
+
+        update_user(mmu_id, face_code1, face_code2)
 
         return "Form submitted successfully!"
 
@@ -317,7 +320,8 @@ if __name__ == '__main__':
     #image_folder_path = r"C:\Users\adria\Downloads\winpass_training_set"
     #db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
     db_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass.db"
-    image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
+    image_folder_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass_training_set"
+    #image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
 
     app.run(debug=True)
 
