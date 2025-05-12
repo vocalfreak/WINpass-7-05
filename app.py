@@ -149,13 +149,22 @@ def admin_page():
     cursor = conn.cursor()
 
     if search_query:
-        cursor.execute("SELECT mmu_id, name, career, faculty, campus, email FROM user WHERE name LIKE ?", ('%' + search_query + '%',))
+        cursor.execute("SELECT mmu_id, name, career, faculty, campus, email, goodies_status, badge_status, ticket_status FROM user WHERE name LIKE ?", ('%' + search_query + '%',))
     else:
-        cursor.execute("SELECT mmu_id, name, career, faculty, campus, email FROM user")
+        cursor.execute("SELECT mmu_id, name, career, faculty, campus, email, goodies_status, badge_status, ticket_status FROM user")
 
     students = cursor.fetchall()
+    updated_students = []
+
+    for student in students:
+        mmu_id, name, career, faculty, campus, email, goodies_status, badge_status, ticket_status = student
+        statuses = [goodies_status, badge_status, ticket_status]
+        booth_status = f"{statuses.count('collected')}/3"
+        updated_students.append((mmu_id, name, career, faculty, campus, email, booth_status))
+
+
     conn.close()
-    return render_template('admin_page.html', students=students)
+    return render_template('admin_page.html', students=updated_students)
 
 @app.route('/Admin-Home')
 def home():

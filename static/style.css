@@ -183,7 +183,7 @@ table {
 
 th, td {
     padding: 10px; 
-    text-align: left;
+    text-align: center;
     border-bottom: 2px solid #ddd;
     overflow: hidden; 
     text-overflow: ellipsis;
