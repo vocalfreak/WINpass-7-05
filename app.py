@@ -264,9 +264,6 @@ def leaderboard():
     return render_template('hall_leaderboard.html', halls=halls)
 
 if __name__ == '__main__':
-    app.run(debug=True)
-
-
 
     #Paths 
     df_path = r"C:\Users\chiam\Downloads\Test_George.csv"
