@@ -109,6 +109,10 @@ def digital_ticket():
 def photos(filename):
     return send_from_directory(image_folder_path, filename)
 
+@app.route('/')
+def temporary():
+    return render_template('admin_landing.html')
+
 @app.route('/Face-Verification')
 def face_verification():
     result = real_time_recognition(db_path, image_folder_path)
