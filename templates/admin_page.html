@@ -28,7 +28,7 @@
     <div class="search-box">
        <form method="GET" action="{{ url_for('admin_page') }}">
          <label for="search">Search:</label>
-         <input type="text" name="search" id="search" value="{{ request.args.get('search', '') }}" placeholder="{% if not request.args.get('search') %}Enter Name{% endif %}"/>
+         <input type="text" name="search" id="search" value="{{ request.args.get('search', '') }}" placeholder="{% if not request.args.get('search') %}Enter Name or MMU ID{% endif %}"/>
          <button class="search-button" type="submit">SEARCH</button>
        </form>
      </div>
@@ -47,6 +47,7 @@
               <th>Faculty</th>
               <th>Campus</th>
               <th>Email</th>
+              <th>Booth Status</th>
             </tr>
           </thead>
 
@@ -66,8 +67,7 @@
                  </tr>
                  {% endfor %}
              </tbody>
-        </table>
-          <!-- a placeholder for the table until alya makes it functional. -->
+            </table>
           
          <button class="edit-button">EDIT</button>
          <form action="{{ url_for('email_button') }}" method="get">
