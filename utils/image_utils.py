@@ -371,7 +371,9 @@ def badge_qr():
 # Paths
 dataset_path = r"C:\Users\chiam\Downloads\winpass_training_set"
 database_path = "winpass.db"
-image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
+#image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
+image_folder_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass_training_set"
+
 
 db_path = database_path 
 

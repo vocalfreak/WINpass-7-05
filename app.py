@@ -322,7 +322,6 @@ def pre_registration_page():
         os.makedirs(image_folder_path, exist_ok=True)
         face_1 = request.files['filename1']
         face_2 = request.files['filename2']
-        # face_3 = request.files['filename3']
 
         filepath_1 = filepath_2 = None
 
@@ -340,27 +339,17 @@ def pre_registration_page():
             face_2.save(filepath_2)
         else:
             print("Unable to save the second picture")
- 
-         
-        # if face_3 and allowed_file(face_3.filename):
-        #     filename3 = f"{name}_0003.jpg"
-        #     filepath_3 = os.path.join(image_folder_path, filename3)
-        #     face_3.save(filepath_3)
-        # else:
-        #     print("Unable to save the third picture")
+
 
         print(f"Student ID: {mmu_id}")
         print(f"File path: {filepath_1}") 
         print(f"File path: {filepath_2}") 
-        # print(f"File path: {filepath_3}") 
 
         face_code1, face_code2 = get_face_encodings_folders(image_folder_path, db_path)
 
         print(f"Student ID: {mmu_id}")
         print(f"File path: {face_code1}") 
         print(f"File path: {face_code2}") 
-        # print(f"File path: {face_code3}") 
-
 
         update_user(mmu_id, face_code1, face_code2)
 
