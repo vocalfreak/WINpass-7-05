@@ -28,7 +28,7 @@
     <div class="search-box">
        <form method="GET" action="{{ url_for('admin_page') }}">
          <label for="search">Search:</label>
-         <input type="text" name="search" id="search" value="{{ request.args.get('search', '') }}" placeholder="{% if not request.args.get('search') %}Enter Name{% endif %}"/>
+         <input type="text" name="search" id="search" value="{{ request.args.get('search', '') }}" placeholder="{% if not request.args.get('search') %}Enter Name or MMU ID{% endif %}"/>
          <button class="search-button" type="submit">SEARCH</button>
        </form>
      </div>

@@ -143,7 +143,7 @@ def admin_page():
     cursor = conn.cursor()
 
     if search_query:
-        cursor.execute("SELECT mmu_id, name, career, faculty, campus, email, goodies_status, badge_status, ticket_status FROM user WHERE name LIKE ?", ('%' + search_query + '%',))
+        cursor.execute("SELECT mmu_id, name, career, faculty, campus, email, goodies_status, badge_status, ticket_status FROM user WHERE name LIKE ? OR mmu_id LIKE ?", ('%' + search_query + '%', '%' + search_query + '%'))
     else:
         cursor.execute("SELECT mmu_id, name, career, faculty, campus, email, goodies_status, badge_status, ticket_status FROM user")
 
