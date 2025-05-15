@@ -1,27 +1,45 @@
 import json
 import requests
 import os
+import csv
+import pandas as pd
 
 def get_post_img(post_path):
     with open(post_path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-
+        df = pd.read_csv(f)
+    
+    displayurl = df["displayUrl"]
     os.makedirs("posts_img", exist_ok=True)
 
-    for i, post in enumerate(data):
-        url = post.get('displayUrl') 
-        if url:
-            try:
-                img_data = requests.get(url).content
-                with open(f"posts_img/img_{i}.jpg", 'wb') as handler:
-                    handler.write(img_data)
-                print(f"Downloaded image {i}")
-            except Exception as e:
-                print(f"Could not find image {i}: {e}")
-        else:
-            print(f"Could not find URL: {i}")
+    for idx, image_url in enumerate(displayurl.dropna()):
+        response = requests.get(image_url, timeout=10)
+        if response.status_code == 200:
+            ext = image_url.split('.')[-1].split('?')[0]
+            if len(ext) > 5 or '/' in ext:  
+                ext = "jpg"
+                file_path = os.path.join("posts_img", f"post_{idx}.{ext}")
+                with open(file_path, "wb") as img_file:
+                    img_file.write(response.content)
 
-# Set your path here
-post_path = r"C:\Users\chiam\Projects\WINpass-7-05\dataset_instagram-post-scraper_2025-05-07_08-55-02-774.json"
+def get_captions(post_path, captions_path):
+    with open(post_path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    
+    captions = []
+    for post in data:
+        caption = post.get('caption') or post.get("edge_media_to_caption", {}).get("edges", [{}][0].get("node", {}).get("texxt"))
+        if caption:
+            captions.append({
+                "caption": caption,
+            })
+    with open(captions_path, "w", encoding="utf-8", newline="") as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(["caption"])  
+        writer.writerows(captions)
+
+# PATH
+post_path = r"C:\Users\chiam\Projects\WINpass-7-05\instagram_dataset.csv"
+captions_path = r"C:\Users\chiam\Projects\WINpass-7-05\captions.csv"
 
 get_post_img(post_path)
+#get_captions(post_path, captions_path)
