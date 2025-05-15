@@ -345,13 +345,16 @@ def pre_registration_page():
         print(f"File path: {filepath_1}") 
         print(f"File path: {filepath_2}") 
 
-        face_code1, face_code2 = get_face_encodings_folders(image_folder_path, db_path)
+        # face_code1, face_code2 = get_face_encodings_folders(image_folder_path, db_path)
 
-        print(f"Student ID: {mmu_id}")
-        print(f"File path: {face_code1}") 
-        print(f"File path: {face_code2}") 
+        # print(f"Student ID: {mmu_id}")
+        # print(f"File path: {face_code1}") 
+        # print(f"File path: {face_code2}") 
 
-        update_user(mmu_id, face_code1, face_code2)
+        # update_user(mmu_id, face_code1, face_code2)
+
+        update_user(mmu_id, filepath_1, filepath_2)
+
 
         return "Form submitted successfully!"
 
