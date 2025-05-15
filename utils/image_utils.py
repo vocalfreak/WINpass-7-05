@@ -7,7 +7,7 @@ import cv2
 import qrcode
 from flask import current_app
 
-def resize_image(img_path, size=(250, 250), fill_color=(0, 0, 0)):
+def resize_img_face(img_path, size=(250, 250), fill_color=(0, 0, 0)):
 
     img = Image.open(img_path)
     img.thumbnail(size, Image.LANCZOS)
@@ -15,6 +15,20 @@ def resize_image(img_path, size=(250, 250), fill_color=(0, 0, 0)):
     delta_h = size[1] - img.size[1]
     padding = (delta_w // 2, delta_h // 2, delta_w - delta_w // 2, delta_h - delta_h // 2)
     return ImageOps.expand(img, padding, fill=fill_color)
+
+def resize_img_post(post_folder_path, size=(224, 224), fill_color=(0, 0, 0)):
+    for filename in os.listdir(post_folder_path):
+        if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+            img_path = os.path.join(post_folder_path, filename)
+            img = Image.open(img_path)
+            img.thumbnail(size, Image.LANCZOS)
+
+            delta_w = size[0] - img.size[0]
+            delta_h = size[1] - img.size[1]
+            padding = (delta_w // 2, delta_h // 2, delta_w - delta_w // 2, delta_h - delta_h // 2)
+            new_img = ImageOps.expand(img, padding, fill=fill_color)
+
+            new_img.save(img_path)
 
 def generate_qr(mmu_id, data):
     qr = qrcode.make(data).resize((160, 160))
@@ -250,13 +264,14 @@ def real_time_recognition(db_path, image_folder_path):
 dataset_path = r"C:\Users\chiam\Downloads\winpass_training_set"
 database_path = "winpass.db"
 image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
+post_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\posts_img"
 
 db_path = database_path 
 
 if __name__ == "__main__":
     #get_face_encodings_folders(dataset_path, db_path)
-    real_time_recognition(db_path, image_folder_path)
-
+    #real_time_recognition(db_path, image_folder_path)
+    resize_img_post(post_folder_path)
 
 
 

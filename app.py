@@ -10,7 +10,7 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 
 app.secret_key = 'xp9nfcZcGQuDuoG4'
-
+db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
 
 @app.route('/Landing-Page')
 def homepage():
@@ -38,10 +38,15 @@ def login_users():
             cursor.execute("UPDATE user SET ticket_status='colllected' WHERE mmu_id = ?", (mmu_id,))
             conn.commit()
             conn.close()
-            
+
             return redirect(url_for('homepage'))
-    
-    
+        
+        else:
+            conn.close()
+            flash('Invalid MMU ID or password. Please try again.', 'error')
+
+            return redirect(url_for('login_users'))
+        
     return render_template('login_users.html')
 
 @app.route('/Login-Admin', methods=['GET', 'POST'])
@@ -139,10 +144,15 @@ def admin_landing():
 
 @app.route('/Admin-Page')
 def admin_page():
+    search_query = request.args.get('search' , '')
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    cursor.execute("SELECT mmu_id, name, career, faculty, campus, email, goodies_status, badge_status, ticket_status FROM user")
+    if search_query:
+        cursor.execute("SELECT mmu_id, name, career, faculty, campus, email FROM user WHERE name LIKE ?", ('%' + search_query + '%',))
+    else:
+        cursor.execute("SELECT mmu_id, name, career, faculty, campus, email FROM user")
+
     students = cursor.fetchall()
     conn.close()
     return render_template('admin_page.html', students=students)
@@ -203,6 +213,7 @@ def email_button():
     send_email(subject, body, image_path, db_path)
     flash("Invitations sent to all users!", "success")
     return redirect(url_for('admin_page'))
+
 app.config['UPLOAD_FOLDER'] = 'face'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -211,28 +222,51 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def update_user(mmu_id, face_front, face_left, face_right):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE user SET face_front = ?, face_left = ?, face_right = ? WHERE mmu_id = ?", (face_front, face_left, face_right, mmu_id))
+    conn.commit()
+    conn.close()
 
 @app.route('/Pre_Registration_page', methods=['POST', 'GET'])
 def pre_registration_page():
     if request.method == 'POST':
-        full_name = request.form['student-name']
-        student_id = request.form['ID']
-        email_address = request.form['email-address']
-        phone_num = request.form['phone-number']
-        face_pic = request.files['filename']
+        mmu_id = request.form['ID']
+        face_front = request.files['filename_front']
+        face_left = request.files['filename_left']
+        face_right = request.files['filename_right']
 
-        if face_pic and allowed_file(face_pic.filename):
-            filename = secure_filename(face_pic.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            face_pic.save(filepath)
+
+        if face_front and allowed_file(face_front.filename):
+            filename_front = secure_filename(face_front.filename)
+            filepath_front = os.path.join(app.config['UPLOAD_FOLDER'], filename_front)
+            face_front.save(filepath_front)
         else:
-            filepath = None  
+            print("Unable to save the 'front' picture")
+ 
+        if face_left and allowed_file(face_left.filename):
+            filename_left = secure_filename(face_left.filename)
+            filepath_left = os.path.join(app.config['UPLOAD_FOLDER'], filename_left)
+            face_left.save(filepath_left)
+        else:
+            print("Unable to save the 'left' picture")
+ 
+         
+        if face_right and allowed_file(face_right.filename):
+            filename_right = secure_filename(face_right.filename)
+            filepath_right = os.path.join(app.config['UPLOAD_FOLDER'], filename_right)
+            face_right.save(filepath_right)
+        else:
+            print("Unable to save the 'right' picture")
 
-        print(f"Full Name: {full_name}")
-        print(f"Student ID: {student_id}")
-        print(f"Email: {email_address}")
-        print(f"Phone: {phone_num}")
-        print(f"File path: {filepath}") 
+        print(f"Student ID: {mmu_id}")
+        print(f"File path: {filepath_front}") 
+        print(f"File path: {filepath_left}") 
+        print(f"File path: {filepath_right}") 
+
+        update_user(mmu_id, filepath_front, filepath_left, filepath_right)
+
 
         return "Form submitted successfully!"
 
@@ -243,31 +277,56 @@ def pre_registration_page():
 def email():
     return render_template("email.html")
 
-DATABASE = 'winpass.db'
 
 def get_leaderboard():
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect('winpass.db')
     cursor = conn.cursor()
-    cursor.execute('''
-        SELECT hall, SUM(points) as total_points
-        FROM user
-        GROUP BY hall
-        ORDER BY total_points DESC
-    ''')
-    leaderboard = cursor.fetchall()
+    cursor.execute("SELECT id, name, gold, silver, bronze, points FROM hall ORDER BY points DESC")
+    halls = cursor.fetchall()
     conn.close()
-    return leaderboard
+    return halls
 
-@app.route('/hall_leaderboard')
+def update_points(hall_id, medal):
+    points_map = {'gold': 5, 'silver': 3, 'bronze': 1}
+    if medal not in points_map:
+        return
+
+    conn = sqlite3.connect('winpass.db')
+    cursor = conn.cursor()
+    cursor.execute(f"""
+        UPDATE hall
+        SET {medal} = {medal} + 1,
+            points = points + ?
+        WHERE id = ?
+    """, (points_map[medal], hall_id))
+    conn.commit()
+    conn.close()
+
+@app.route('/leaderboard')
 def leaderboard():
     halls = get_leaderboard()
-    return render_template('hall_leaderboard.html', halls=halls)
+    return render_template('leaderboards.html', halls=halls)
+
+@app.route('/add/<int:hall_id>/<medal>', methods=['POST'])
+def add_medal(hall_id, medal):
+    update_points(hall_id, medal)
+    return redirect(url_for('leaderboard'))
+
+@app.route('/update', methods=['POST'])
+def update():
+    hall_id = request.form['hall']
+    medal = request.form['medal']
+    update_points(hall_id, medal)
+    return redirect(url_for('leaderboard'))
 
 if __name__ == '__main__':
 
     #Paths 
     df_path = r"C:\Users\chiam\Downloads\Test_George.csv"
-    db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+    #db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
+    #image_folder_path = r"C:\Users\adria\Downloads\winpass_training_set"
+    # db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+    db_path = r"C:\Users\user\projects\WINpass-7-05\winpass.db"
     image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
 
     app.run(debug=True)
