@@ -19,3 +19,6 @@ face
 
 instagram_posts_cleaned.csv
 captions.csv
+
+prediction_results.csv
+test_results.csv

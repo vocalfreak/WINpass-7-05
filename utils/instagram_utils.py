@@ -3,6 +3,8 @@ import requests
 import os
 import csv
 import pandas as pd
+import subprocess as sp
+from pathlib import Path 
 
 def get_post_img(post_path):
     with open(post_path, 'r', encoding='utf-8') as f:
@@ -37,9 +39,26 @@ def get_captions(post_path, captions_path):
         writer.writerow(["caption"])  
         writer.writerows(captions)
 
+def get_tsv(images_dir):
+    images_dir = Path(images_dir)
+    for image_file in images_dir.glob("*.jpg"):
+        output_path = image_file.with_suffix('')  
+        cmd = [
+            "tesseract",  
+            str(image_file),
+            str(output_path),
+            "--oem", "3",
+            "--psm", "11",
+            "tsv"
+        ]
+        print("Running command:", " ".join(cmd))  
+        sp.run(cmd, check=True) 
+
 # PATH
 post_path = r"C:\Users\chiam\Projects\WINpass-7-05\instagram_dataset.csv"
 captions_path = r"C:\Users\chiam\Projects\WINpass-7-05\captions.csv"
+posts_img_path = r"C:\Users\chiam\Projects\WINpass-7-05\posts_img"
 
-get_post_img(post_path)
+#get_post_img(post_path)
 #get_captions(post_path, captions_path)
+get_tsv(posts_img_path)
