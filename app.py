@@ -111,7 +111,7 @@ def photos(filename):
 
 @app.route('/')
 def temporary():
-    return render_template('admin_landing.html')
+    return render_template('landing_page.html')
 
 @app.route('/Face-Verification')
 def face_verification():
