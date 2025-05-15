@@ -5,9 +5,11 @@ import sqlite3
 import numpy as np
 import cv2 
 import qrcode
+import requests
 from flask import current_app
+from urllib.parse import urlparse
 
-def resize_img_face(img_path, size=(250, 250), fill_color=(0, 0, 0)):
+def resize_image(img_path, size=(250, 250), fill_color=(0, 0, 0)):
 
     img = Image.open(img_path)
     img.thumbnail(size, Image.LANCZOS)
@@ -15,20 +17,6 @@ def resize_img_face(img_path, size=(250, 250), fill_color=(0, 0, 0)):
     delta_h = size[1] - img.size[1]
     padding = (delta_w // 2, delta_h // 2, delta_w - delta_w // 2, delta_h - delta_h // 2)
     return ImageOps.expand(img, padding, fill=fill_color)
-
-def resize_img_post(post_folder_path, size=(224, 224), fill_color=(0, 0, 0)):
-    for filename in os.listdir(post_folder_path):
-        if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
-            img_path = os.path.join(post_folder_path, filename)
-            img = Image.open(img_path)
-            img.thumbnail(size, Image.LANCZOS)
-
-            delta_w = size[0] - img.size[0]
-            delta_h = size[1] - img.size[1]
-            padding = (delta_w // 2, delta_h // 2, delta_w - delta_w // 2, delta_h - delta_h // 2)
-            new_img = ImageOps.expand(img, padding, fill=fill_color)
-
-            new_img.save(img_path)
 
 def generate_qr(mmu_id, data):
     qr = qrcode.make(data).resize((160, 160))
@@ -260,18 +248,139 @@ def real_time_recognition(db_path, image_folder_path):
     video_capture.release()
     cv2.destroyAllWindows()
 
+def ticket_qr():
+    cap = cv2.VideoCapture(0)
+    detector = cv2.QRCodeDetector()
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+    
+        data, bbox, _ = detector.detectAndDecode(frame)
+
+        if bbox is not None:
+            points = bbox.astype(int)
+            frame = cv2.polylines(frame, [points], isClosed=True, color=(0, 255, 0), thickness=3)
+
+            if data:
+                frame = cv2.putText(frame, data, (points[0][0][0], points[0][0][1] - 10),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+                print(f"QR Code Detected: {data}")
+
+        if data:
+            print(f"QR Code Detected: {data}")
+
+            try:
+                response = requests.post(f'http://127.0.0.1:5000/Scan_tickets/{data}', data={
+                'ticket_status' : 'collected'
+                })
+                print("Update successful")
+            except requests.exceptions.RequestException as e:
+                print("Invalid QR")
+
+        cv2.imshow("QR Scanner", frame)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+
+def goodies_qr():
+    cap = cv2.VideoCapture(0)
+    detector = cv2.QRCodeDetector()
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+    
+        data, bbox, _ = detector.detectAndDecode(frame)
+
+        if bbox is not None:
+            points = bbox.astype(int)
+            frame = cv2.polylines(frame, [points], isClosed=True, color=(0, 255, 0), thickness=3)
+
+            if data:
+                frame = cv2.putText(frame, data, (points[0][0][0], points[0][0][1] - 10),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+                print(f"QR Code Detected: {data}")
+
+        if data:
+            print(f"QR Code Detected: {data}")
+
+            try:
+                response = requests.post(f'http://127.0.0.1:5000/Scan_goodies/{data}', data={
+                'godies_status' : 'collected'
+                })
+                print("Update successful")
+            except requests.exceptions.RequestException as e:
+                print("Invalid QR")
+
+        cv2.imshow("QR Scanner", frame)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+
+def badge_qr():
+    cap = cv2.VideoCapture(0)
+    detector = cv2.QRCodeDetector()
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+    
+        data, bbox, _ = detector.detectAndDecode(frame)
+
+        if bbox is not None:
+            points = bbox.astype(int)
+            frame = cv2.polylines(frame, [points], isClosed=True, color=(0, 255, 0), thickness=3)
+
+            if data:
+                frame = cv2.putText(frame, data, (points[0][0][0], points[0][0][1] - 10),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+                print(f"QR Code Detected: {data}")
+
+        if data:
+            print(f"QR Code Detected: {data}")
+
+            try:
+                response = requests.post(f'http://127.0.0.1:5000/Scan_goodies/{data}', data={
+                'goodies_status' : 'collected'
+                })
+                print("Update successful")
+            except requests.exceptions.RequestException as e:
+                print("Invalid QR")
+
+        cv2.imshow("QR Scanner", frame)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+
 # Paths
 dataset_path = r"C:\Users\chiam\Downloads\winpass_training_set"
 database_path = "winpass.db"
-image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
-post_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\posts_img"
+#image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
+image_folder_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass_training_set"
+
 
 db_path = database_path 
 
 if __name__ == "__main__":
     #get_face_encodings_folders(dataset_path, db_path)
-    #real_time_recognition(db_path, image_folder_path)
-    resize_img_post(post_folder_path)
+    real_time_recognition(db_path, image_folder_path)
+
 
 
 

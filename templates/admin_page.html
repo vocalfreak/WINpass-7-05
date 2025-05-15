@@ -47,6 +47,7 @@
               <th>Faculty</th>
               <th>Campus</th>
               <th>Email</th>
+              <th>Booth Status</th>
             </tr>
           </thead>
 
@@ -66,8 +67,7 @@
                  </tr>
                  {% endfor %}
              </tbody>
-        </table>
-          <!-- a placeholder for the table until alya makes it functional. -->
+            </table>
           
          <button class="edit-button">EDIT</button>
          <form action="{{ url_for('email_button') }}" method="get">
