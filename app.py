@@ -164,6 +164,41 @@ def admin_page():
     conn.close()
     return render_template('admin_page.html', students=updated_students)
 
+@app.route('/edit-student', methods=['GET', 'POST'])
+def edit_student():
+    mmu_id = request.args.get('mmu_id')
+    if not mmu_id:
+        return redirect(url_for('admin_page'))
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    if request.method == 'POST':
+        name = request.form['name']
+        career = request.form['career']
+        faculty = request.form['faculty']
+        campus = request.form['campus']
+        email = request.form['email']
+
+        cursor.execute("""
+            UPDATE user 
+            SET name=?, career=?, faculty=?, campus=?, email=?
+            WHERE mmu_id=?
+        """, (name, career, faculty, campus, email, mmu_id))
+
+        conn.commit()
+        conn.close()
+        return redirect(url_for('admin_page'))
+
+    cursor.execute("SELECT mmu_id, name, career, faculty, campus, email FROM user WHERE mmu_id=?", (mmu_id,))
+    student = cursor.fetchone()
+    conn.close()
+
+    if not student:
+        return "Student not found", 404
+
+    return render_template('edit_student.html', student=student)
+
 @app.route('/Admin-Home')
 def home():
     return render_template('landing_page.html')
