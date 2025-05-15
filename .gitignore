@@ -7,4 +7,22 @@ env/
 venv/
 
 winpass_training_set
+<<<<<<< HEAD
 .env
+=======
+.env
+
+posts_img
+dataset_instagram-post-scraper_2025-05-12_09-02-09-852.json
+
+winpass.db
+
+qr_codes
+face
+
+instagram_posts_cleaned.csv
+captions.csv
+
+prediction_results.csv
+test_results.csv
+>>>>>>> instascraper
