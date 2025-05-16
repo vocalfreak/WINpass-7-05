@@ -1,6 +1,8 @@
 from utils.route_utils import import_csv_init, photobooth
 from utils.image_utils import real_time_recognition
-from utils.email_utils import send_email
+from utils.image_utils import get_face_encodings_folders
+from utils.image_utils import ticket_qr, badge_qr, goodies_qr
+#from utils.email_utils import send_email
 from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory, session 
 import sqlite3
 from flask_sqlalchemy import SQLAlchemy
@@ -256,7 +258,80 @@ def email_button():
     flash("Invitations sent to all users!", "success")
     return redirect(url_for('admin_page'))
 
-app.config['UPLOAD_FOLDER'] = 'face'
+@app.route('/Checklist_page', methods=['POST', 'GET'])
+def register_checklist():
+    if request.method == 'POST':
+        mmu_id = request.form.get('ID')
+        goodies_status = request.form.get('goodies_status', 'Pending')
+        badge_status = request.form.get('badge_status', 'Pending')
+        ticket_status = request.form.get('ticket_status', 'Pending')
+
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("UPDATE user set goodies_status = ?, badge_status = ?, ticket_status = ? WHERE mmu_id = ?", (goodies_status, badge_status, ticket_status, mmu_id))
+        conn.commit()
+        conn.close()
+
+        return "Checklist updated successfully!"
+    return render_template('qr.html')
+
+@app.route('/Scan_tickets')
+def scan_tickets():
+    ticket_qr()
+    ticket_status = request.form.get('ticket_status', 'Pending')
+
+    ticket = request.args.get('ticket')
+    if not ticket:
+        return "No ticket detected. Please retry or meet the admin to verify", 400
+    mmu_id = ticket
+    global db_path
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE user set ticket_status = ? WHERE mmu_id = ?", (ticket_status, mmu_id))
+    conn.commit()
+    conn.close()
+
+    return render_template('qr.html')
+
+@app.route('/Scan_goodies')
+def scan_goodies():
+    goodies_qr()
+    goodies_status = request.form.get('ticket_status', 'Pending')
+
+    ticket = request.args.get('ticket')
+    if not ticket:
+        return "No ticket detected. Please retry or meet the admin to verify", 400
+    mmu_id = ticket
+    global db_path
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE user set goodies_status = ? WHERE mmu_id = ?", (goodies_status, mmu_id))
+    conn.commit()
+    conn.close()
+
+    return render_template('qr.html')
+
+@app.route('/Scan_badge')
+def scan_badge():
+    badge_qr()
+    badge_status = request.form.get('ticket_status', 'Pending')
+
+    ticket = request.args.get('ticket')
+    if not ticket:
+        return "No ticket detected. Please retry or meet the admin to verify", 400
+    mmu_id = ticket
+    global db_path
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE user set badge_status = ? WHERE mmu_id = ?", (badge_status, mmu_id))
+    conn.commit()
+    conn.close()
+
+    return render_template('qr.html')
+
+
+Picture_folder = 'winpass_training_set'
+app.config['UPLOAD_FOLDER'] = Picture_folder
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -264,10 +339,10 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def update_user(mmu_id, face_front, face_left, face_right):
+def update_user(mmu_id, face_1, face_2):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("UPDATE user SET face_front = ?, face_left = ?, face_right = ? WHERE mmu_id = ?", (face_front, face_left, face_right, mmu_id))
+    cursor.execute("UPDATE user SET face_1 = ?, face_2 = ? WHERE mmu_id = ?", (face_1, face_2, mmu_id))
     conn.commit()
     conn.close()
 
@@ -275,39 +350,43 @@ def update_user(mmu_id, face_front, face_left, face_right):
 def pre_registration_page():
     if request.method == 'POST':
         mmu_id = request.form['ID']
-        face_front = request.files['filename_front']
-        face_left = request.files['filename_left']
-        face_right = request.files['filename_right']
+        name = request.form['name'].strip().replace(" ", "_")
+        image_folder_path = os.path.join(app.config['UPLOAD_FOLDER'], name)
+        os.makedirs(image_folder_path, exist_ok=True)
+        face_1 = request.files['filename1']
+        face_2 = request.files['filename2']
+
+        filepath_1 = filepath_2 = None
 
 
-        if face_front and allowed_file(face_front.filename):
-            filename_front = secure_filename(face_front.filename)
-            filepath_front = os.path.join(app.config['UPLOAD_FOLDER'], filename_front)
-            face_front.save(filepath_front)
+        if face_1 and allowed_file(face_1.filename):
+            filename1 = f"{name}_0001.jpg"
+            filepath_1 = os.path.join(image_folder_path, filename1)
+            face_1.save(filepath_1)
         else:
-            print("Unable to save the 'front' picture")
+            print("Unable to save the first picture")
  
-        if face_left and allowed_file(face_left.filename):
-            filename_left = secure_filename(face_left.filename)
-            filepath_left = os.path.join(app.config['UPLOAD_FOLDER'], filename_left)
-            face_left.save(filepath_left)
+        if face_2 and allowed_file(face_2.filename):
+            filename2 = f"{name}_0002.jpg"
+            filepath_2 = os.path.join(image_folder_path, filename2)
+            face_2.save(filepath_2)
         else:
-            print("Unable to save the 'left' picture")
- 
-         
-        if face_right and allowed_file(face_right.filename):
-            filename_right = secure_filename(face_right.filename)
-            filepath_right = os.path.join(app.config['UPLOAD_FOLDER'], filename_right)
-            face_right.save(filepath_right)
-        else:
-            print("Unable to save the 'right' picture")
+            print("Unable to save the second picture")
+
 
         print(f"Student ID: {mmu_id}")
-        print(f"File path: {filepath_front}") 
-        print(f"File path: {filepath_left}") 
-        print(f"File path: {filepath_right}") 
+        print(f"File path: {filepath_1}") 
+        print(f"File path: {filepath_2}") 
 
-        update_user(mmu_id, filepath_front, filepath_left, filepath_right)
+        # face_code1, face_code2 = get_face_encodings_folders(image_folder_path, db_path)
+
+        # print(f"Student ID: {mmu_id}")
+        # print(f"File path: {face_code1}") 
+        # print(f"File path: {face_code2}") 
+
+        # update_user(mmu_id, face_code1, face_code2)
+
+        update_user(mmu_id, filepath_1, filepath_2)
 
 
         return "Form submitted successfully!"
@@ -325,8 +404,13 @@ if __name__ == '__main__':
     df_path = r"C:\Users\chiam\Downloads\Test_George.csv"
     #db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
     #image_folder_path = r"C:\Users\adria\Downloads\winpass_training_set"
-    db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
-    image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
+    #db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+    #db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
+    #image_folder_path = r"C:\Users\adria\Downloads\winpass_training_set"
+    #db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+    db_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass.db"
+    image_folder_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass_training_set"
+    #image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
 
     app.run(debug=True)
 
