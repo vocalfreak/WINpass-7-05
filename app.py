@@ -402,15 +402,8 @@ def email():
 if __name__ == '__main__':
     #Paths 
     df_path = r"C:\Users\chiam\Downloads\Test_George.csv"
-    #db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
-    #image_folder_path = r"C:\Users\adria\Downloads\winpass_training_set"
-    #db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
-    #db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
-    #image_folder_path = r"C:\Users\adria\Downloads\winpass_training_set"
-    #db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
-    db_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass.db"
-    image_folder_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass_training_set"
-    #image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
+    db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+    image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
 
     app.run(debug=True)
 

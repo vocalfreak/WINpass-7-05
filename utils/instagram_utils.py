@@ -5,6 +5,8 @@ import csv
 import pandas as pd
 import subprocess as sp
 from pathlib import Path 
+import io
+import sys
 
 def get_post_img(post_path):
     with open(post_path, 'r', encoding='utf-8') as f:
@@ -54,11 +56,29 @@ def get_tsv(images_dir):
         print("Running command:", " ".join(cmd))  
         sp.run(cmd, check=True) 
 
+def get_events_title(post_path):
+    df = pd.read_csv(post_path, encoding='utf-8-sig')
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
+    titles = []
+    for _, row in df.iterrows():
+        if row['predicted'] == 1:
+            caption = row.get('caption', '')
+            lines = [line.strip() for line in caption.split('\n') if line.strip()]
+            if lines:
+                titles.append(lines[0])
+            else:
+                titles.append('')
+        else:
+            titles.append(None)
+
+    print(titles)
+    return titles
+
 # PATH
 post_path = r"C:\Users\chiam\Projects\WINpass-7-05\instagram_dataset.csv"
-captions_path = r"C:\Users\chiam\Projects\WINpass-7-05\captions.csv"
+captions_training_path = r"C:\Users\chiam\Projects\WINpass-7-05\captions.csv"
 posts_img_path = r"C:\Users\chiam\Projects\WINpass-7-05\posts_img"
+captions_path = r"C:\Users\chiam\Projects\WINpass-7-05\test_results.csv"
 
-#get_post_img(post_path)
-#get_captions(post_path, captions_path)
-get_tsv(posts_img_path)
+get_events_title(captions_path)
