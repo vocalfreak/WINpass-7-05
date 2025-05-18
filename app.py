@@ -306,10 +306,10 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def update_user(mmu_id, face_1, face_2):
+def update_user(mmu_id, face_data):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("UPDATE user SET face_1 = ?, face_2 = ? WHERE mmu_id = ?", (face_1, face_2, mmu_id))
+    cursor.execute("UPDATE user SET face_data = ? WHERE mmu_id = ?", (face_data, mmu_id))
     conn.commit()
     conn.close()
 
@@ -342,19 +342,17 @@ def pre_registration_page():
 
 
         print(f"Student ID: {mmu_id}")
-        print(f"File path: {filepath_1}") 
-        print(f"File path: {filepath_2}") 
+        face_code = get_face_encodings_folders(image_folder_path)
 
-        # face_code1, face_code2 = get_face_encodings_folders(image_folder_path, db_path)
+        if face_code is None:
+            print("No valid face encodings found.")
+            return "Error: Face not detected in one or both images.", 400
 
-        # print(f"Student ID: {mmu_id}")
-        # print(f"File path: {face_code1}") 
-        # print(f"File path: {face_code2}") 
+        print(f"Combined face encoding: {face_code}")
 
-        # update_user(mmu_id, face_code1, face_code2)
+        face_data = face_code.tobytes()
 
-        update_user(mmu_id, filepath_1, filepath_2)
-
+        update_user(mmu_id, face_data)
 
         return "Form submitted successfully!"
 
