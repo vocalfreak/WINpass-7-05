@@ -21,53 +21,46 @@ def homepage():
 @app.route('/Login-Users', methods=['GET', 'POST'])
 def login_users():
     if request.method == 'POST':
-        mmu_id = request.form.get('mmu_id')
-        password = request.form.get('password')
+        mmu_id = request.form.get('mmu_id').strip()
+        password = request.form.get('password').strip()
 
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
 
+        cursor.execute("SELECT name, email FROM admin WHERE mmu_id = ? AND password = ?", (mmu_id, password))
+        admin = cursor.fetchone()
+
+        if admin:
+            session['mmu_id'] = mmu_id
+            session['name'] = admin[0]
+            session['email'] = admin[1]
+            conn.close()
+            return redirect(url_for('admin_landing')) 
+
+       
         cursor.execute("SELECT id, name, email, career, faculty, hall FROM user WHERE mmu_id = ? AND password = ?", (mmu_id, password))
-        user = cursor.fetchone() 
+        user = cursor.fetchone()
 
         if user:
             session['mmu_id'] = mmu_id
             session['name'] = user[1]
-            session['email'] = user[2] 
-            session['career'] = user[3] 
-            session['faculty'] = user[4] 
+            session['email'] = user[2]
+            session['career'] = user[3]
+            session['faculty'] = user[4]
             session['hall'] = user[5]
-            cursor.execute("UPDATE user SET ticket_status='colllected' WHERE mmu_id = ?", (mmu_id,))
+
+            cursor.execute("UPDATE user SET ticket_status='collected' WHERE mmu_id = ?", (mmu_id,))
             conn.commit()
             conn.close()
-
             return redirect(url_for('homepage'))
-        
+
         else:
             conn.close()
             flash('Invalid MMU ID or password. Please try again.', 'error')
-
             return redirect(url_for('login_users'))
-        
+
     return render_template('login_users.html')
 
-@app.route('/Login-Admin', methods=['GET', 'POST'])
-def login_admin():
-    if request.method == 'POST':
-        mmu_id = request.form.get('mmu_id')
-        password = request.form.get('password')
-
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-
-        cursor.execute("SELECT id FROM admin WHERE mmu_id = ? AND password = ?", (mmu_id, password))
-        admin = cursor.fetchone() 
-
-        if admin:
-            conn.close()
-            
-            # CHANGE TO admin_page.html LATER 
-            return redirect(url_for('homepage'))
         
 @app.route('/Logout', methods=['POST'])
 def logout():
@@ -118,6 +111,10 @@ def digital_ticket():
 def photos(filename):
     return send_from_directory(image_folder_path, filename)
 
+@app.route('/')
+def temporary():
+    return render_template('landing_page.html')
+
 @app.route('/Face-Verification')
 def face_verification():
     result = real_time_recognition(db_path, image_folder_path)
@@ -140,9 +137,10 @@ def face_verification():
 def pre_registration():
     pass
 
-@app.route('/')
+@app.route('/admin_landing')
 def admin_landing():
-    return render_template('admin_landing.html')
+    return render_template('admin_landing.html') 
+
 
 @app.route('/Admin-Page')
 def admin_page():
@@ -151,7 +149,7 @@ def admin_page():
     cursor = conn.cursor()
 
     if search_query:
-        cursor.execute("SELECT mmu_id, name, career, faculty, campus, email, goodies_status, badge_status, ticket_status FROM user WHERE name LIKE ?", ('%' + search_query + '%',))
+        cursor.execute("SELECT mmu_id, name, career, faculty, campus, email, goodies_status, badge_status, ticket_status FROM user WHERE name LIKE ? OR mmu_id LIKE ?", ('%' + search_query + '%', '%' + search_query + '%'))
     else:
         cursor.execute("SELECT mmu_id, name, career, faculty, campus, email, goodies_status, badge_status, ticket_status FROM user")
 
@@ -167,6 +165,41 @@ def admin_page():
 
     conn.close()
     return render_template('admin_page.html', students=updated_students)
+
+@app.route('/edit-student', methods=['GET', 'POST'])
+def edit_student():
+    mmu_id = request.args.get('mmu_id')
+    if not mmu_id:
+        return redirect(url_for('admin_page'))
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    if request.method == 'POST':
+        name = request.form['name']
+        career = request.form['career']
+        faculty = request.form['faculty']
+        campus = request.form['campus']
+        email = request.form['email']
+
+        cursor.execute("""
+            UPDATE user 
+            SET name=?, career=?, faculty=?, campus=?, email=?
+            WHERE mmu_id=?
+        """, (name, career, faculty, campus, email, mmu_id))
+
+        conn.commit()
+        conn.close()
+        return redirect(url_for('admin_page'))
+
+    cursor.execute("SELECT mmu_id, name, career, faculty, campus, email FROM user WHERE mmu_id=?", (mmu_id,))
+    student = cursor.fetchone()
+    conn.close()
+
+    if not student:
+        return "Student not found", 404
+
+    return render_template('edit_student.html', student=student)
 
 @app.route('/Admin-Home')
 def home():
