@@ -295,10 +295,10 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def update_user(mmu_id, face_data):
+def update_user(mmu_id, face_data, face_1):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("UPDATE user SET face_data = ? WHERE mmu_id = ?", (face_data, mmu_id))
+    cursor.execute("UPDATE user SET face_data = ?, face_1 = ? WHERE mmu_id = ?", (face_data, face_1, mmu_id))
     conn.commit()
     conn.close()
 
@@ -331,6 +331,7 @@ def pre_registration_page():
 
 
         print(f"Student ID: {mmu_id}")
+        print(f"File path: {filepath_1}")
         face_code = get_face_encodings_folders(image_folder_path)
 
         if face_code is None:
@@ -341,7 +342,9 @@ def pre_registration_page():
 
         face_data = face_code.tobytes()
 
-        update_user(mmu_id, face_data)
+        face_code1 = filepath_1
+
+        update_user(mmu_id, face_data, face_code1)
 
         return "Form submitted successfully!"
 
