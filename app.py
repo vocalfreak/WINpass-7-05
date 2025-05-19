@@ -277,20 +277,7 @@ def register_checklist():
 
 @app.route('/Scan_goodies')
 def scan_goodies():
-    goodies_qr()
-    goodies_status = request.args.get('goodies_status', 'Pending')
-
-    ticket = request.args.get('ticket')
-    if not ticket:
-        return "No ticket detected. Please retry or meet the admin to verify", 400
-    mmu_id = ticket
-    global db_path
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute("UPDATE user set goodies_status = ? WHERE mmu_id = ?", (goodies_status, mmu_id))
-    conn.commit()
-    conn.close()
-
+    goodies_qr(db_path)
     return render_template('qr.html')
 
 @app.route('/Scan_badge')

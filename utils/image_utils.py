@@ -286,7 +286,8 @@ def real_time_recognition(db_path, image_folder_path):
     cv2.destroyAllWindows()
 
 
-def goodies_qr():
+def goodies_qr( db_path):
+    print(f"Using database path: {db_path}")
     cap = cv2.VideoCapture(0)
     detector = cv2.QRCodeDetector()
 
@@ -306,16 +307,23 @@ def goodies_qr():
                                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
                 print(f"QR Code Detected: {data}")
 
-        if data:
-            print(f"QR Code Detected: {data}")
+                parsed = urlparse(data.strip())
+                mmu_id = parsed.path.lstrip('/')
+                print(f"Parsed data: {parsed}")
+                print(f"QR Code Detected: {mmu_id}")
 
-            try:
-                response = requests.post(f'http://127.0.0.1:5000/Scan_goodies/{data}', data={
-                'godies_status' : 'collected'
-                })
-                print("Update successful")
-            except requests.exceptions.RequestException as e:
-                print("Invalid QR")
+                try:
+                    conn = sqlite3.connect(db_path)
+                    cursor = conn.cursor()
+                    print(f"Executing query: UPDATE user SET goodies_status = 'collected' WHERE mmu_id = {mmu_id}")
+                    cursor.execute("UPDATE user SET goodies_status = ? WHERE mmu_id = ?", ('collected', mmu_id))
+                    conn.commit()
+                    conn.close()
+                    
+                    print(f"Updated database for MMU ID: {mmu_id}")
+                    break
+                except Exception as e:
+                    print("Failed to connect to server:", e)
 
         cv2.imshow("QR Scanner", frame)
 
@@ -324,6 +332,7 @@ def goodies_qr():
 
     cap.release()
     cv2.destroyAllWindows()
+
 
 
 def badge_qr( db_path):
@@ -364,28 +373,6 @@ def badge_qr( db_path):
                     break
                 except Exception as e:
                     print("Failed to connect to server:", e)
-
-        # if data:
-        #     print(f"QR Code Detected: {data}")
-
-        #     try:
-        #         conn = sqlite3.connect(db_path)
-        #         cursor = conn.cursor()
-        #         cursor.execute("UPDATE user SET badge_status = ? WHERE mmu_id = ?", (badge_status, ticket))
-        #         conn.commit()
-        #         conn.close()
-        #         print("Database updated successfully")
-        #     except Exception as e:
-        #         print(f"Database update error: {e}")
-
-
-        #     try:
-        #         response = requests.post(f'http://127.0.0.1:5000/Scan_goodies/{data}', data={
-        #         'badge_status' : 'collected'
-        #         })
-        #         print("Update successful")
-        #     except requests.exceptions.RequestException as e:
-                # print("Invalid QR")
 
         cv2.imshow("QR Scanner", frame)
 
