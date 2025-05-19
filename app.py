@@ -1,7 +1,7 @@
 from utils.route_utils import import_csv_init, photobooth
 from utils.image_utils import real_time_recognition
 from utils.image_utils import get_face_encodings_folders
-from utils.image_utils import ticket_qr, badge_qr, goodies_qr
+from utils.image_utils import badge_qr, goodies_qr
 #from utils.email_utils import send_email
 from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory, session 
 import sqlite3
@@ -264,39 +264,21 @@ def register_checklist():
         mmu_id = request.form.get('ID')
         goodies_status = request.form.get('goodies_status', 'Pending')
         badge_status = request.form.get('badge_status', 'Pending')
-        ticket_status = request.form.get('ticket_status', 'Pending')
 
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
-        cursor.execute("UPDATE user set goodies_status = ?, badge_status = ?, ticket_status = ? WHERE mmu_id = ?", (goodies_status, badge_status, ticket_status, mmu_id))
+        cursor.execute("UPDATE user set goodies_status = ?, badge_status = ? WHERE mmu_id = ?", (goodies_status, badge_status, mmu_id))
         conn.commit()
         conn.close()
 
         return "Checklist updated successfully!"
     return render_template('qr.html')
 
-@app.route('/Scan_tickets')
-def scan_tickets():
-    ticket_qr()
-    ticket_status = request.form.get('ticket_status', 'Pending')
-
-    ticket = request.args.get('ticket')
-    if not ticket:
-        return "No ticket detected. Please retry or meet the admin to verify", 400
-    mmu_id = ticket
-    global db_path
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute("UPDATE user set ticket_status = ? WHERE mmu_id = ?", (ticket_status, mmu_id))
-    conn.commit()
-    conn.close()
-
-    return render_template('qr.html')
 
 @app.route('/Scan_goodies')
 def scan_goodies():
     goodies_qr()
-    goodies_status = request.form.get('ticket_status', 'Pending')
+    goodies_status = request.args.get('goodies_status', 'Pending')
 
     ticket = request.args.get('ticket')
     if not ticket:
@@ -313,20 +295,7 @@ def scan_goodies():
 
 @app.route('/Scan_badge')
 def scan_badge():
-    badge_qr()
-    badge_status = request.form.get('ticket_status', 'Pending')
-
-    ticket = request.args.get('ticket')
-    if not ticket:
-        return "No ticket detected. Please retry or meet the admin to verify", 400
-    mmu_id = ticket
-    global db_path
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute("UPDATE user set badge_status = ? WHERE mmu_id = ?", (badge_status, mmu_id))
-    conn.commit()
-    conn.close()
-
+    badge_qr(db_path)
     return render_template('qr.html')
 
 

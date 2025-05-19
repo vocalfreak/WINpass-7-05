@@ -285,45 +285,6 @@ def real_time_recognition(db_path, image_folder_path):
     video_capture.release()
     cv2.destroyAllWindows()
 
-def ticket_qr():
-    cap = cv2.VideoCapture(0)
-    detector = cv2.QRCodeDetector()
-
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-    
-        data, bbox, _ = detector.detectAndDecode(frame)
-
-        if bbox is not None:
-            points = bbox.astype(int)
-            frame = cv2.polylines(frame, [points], isClosed=True, color=(0, 255, 0), thickness=3)
-
-            if data:
-                frame = cv2.putText(frame, data, (points[0][0][0], points[0][0][1] - 10),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
-                print(f"QR Code Detected: {data}")
-
-        if data:
-            print(f"QR Code Detected: {data}")
-
-            try:
-                response = requests.post(f'http://127.0.0.1:5000/Scan_tickets/{data}', data={
-                'ticket_status' : 'collected'
-                })
-                print("Update successful")
-            except requests.exceptions.RequestException as e:
-                print("Invalid QR")
-
-        cv2.imshow("QR Scanner", frame)
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()
-
 
 def goodies_qr():
     cap = cv2.VideoCapture(0)
@@ -365,7 +326,8 @@ def goodies_qr():
     cv2.destroyAllWindows()
 
 
-def badge_qr():
+def badge_qr( db_path):
+    print(f"Using database path: {db_path}")
     cap = cv2.VideoCapture(0)
     detector = cv2.QRCodeDetector()
 
@@ -385,16 +347,45 @@ def badge_qr():
                                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
                 print(f"QR Code Detected: {data}")
 
-        if data:
-            print(f"QR Code Detected: {data}")
+                parsed = urlparse(data.strip())
+                mmu_id = parsed.path.lstrip('/')
+                print(f"Parsed data: {parsed}")
+                print(f"QR Code Detected: {mmu_id}")
 
-            try:
-                response = requests.post(f'http://127.0.0.1:5000/Scan_goodies/{data}', data={
-                'goodies_status' : 'collected'
-                })
-                print("Update successful")
-            except requests.exceptions.RequestException as e:
-                print("Invalid QR")
+                try:
+                    conn = sqlite3.connect(db_path)
+                    cursor = conn.cursor()
+                    print(f"Executing query: UPDATE user SET badge_status = 'collected' WHERE mmu_id = {mmu_id}")
+                    cursor.execute("UPDATE user SET badge_status = ? WHERE mmu_id = ?", ('collected', mmu_id))
+                    conn.commit()
+                    conn.close()
+                    
+                    print(f"Updated database for MMU ID: {mmu_id}")
+                    break
+                except Exception as e:
+                    print("Failed to connect to server:", e)
+
+        # if data:
+        #     print(f"QR Code Detected: {data}")
+
+        #     try:
+        #         conn = sqlite3.connect(db_path)
+        #         cursor = conn.cursor()
+        #         cursor.execute("UPDATE user SET badge_status = ? WHERE mmu_id = ?", (badge_status, ticket))
+        #         conn.commit()
+        #         conn.close()
+        #         print("Database updated successfully")
+        #     except Exception as e:
+        #         print(f"Database update error: {e}")
+
+
+        #     try:
+        #         response = requests.post(f'http://127.0.0.1:5000/Scan_goodies/{data}', data={
+        #         'badge_status' : 'collected'
+        #         })
+        #         print("Update successful")
+        #     except requests.exceptions.RequestException as e:
+                # print("Invalid QR")
 
         cv2.imshow("QR Scanner", frame)
 
@@ -407,7 +398,9 @@ def badge_qr():
 
 # Paths
 dataset_path = r"C:\Users\chiam\Downloads\winpass_training_set"
-database_path = "winpass.db"
+#database_path = "winpass.db"
+database_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass.db"
+db_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass.db"
 #image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
 image_folder_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass_training_set"
 
