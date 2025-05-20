@@ -12,7 +12,9 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 
 app.secret_key = 'xp9nfcZcGQuDuoG4'
-db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+#db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
+image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
 
 @app.route('/Landing-Page')
 def homepage():
@@ -38,7 +40,7 @@ def login_users():
             return redirect(url_for('admin_landing')) 
 
        
-        cursor.execute("SELECT id, name, email, career, faculty, hall FROM user WHERE mmu_id = ? AND password = ?", (mmu_id, password))
+        cursor.execute("SELECT id, name, email, career, faculty, hall, face_1 FROM user WHERE mmu_id = ? AND password = ?", (mmu_id, password))
         user = cursor.fetchone()
 
         if user:
@@ -48,6 +50,7 @@ def login_users():
             session['career'] = user[3]
             session['faculty'] = user[4]
             session['hall'] = user[5]
+            session['avatar'] = user[6].replace('\\', '/').replace('winpass_training_set/', '')
 
             cursor.execute("UPDATE user SET ticket_status='collected' WHERE mmu_id = ?", (mmu_id,))
             conn.commit()
@@ -79,7 +82,7 @@ def student_profile():
     cursor = conn.cursor()
 
     cursor.execute(
-        "SELECT name, mmu_id, email, career, faculty, hall FROM user WHERE mmu_id = ?",
+        "SELECT name, mmu_id, email, career, faculty, hall, face_1 FROM user WHERE mmu_id = ?",
         (session['mmu_id'],)
     )
     user = cursor.fetchone()
@@ -92,8 +95,10 @@ def student_profile():
             'email': user[2],
             'career': user[3],
             'faculty': user[4],
-            'hall': user[5]
+            'hall': user[5],
+            'avatar': user[6].replace('\\', '/').replace('winpass_training_set/', '')
         }
+
     else:
         user_data = None
 
@@ -231,7 +236,7 @@ def self_service():
 @app.route('/Import-CSV', methods=['POST'])
 def import_csv():
     if request.method == 'POST':
-        import_csv_init(df_path, db_path)
+        #import_csv_init(df_path, db_path)
         flash('CSV imported successfully!', 'success')
     return admin_page()
 
@@ -360,16 +365,18 @@ def pre_registration_page():
 
 
         if face_1 and allowed_file(face_1.filename):
-            filename1 = f"{name}_0001.jpg"
-            filepath_1 = os.path.join(image_folder_path, filename1)
-            face_1.save(filepath_1)
+          filename1 = f"{name}_0001.jpg"
+          relative_path_1 = os.path.join(name, filename1).replace('\\', '/')
+          filepath_1 = os.path.join(app.config['UPLOAD_FOLDER'], relative_path_1)
+          face_1.save(filepath_1)
         else:
             print("Unable to save the first picture")
  
         if face_2 and allowed_file(face_2.filename):
-            filename2 = f"{name}_0002.jpg"
-            filepath_2 = os.path.join(image_folder_path, filename2)
-            face_2.save(filepath_2)
+          filename2 = f"{name}_0002.jpg"
+          relative_path_2 = os.path.join(name, filename2).replace('\\', '/')
+          filepath_2 = os.path.join(app.config['UPLOAD_FOLDER'], relative_path_2)
+          face_2.save(filepath_2)
         else:
             print("Unable to save the second picture")
 
@@ -378,15 +385,7 @@ def pre_registration_page():
         print(f"File path: {filepath_1}") 
         print(f"File path: {filepath_2}") 
 
-        # face_code1, face_code2 = get_face_encodings_folders(image_folder_path, db_path)
-
-        # print(f"Student ID: {mmu_id}")
-        # print(f"File path: {face_code1}") 
-        # print(f"File path: {face_code2}") 
-
-        # update_user(mmu_id, face_code1, face_code2)
-
-        update_user(mmu_id, filepath_1, filepath_2)
+        update_user(mmu_id, relative_path_1, relative_path_2)
 
 
         return "Form submitted successfully!"
@@ -401,15 +400,12 @@ def email():
 
 if __name__ == '__main__':
     #Paths 
-    df_path = r"C:\Users\chiam\Downloads\Test_George.csv"
-    #db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
-    #image_folder_path = r"C:\Users\adria\Downloads\winpass_training_set"
+    #df_path = r"C:\Users\chiam\Downloads\Test_George.csv"
+    db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
+    image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
     #db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
-    #db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
-    #image_folder_path = r"C:\Users\adria\Downloads\winpass_training_set"
-    #db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
-    db_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass.db"
-    image_folder_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass_training_set"
+    #db_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass.db"
+    #image_folder_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass_training_set"
     #image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
 
     app.run(debug=True)

@@ -6,7 +6,7 @@ __pycache__/
 env/
 venv/
 
-winpass_training_set
+
 .env
 
 posts_img
