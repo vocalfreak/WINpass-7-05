@@ -22,3 +22,6 @@ captions.csv
 
 prediction_results.csv
 test_results.csv
+
+captions_trainingset.csv
+instagram_posts.csv

@@ -11,19 +11,25 @@ import sys
 def get_post_img(post_path):
     with open(post_path, 'r', encoding='utf-8') as f:
         df = pd.read_csv(f)
-    
-    displayurl = df["displayUrl"]
+
+    df = df[df["predicted"] == 1]  
     os.makedirs("posts_img", exist_ok=True)
 
-    for idx, image_url in enumerate(displayurl.dropna()):
-        response = requests.get(image_url, timeout=10)
-        if response.status_code == 200:
-            ext = image_url.split('.')[-1].split('?')[0]
-            if len(ext) > 5 or '/' in ext:  
-                ext = "jpg"
-                file_path = os.path.join("posts_img", f"post_{idx}.{ext}")
+    for image_url, post_id in zip(df["displayUrl"], df["shortCode"]):
+        if pd.isna(image_url) or pd.isna(post_id):
+            continue
+
+        try:
+            response = requests.get(image_url, timeout=10)
+            if response.status_code == 200:
+                ext = image_url.split('.')[-1].split('?')[0]
+                if len(ext) > 5 or '/' in ext:
+                    ext = "jpg"
+                file_path = os.path.join("posts_img", f"{post_id}.{ext}")
                 with open(file_path, "wb") as img_file:
                     img_file.write(response.content)
+        except Exception as e:
+            print(f"Failed to download {post_id}: {e}")
 
 def get_captions(post_path, captions_path):
     with open(post_path, 'r', encoding='utf-8') as f:
@@ -72,13 +78,37 @@ def get_events_title(post_path):
         else:
             titles.append(None)
 
-    print(titles)
-    return titles
+    df["title"] = titles
+    df.to_csv(post_path, index=False, encoding='utf-8-sig')
 
+def get_events_title_yake(post_path):
+    df = pd.read_csv(post_path, encoding='utf-8-sig')
+
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
+    kw_extractor = KeywordExtractor(lan="en", top=3)
+
+    titles = []
+    for _, row in df.iterrows():
+        if row.get('predicted', 0) == 1:
+            caption = row.get('caption', '')
+            if isinstance(caption, str) and caption.strip():
+                keywords = kw_extractor.extract_keywords(caption)
+                keyword_text = ", ".join([kw for kw, _ in keywords])
+                titles.append(keyword_text)
+            else:
+                titles.append('')
+        else:
+            titles.append(None)
+
+    df["title"] = titles
+    df.to_csv(post_path, index=False, encoding='utf-8-sig')
 # PATH
-post_path = r"C:\Users\chiam\Projects\WINpass-7-05\instagram_dataset.csv"
-captions_training_path = r"C:\Users\chiam\Projects\WINpass-7-05\captions.csv"
+post_path = r"C:\Users\chiam\Projects\WINpass-7-05\instagram_posts.csv"
+captions_training_path = r"C:\Users\chiam\Projects\WINpass-7-05\captions_trainingset.csv"
 posts_img_path = r"C:\Users\chiam\Projects\WINpass-7-05\posts_img"
-captions_path = r"C:\Users\chiam\Projects\WINpass-7-05\test_results.csv"
 
-get_events_title(captions_path)
+
+#get_events_title(post_path)
+#get_post_img(post_path)
+get_events_title_yake(post_path)
