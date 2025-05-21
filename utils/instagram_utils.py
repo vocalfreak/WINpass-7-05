@@ -81,28 +81,6 @@ def get_events_title(post_path):
     df["title"] = titles
     df.to_csv(post_path, index=False, encoding='utf-8-sig')
 
-def get_events_title_yake(post_path):
-    df = pd.read_csv(post_path, encoding='utf-8-sig')
-
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-
-    kw_extractor = KeywordExtractor(lan="en", top=3)
-
-    titles = []
-    for _, row in df.iterrows():
-        if row.get('predicted', 0) == 1:
-            caption = row.get('caption', '')
-            if isinstance(caption, str) and caption.strip():
-                keywords = kw_extractor.extract_keywords(caption)
-                keyword_text = ", ".join([kw for kw, _ in keywords])
-                titles.append(keyword_text)
-            else:
-                titles.append('')
-        else:
-            titles.append(None)
-
-    df["title"] = titles
-    df.to_csv(post_path, index=False, encoding='utf-8-sig')
 # PATH
 post_path = r"C:\Users\chiam\Projects\WINpass-7-05\instagram_posts.csv"
 captions_training_path = r"C:\Users\chiam\Projects\WINpass-7-05\captions_trainingset.csv"
@@ -111,4 +89,3 @@ posts_img_path = r"C:\Users\chiam\Projects\WINpass-7-05\posts_img"
 
 #get_events_title(post_path)
 #get_post_img(post_path)
-get_events_title_yake(post_path)
