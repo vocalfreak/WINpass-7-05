@@ -2,7 +2,7 @@ from utils.route_utils import import_csv_init, photobooth
 from utils.image_utils import real_time_recognition
 from utils.image_utils import get_face_encodings_folders
 from utils.image_utils import ticket_qr, badge_qr, goodies_qr
-#from utils.email_utils import send_email
+from utils.email_utils import send_email
 from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory, session 
 import sqlite3
 from flask_sqlalchemy import SQLAlchemy
