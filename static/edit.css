@@ -29,12 +29,12 @@ h2 {
 .form-group label {
   display: block;
   font-weight: bold;
-  margin-bottom: 0.5rem;
+  margin-bottom: 8px;
 }
 
 .form-control {
   width: 100%;
-  padding: 0.6rem;
+  padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
 }
@@ -42,11 +42,11 @@ h2 {
 .form-actions {
   display: flex;
   justify-content: space-between;
-  margin-top: 1.5rem;
+  margin-top: 12px;
 }
 
 .btn {
-  padding: 0.6rem 1.2rem;
+  padding: 10px 10px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
@@ -63,5 +63,18 @@ h2 {
   color: #333;
   text-decoration: none;
   text-align: center;
-  line-height: 2.2rem;
+  line-height: 18px;
+}
+
+.btn-danger {
+    background-color: #94212c;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-danger:hover {
+    background-color: #772e35;
 }

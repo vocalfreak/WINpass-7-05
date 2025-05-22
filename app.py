@@ -206,6 +206,24 @@ def edit_student():
 
     return render_template('edit_student.html', student=student)
 
+@app.route('/delete-student', methods=['POST'])
+def delete_student():
+    mmu_id = request.form.get('mmu_id')
+
+    if not mmu_id:
+        flash('Missing MMU ID for deletion.', 'error')
+        return redirect(url_for('admin_page'))
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM user WHERE mmu_id = ?", (mmu_id,))
+    conn.commit()
+    conn.close()
+
+    flash(f"Student with MMU ID {mmu_id} has been deleted.", "success")
+    return redirect(url_for('admin_page'))
+
 @app.route('/Admin-Home')
 def home():
     return render_template('landing_page.html')
