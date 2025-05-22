@@ -71,66 +71,103 @@ def get_winpass_info(name, mmu_id, db_path, image_folder_path):
                 print(f"Error displaying image {img_path}: {e}")
 
     
-def get_face_encodings_folders(image_folder_path, db_path):
+# def get_face_encodings_folders(image_folder_path, db_path):
 
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
+#     conn = sqlite3.connect(db_path)
+#     cursor = conn.cursor()
     
-    total_encodings = 0
+#     total_encodings = 0
     
-    for person_folder in os.listdir(image_folder_path):
-        folder_path = os.path.join(image_folder_path, person_folder)
-        if not os.path.isdir(folder_path):
-            continue
+#     for person_folder in os.listdir(image_folder_path):
+#         folder_path = os.path.join(image_folder_path, person_folder)
+#         if not os.path.isdir(folder_path):
+#             continue
         
-        person_name = person_folder.replace('_', ' ')
+#         person_name = person_folder.replace('_', ' ')
         
-        all_encodings = []
+#         all_encodings = []
         
-        for image_name in os.listdir(folder_path):
-            image_path = os.path.join(folder_path, image_name)
-            try:
-                img = cv2.imread(image_path)
-                if img is None:
-                    print(f"Could not read image: {image_path}")
-                    continue
+#         for image_name in os.listdir(folder_path):
+#             image_path = os.path.join(folder_path, image_name)
+#             try:
+#                 img = cv2.imread(image_path)
+#                 if img is None:
+#                     print(f"Could not read image: {image_path}")
+#                     continue
 
-                rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                encodings = fr.face_encodings(rgb_img)
+#                 rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+#                 encodings = fr.face_encodings(rgb_img)
                 
-                if encodings:
-                    for encoding in encodings:
-                        all_encodings.append(encoding)
-                        total_encodings += 1
-                        print(f"[+] Collected encoding for {person_name} - {image_name}")
-                else:
-                    print(f"[-] No face found in {person_name} - {image_name}")
+#                 if encodings:
+#                     for encoding in encodings:
+#                         all_encodings.append(encoding)
+#                         total_encodings += 1
+#                         print(f"[+] Collected encoding for {person_name} - {image_name}")
+#                 else:
+#                     print(f"[-] No face found in {person_name} - {image_name}")
                     
-            except Exception as e:
-                print(f"Error processing {person_name} - {image_name}: {e}")
+#             except Exception as e:
+#                 print(f"Error processing {person_name} - {image_name}: {e}")
         
-        if all_encodings:
+#         if all_encodings:
 
-            all_encodings_array = np.array(all_encodings)
-            encodings_blob = all_encodings_array.tobytes()
+#             all_encodings_array = np.array(all_encodings)
+#             encodings_blob = all_encodings_array.tobytes()
 
-            cursor.execute("SELECT id FROM user WHERE name = ?", (person_name,))
-            existing_user = cursor.fetchone()
+#             cursor.execute("SELECT id FROM user WHERE name = ?", (person_name,))
+#             existing_user = cursor.fetchone()
             
-            if existing_user:
-                cursor.execute("UPDATE user SET face_data = ? WHERE id = ?", 
-                              (encodings_blob, existing_user[0]))
-                print(f"Updated face data for {person_name} with {len(all_encodings)} encodings")
-            else:
-                cursor.execute('''
-                INSERT INTO user (name, face_data)
-                VALUES (?, ?)
-                ''', (person_name, encodings_blob))
-                print(f"Added new user {person_name} with {len(all_encodings)} encodings")
+#             if existing_user:
+#                 cursor.execute("UPDATE user SET face_data = ? WHERE id = ?", 
+#                               (encodings_blob, existing_user[0]))
+#                 print(f"Updated face data for {person_name} with {len(all_encodings)} encodings")
+#             else:
+#                 cursor.execute('''
+#                 INSERT INTO user (name, face_data)
+#                 VALUES (?, ?)
+#                 ''', (person_name, encodings_blob))
+#                 print(f"Added new user {person_name} with {len(all_encodings)} encodings")
                       
-    conn.commit()
-    conn.close()
-    print(f"\nTotal encodings collected and stored: {total_encodings}")
+#     conn.commit()
+#     conn.close()
+#     print(f"\nTotal encodings collected and stored: {total_encodings}")
+
+
+
+def get_face_encodings_folders(image_folder_path):
+    face_encodings = []
+
+    for image_name in sorted(os.listdir(image_folder_path)):
+        image_path = os.path.join(image_folder_path, image_name)
+        try:
+            img = cv2.imread(image_path)
+            if img is None:
+                print(f"Could not read image: {image_path}")
+                continue
+
+            rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            encodings = fr.face_encodings(rgb_img)
+
+            if encodings:
+                face_encodings.append(encodings[0])
+                print(f"[+] Found encoding for {image_name}")
+            else:
+                print(f"[-] No face found in {image_name}")
+
+        except Exception as e:
+            print(f"Error processing {image_name}: {e}")
+
+    valid_encodings = [encoding for encoding in face_encodings if encoding is not None]
+    
+    if len(valid_encodings) < 2:
+        return None
+
+    combined_encoding = np.mean(valid_encodings, axis=0)
+    
+    return combined_encoding
+
+
+
 
 def get_decode_face_data(db_path):
     
@@ -248,7 +285,9 @@ def real_time_recognition(db_path, image_folder_path):
     video_capture.release()
     cv2.destroyAllWindows()
 
-def ticket_qr():
+
+def goodies_qr( db_path):
+    print(f"Using database path: {db_path}")
     cap = cv2.VideoCapture(0)
     detector = cv2.QRCodeDetector()
 
@@ -268,16 +307,23 @@ def ticket_qr():
                                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
                 print(f"QR Code Detected: {data}")
 
-        if data:
-            print(f"QR Code Detected: {data}")
+                parsed = urlparse(data.strip())
+                mmu_id = parsed.path.lstrip('/')
+                print(f"Parsed data: {parsed}")
+                print(f"QR Code Detected: {mmu_id}")
 
-            try:
-                response = requests.post(f'http://127.0.0.1:5000/Scan_tickets/{data}', data={
-                'ticket_status' : 'collected'
-                })
-                print("Update successful")
-            except requests.exceptions.RequestException as e:
-                print("Invalid QR")
+                try:
+                    conn = sqlite3.connect(db_path)
+                    cursor = conn.cursor()
+                    print(f"Executing query: UPDATE user SET goodies_status = 'collected' WHERE mmu_id = {mmu_id}")
+                    cursor.execute("UPDATE user SET goodies_status = ? WHERE mmu_id = ?", ('collected', mmu_id))
+                    conn.commit()
+                    conn.close()
+                    
+                    print(f"Updated database for MMU ID: {mmu_id}")
+                    break
+                except Exception as e:
+                    print("Failed to connect to server:", e)
 
         cv2.imshow("QR Scanner", frame)
 
@@ -288,7 +334,9 @@ def ticket_qr():
     cv2.destroyAllWindows()
 
 
-def goodies_qr():
+
+def badge_qr( db_path):
+    print(f"Using database path: {db_path}")
     cap = cv2.VideoCapture(0)
     detector = cv2.QRCodeDetector()
 
@@ -308,56 +356,23 @@ def goodies_qr():
                                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
                 print(f"QR Code Detected: {data}")
 
-        if data:
-            print(f"QR Code Detected: {data}")
+                parsed = urlparse(data.strip())
+                mmu_id = parsed.path.lstrip('/')
+                print(f"Parsed data: {parsed}")
+                print(f"QR Code Detected: {mmu_id}")
 
-            try:
-                response = requests.post(f'http://127.0.0.1:5000/Scan_goodies/{data}', data={
-                'godies_status' : 'collected'
-                })
-                print("Update successful")
-            except requests.exceptions.RequestException as e:
-                print("Invalid QR")
-
-        cv2.imshow("QR Scanner", frame)
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()
-
-
-def badge_qr():
-    cap = cv2.VideoCapture(0)
-    detector = cv2.QRCodeDetector()
-
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-    
-        data, bbox, _ = detector.detectAndDecode(frame)
-
-        if bbox is not None:
-            points = bbox.astype(int)
-            frame = cv2.polylines(frame, [points], isClosed=True, color=(0, 255, 0), thickness=3)
-
-            if data:
-                frame = cv2.putText(frame, data, (points[0][0][0], points[0][0][1] - 10),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
-                print(f"QR Code Detected: {data}")
-
-        if data:
-            print(f"QR Code Detected: {data}")
-
-            try:
-                response = requests.post(f'http://127.0.0.1:5000/Scan_goodies/{data}', data={
-                'goodies_status' : 'collected'
-                })
-                print("Update successful")
-            except requests.exceptions.RequestException as e:
-                print("Invalid QR")
+                try:
+                    conn = sqlite3.connect(db_path)
+                    cursor = conn.cursor()
+                    print(f"Executing query: UPDATE user SET badge_status = 'collected' WHERE mmu_id = {mmu_id}")
+                    cursor.execute("UPDATE user SET badge_status = ? WHERE mmu_id = ?", ('collected', mmu_id))
+                    conn.commit()
+                    conn.close()
+                    
+                    print(f"Updated database for MMU ID: {mmu_id}")
+                    break
+                except Exception as e:
+                    print("Failed to connect to server:", e)
 
         cv2.imshow("QR Scanner", frame)
 
@@ -370,7 +385,9 @@ def badge_qr():
 
 # Paths
 dataset_path = r"C:\Users\chiam\Downloads\winpass_training_set"
-database_path = "winpass.db"
+#database_path = "winpass.db"
+database_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass.db"
+db_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass.db"
 #image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
 image_folder_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass_training_set"
 
