@@ -1,8 +1,8 @@
 from utils.route_utils import import_csv_init, photobooth
 from utils.image_utils import real_time_recognition
 from utils.image_utils import get_face_encodings_folders
-from utils.image_utils import ticket_qr, badge_qr, goodies_qr
-#from utils.email_utils import send_email
+from utils.image_utils import badge_qr, goodies_qr
+from utils.email_utils import send_email
 from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory, session 
 import sqlite3
 from flask_sqlalchemy import SQLAlchemy
@@ -270,69 +270,25 @@ def register_checklist():
         mmu_id = request.form.get('ID')
         goodies_status = request.form.get('goodies_status', 'Pending')
         badge_status = request.form.get('badge_status', 'Pending')
-        ticket_status = request.form.get('ticket_status', 'Pending')
 
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
-        cursor.execute("UPDATE user set goodies_status = ?, badge_status = ?, ticket_status = ? WHERE mmu_id = ?", (goodies_status, badge_status, ticket_status, mmu_id))
+        cursor.execute("UPDATE user set goodies_status = ?, badge_status = ? WHERE mmu_id = ?", (goodies_status, badge_status, mmu_id))
         conn.commit()
         conn.close()
 
         return "Checklist updated successfully!"
     return render_template('qr.html')
 
-@app.route('/Scan_tickets')
-def scan_tickets():
-    ticket_qr()
-    ticket_status = request.form.get('ticket_status', 'Pending')
-
-    ticket = request.args.get('ticket')
-    if not ticket:
-        return "No ticket detected. Please retry or meet the admin to verify", 400
-    mmu_id = ticket
-    global db_path
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute("UPDATE user set ticket_status = ? WHERE mmu_id = ?", (ticket_status, mmu_id))
-    conn.commit()
-    conn.close()
-
-    return render_template('qr.html')
 
 @app.route('/Scan_goodies')
 def scan_goodies():
-    goodies_qr()
-    goodies_status = request.form.get('ticket_status', 'Pending')
-
-    ticket = request.args.get('ticket')
-    if not ticket:
-        return "No ticket detected. Please retry or meet the admin to verify", 400
-    mmu_id = ticket
-    global db_path
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute("UPDATE user set goodies_status = ? WHERE mmu_id = ?", (goodies_status, mmu_id))
-    conn.commit()
-    conn.close()
-
+    goodies_qr(db_path)
     return render_template('qr.html')
 
 @app.route('/Scan_badge')
 def scan_badge():
-    badge_qr()
-    badge_status = request.form.get('ticket_status', 'Pending')
-
-    ticket = request.args.get('ticket')
-    if not ticket:
-        return "No ticket detected. Please retry or meet the admin to verify", 400
-    mmu_id = ticket
-    global db_path
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute("UPDATE user set badge_status = ? WHERE mmu_id = ?", (badge_status, mmu_id))
-    conn.commit()
-    conn.close()
-
+    badge_qr(db_path)
     return render_template('qr.html')
 
 
@@ -345,10 +301,10 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def update_user(mmu_id, face_1, face_2):
+def update_user(mmu_id, face_data, face_1):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("UPDATE user SET face_1 = ?, face_2 = ? WHERE mmu_id = ?", (face_1, face_2, mmu_id))
+    cursor.execute("UPDATE user SET face_data = ?, face_1 = ? WHERE mmu_id = ?", (face_data, face_1, mmu_id))
     conn.commit()
     conn.close()
 
@@ -383,11 +339,12 @@ def pre_registration_page():
 
 
         print(f"Student ID: {mmu_id}")
-        print(f"File path: {filepath_1}") 
-        print(f"File path: {filepath_2}") 
+        print(f"File path: {filepath_1}")
+        face_code = get_face_encodings_folders(image_folder_path)
 
         update_user(mmu_id, relative_path_1, relative_path_2)
 
+        update_user(mmu_id, face_data, face_code1)
 
         return "Form submitted successfully!"
 
@@ -399,9 +356,51 @@ def email():
     return render_template("email.html")
 
 
+def get_leaderboard():
+    conn = sqlite3.connect('winpass.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, name, gold, silver, bronze, points FROM hall ORDER BY points DESC")
+    halls = cursor.fetchall()
+    conn.close()
+    return halls
+
+def update_points(hall_id, medal):
+    points_map = {'gold': 5, 'silver': 3, 'bronze': 1}
+    if medal not in points_map:
+        return
+
+    conn = sqlite3.connect('winpass.db')
+    cursor = conn.cursor()
+    cursor.execute(f"""
+        UPDATE hall
+        SET {medal} = {medal} + 1,
+            points = points + ?
+        WHERE id = ?
+    """, (points_map[medal], hall_id))
+    conn.commit()
+    conn.close()
+
+@app.route('/leaderboard')
+def leaderboard():
+    halls = get_leaderboard()
+    return render_template('leaderboards.html', halls=halls)
+
+@app.route('/add/<int:hall_id>/<medal>', methods=['POST'])
+def add_medal(hall_id, medal):
+    update_points(hall_id, medal)
+    return redirect(url_for('leaderboard'))
+
+@app.route('/update', methods=['POST'])
+def update():
+    hall_id = request.form['hall']
+    medal = request.form['medal']
+    update_points(hall_id, medal)
+    return redirect(url_for('leaderboard'))
+
 if __name__ == '__main__':
+
     #Paths 
-    #df_path = r"C:\Users\chiam\Downloads\Test_George.csv"
+    df_path = r"C:\Users\adria\Projects\WINpass-7-05\Test_George.csv"
     db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
     image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
     #db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
