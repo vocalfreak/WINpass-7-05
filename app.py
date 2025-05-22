@@ -344,8 +344,6 @@ def pre_registration_page():
 
         update_user(mmu_id, relative_path_1, relative_path_2)
 
-        update_user(mmu_id, face_data, face_code1)
-
         return "Form submitted successfully!"
 
     return render_template('pre_registration_page.html')
