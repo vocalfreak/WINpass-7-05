@@ -45,7 +45,7 @@ def check_ticket_status(db_path):
     except Exception as e:
         print(f"Error fetching ticket status: {e}")
         
-def get_winpass_info(name, mmu_id, db_path, image_folder_path):
+def generate_winpass(name, mmu_id, db_path, image_folder_path):
     person_folder_path = os.path.join(image_folder_path, name.replace(' ', '_'))
     if os.path.exists(person_folder_path):
         image_files = [f for f in os.listdir(person_folder_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))][:1]
@@ -70,6 +70,22 @@ def get_winpass_info(name, mmu_id, db_path, image_folder_path):
             except Exception as e:
                 print(f"Error displaying image {img_path}: {e}")
 
+def get_winpass_info(mmu_id, db_path, image_folder_path):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT name, hall, career FROM user WHERE mmu_id = ?", (mmu_id,))
+    name, hall, career = cursor.fetchone()
+    conn.close()
+
+    person_folder_path = os.path.join(image_folder_path, name.replace(' ', '_'))
+    if os.path.exists(person_folder_path):
+        image_files = [f for f in os.listdir(person_folder_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))][:1]
+
+        for i, img_file in enumerate(image_files):
+            img_path = os.path.join(person_folder_path, img_file)
+    
+    return name, mmu_id, hall, career, img_path
     
 # def get_face_encodings_folders(image_folder_path, db_path):
 
@@ -252,7 +268,7 @@ def real_time_recognition(db_path, image_folder_path):
                                 cv2.waitKey(0)
                                 cv2.destroyAllWindows()
 
-                                return get_winpass_info(name, mmu_id, db_path, image_folder_path)
+                                return generate_winpass(name, mmu_id, db_path, image_folder_path)
                                                                 
                         face_names.append(name)
                         mmu_ids.append(mmu_id)
