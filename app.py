@@ -377,13 +377,13 @@ def pre_registration_page():
 def email():
     return render_template("email.html")
 
-
 if __name__ == '__main__':
 
     #Paths 
     #df_path = r"C:\Users\adria\Projects\WINpass-7-05\Test_George.csv"
     #db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
     #image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
+
     
     db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
     image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
@@ -391,6 +391,10 @@ if __name__ == '__main__':
 
     #db_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass.db"
     #image_folder_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass_training_set"
+    
+    #db_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\winpass.db"
+    #image_folder_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\winpass_training_set"
+
 
     app.run(debug=True)
 
