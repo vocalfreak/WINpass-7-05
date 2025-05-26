@@ -50,7 +50,7 @@ def login_users():
             session['career'] = user[3]
             session['faculty'] = user[4]
             session['hall'] = user[5]
-            session['avatar'] = user[6].replace('\\', '/').replace('winpass_training_set/', '')
+            session['avatar'] = user[6]
 
             cursor.execute("UPDATE user SET ticket_status='collected' WHERE mmu_id = ?", (mmu_id,))
             conn.commit()
@@ -96,7 +96,7 @@ def student_profile():
             'career': user[3],
             'faculty': user[4],
             'hall': user[5],
-            'avatar': user[6].replace('\\', '/').replace('winpass_training_set/', '')
+            'avatar': user[6]
         }
 
     else:
@@ -237,7 +237,7 @@ def self_service():
 @app.route('/Import-CSV', methods=['POST'])
 def import_csv():
     if request.method == 'POST':
-        #import_csv_init(df_path, db_path)
+        import_csv_init(df_path, db_path)
         flash('CSV imported successfully!', 'success')
     return admin_page()
 
@@ -354,57 +354,19 @@ def email():
     return render_template("email.html")
 
 
-def get_leaderboard():
-    conn = sqlite3.connect('winpass.db')
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, name, gold, silver, bronze, points FROM hall ORDER BY points DESC")
-    halls = cursor.fetchall()
-    conn.close()
-    return halls
-
-def update_points(hall_id, medal):
-    points_map = {'gold': 5, 'silver': 3, 'bronze': 1}
-    if medal not in points_map:
-        return
-
-    conn = sqlite3.connect('winpass.db')
-    cursor = conn.cursor()
-    cursor.execute(f"""
-        UPDATE hall
-        SET {medal} = {medal} + 1,
-            points = points + ?
-        WHERE id = ?
-    """, (points_map[medal], hall_id))
-    conn.commit()
-    conn.close()
-
-@app.route('/leaderboard')
-def leaderboard():
-    halls = get_leaderboard()
-    return render_template('leaderboards.html', halls=halls)
-
-@app.route('/add/<int:hall_id>/<medal>', methods=['POST'])
-def add_medal(hall_id, medal):
-    update_points(hall_id, medal)
-    return redirect(url_for('leaderboard'))
-
-@app.route('/update', methods=['POST'])
-def update():
-    hall_id = request.form['hall']
-    medal = request.form['medal']
-    update_points(hall_id, medal)
-    return redirect(url_for('leaderboard'))
-
 if __name__ == '__main__':
 
     #Paths 
-    df_path = r"C:\Users\adria\Projects\WINpass-7-05\Test_George.csv"
-    db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
-    image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
-    #db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+    #df_path = r"C:\Users\adria\Projects\WINpass-7-05\Test_George.csv"
+    #db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
+    #image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
+    
+    db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+    image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
+    df_path = r"C:\Users\chiam\Projects\WINpass-7-05\Test_George.csv"
+
     #db_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass.db"
     #image_folder_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass_training_set"
-    #image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
 
     app.run(debug=True)
 
