@@ -12,7 +12,9 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 
 app.secret_key = 'xp9nfcZcGQuDuoG4'
-db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+#db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
+image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
 
 @app.route('/Landing-Page')
 def homepage():
@@ -38,7 +40,7 @@ def login_users():
             return redirect(url_for('admin_landing')) 
 
        
-        cursor.execute("SELECT id, name, email, career, faculty, hall FROM user WHERE mmu_id = ? AND password = ?", (mmu_id, password))
+        cursor.execute("SELECT id, name, email, career, faculty, hall, face_1 FROM user WHERE mmu_id = ? AND password = ?", (mmu_id, password))
         user = cursor.fetchone()
 
         if user:
@@ -48,6 +50,7 @@ def login_users():
             session['career'] = user[3]
             session['faculty'] = user[4]
             session['hall'] = user[5]
+            session['avatar'] = user[6]
 
             cursor.execute("UPDATE user SET ticket_status='collected' WHERE mmu_id = ?", (mmu_id,))
             conn.commit()
@@ -79,7 +82,7 @@ def student_profile():
     cursor = conn.cursor()
 
     cursor.execute(
-        "SELECT name, mmu_id, email, career, faculty, hall FROM user WHERE mmu_id = ?",
+        "SELECT name, mmu_id, email, career, faculty, hall, face_1 FROM user WHERE mmu_id = ?",
         (session['mmu_id'],)
     )
     user = cursor.fetchone()
@@ -92,8 +95,10 @@ def student_profile():
             'email': user[2],
             'career': user[3],
             'faculty': user[4],
-            'hall': user[5]
+            'hall': user[5],
+            'avatar': user[6]
         }
+
     else:
         user_data = None
 
@@ -231,7 +236,7 @@ def self_service():
 @app.route('/Import-CSV', methods=['POST'])
 def import_csv():
     if request.method == 'POST':
-        import_csv_init(df_path, db_path)
+        #import_csv_init(df_path, db_path)
         flash('CSV imported successfully!', 'success')
     return admin_page()
 
@@ -254,7 +259,7 @@ def email_button():
     body       = "We’re excited to see you at WIN 2025! Here are the details."
     image_path = r"C:\Users\chiam\Projects\WINpass-7-05\static\email.png"
 
-    send_email(subject, body, image_path, db_path)
+    #send_email(subject, body, image_path, db_path)
     flash("Invitations sent to all users!", "success")
     return redirect(url_for('admin_page'))
 
@@ -275,10 +280,32 @@ def register_checklist():
     return render_template('qr.html')
 
 
+# @app.route('/Scan_goodies')
+# def scan_goodies():
+#     size = goodies_qr(db_path)
+#     return f"Tshirt size : {size}"
+
 @app.route('/Scan_goodies')
 def scan_goodies():
-    goodies_qr(db_path)
-    return render_template('qr.html')
+    mmu_id = goodies_qr(db_path)
+
+    if not mmu_id:
+        return "No QR code detected or failed to update database."
+
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT size FROM user WHERE mmu_id = ?", (mmu_id,))
+        result = cursor.fetchone()
+        conn.close()
+
+        size = result[0] if result else "Not Found"
+        return f"T-shirt size for {mmu_id}: {size}"
+
+    except Exception as e:
+        print("Database error:", e)
+        return "Failed to fetch T-shirt size."
+
 
 @app.route('/Scan_badge')
 def scan_badge():
@@ -295,10 +322,10 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def update_user(mmu_id, face_data, face_1):
+def update_user(mmu_id, face_data, face_1, size=None):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("UPDATE user SET face_data = ?, face_1 = ? WHERE mmu_id = ?", (face_data, face_1, mmu_id))
+    cursor.execute("UPDATE user set face_data = ?, face_1 = ?, size = ? WHERE mmu_id = ?", (face_data, face_1, size, mmu_id))
     conn.commit()
     conn.close()
 
@@ -307,13 +334,13 @@ def pre_registration_page():
     if request.method == 'POST':
         mmu_id = request.form['ID']
         name = request.form['name'].strip().replace(" ", "_")
+        size = request.form.get('size')
         image_folder_path = os.path.join(app.config['UPLOAD_FOLDER'], name)
         os.makedirs(image_folder_path, exist_ok=True)
         face_1 = request.files['filename1']
         face_2 = request.files['filename2']
 
         filepath_1 = filepath_2 = None
-
 
         if face_1 and allowed_file(face_1.filename):
             filename1 = f"{name}_0001.jpg"
@@ -329,9 +356,8 @@ def pre_registration_page():
         else:
             print("Unable to save the second picture")
 
-
         print(f"Student ID: {mmu_id}")
-        print(f"File path: {filepath_1}")
+        print(f"File path 1: {filepath_1}")
         face_code = get_face_encodings_folders(image_folder_path)
 
         if face_code is None:
@@ -344,7 +370,7 @@ def pre_registration_page():
 
         face_code1 = filepath_1
 
-        update_user(mmu_id, face_data, face_code1)
+        update_user(mmu_id, face_data, face_code1, size)
 
         return "Form submitted successfully!"
 
@@ -400,18 +426,18 @@ def update():
 if __name__ == '__main__':
 
     #Paths 
-    df_path = r"C:\Users\chiam\Downloads\Test_George.csv"
+    #df_path = r"C:\Users\chiam\Downloads\Test_George.csv"
+    #db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
+    #image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
+    #df_path = r"C:\Users\chiam\Downloads\Test_George.csv"
     #db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
     #image_folder_path = r"C:\Users\adria\Downloads\winpass_training_set"
     # db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
-    db_path = r"C:\Users\user\projects\WINpass-7-05\winpass.db"
-    image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
+    #db_path = r"C:\Users\user\projects\WINpass-7-05\winpass.db"
+    #image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
     #db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
-    #db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
-    #image_folder_path = r"C:\Users\adria\Downloads\winpass_training_set"
-    #db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
-    db_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass.db"
-    image_folder_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass_training_set"
+    db_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
+    image_folder_path = r"C:\Mini IT\WINpass-7-05\winpass_training_set"
     #image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
 
     app.run(debug=True)

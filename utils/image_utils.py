@@ -315,7 +315,6 @@ def goodies_qr( db_path):
                 try:
                     conn = sqlite3.connect(db_path)
                     cursor = conn.cursor()
-                    print(f"Executing query: UPDATE user SET goodies_status = 'collected' WHERE mmu_id = {mmu_id}")
                     cursor.execute("UPDATE user SET goodies_status = ? WHERE mmu_id = ?", ('collected', mmu_id))
                     conn.commit()
                     conn.close()
@@ -332,6 +331,7 @@ def goodies_qr( db_path):
 
     cap.release()
     cv2.destroyAllWindows()
+    return mmu_id
 
 
 
@@ -386,10 +386,10 @@ def badge_qr( db_path):
 # Paths
 dataset_path = r"C:\Users\chiam\Downloads\winpass_training_set"
 #database_path = "winpass.db"
-database_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass.db"
-db_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass.db"
+database_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
+db_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
 #image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
-image_folder_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass_training_set"
+image_folder_path = r"C:\Mini IT\WINpass-7-05\winpass_training_set"
 
 
 db_path = database_path 
