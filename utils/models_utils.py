@@ -9,7 +9,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
 from transformers import T5Tokenizer, T5ForConditionalGeneration
-from dateparser import parse 
 
 def logistic_regression(captions_train_path, test_set_path):
     df = pd.read_csv(captions_train_path)

@@ -399,6 +399,9 @@ def pre_registration_page():
 def email():
     return render_template("email.html")
 
+@app.route('/MMUsync', methods=['GET'])
+def mmusync():
+    return redirect(url_for('homepage'))
 
 if __name__ == '__main__':
 

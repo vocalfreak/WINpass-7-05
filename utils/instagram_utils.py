@@ -7,6 +7,82 @@ import subprocess as sp
 from pathlib import Path 
 import io
 import sys
+from apify_client import ApifyClient
+import datetime
+
+def scrape_instagram(csv_folder_path):
+
+    client = ApifyClient("apify_api_fYSEzqJDmoUmbHEQ4FwHW30b8Ps2aa3LcE2D")
+
+    run_input = {
+  "resultsLimit": 2,
+  "skipPinnedPosts": true,
+  "username": [
+    "itsocietymmu",
+    "acsmmu",
+    "buddhistsociety.mmu",
+    "byic.mmu",
+    "official_clsc_mmu",
+    "commsocietymmu",
+    "cmcmmu",
+    "cac.mmu",
+    "mmu.dice",
+    "ebeevocals",
+    "engsoc_mmucyb",
+    "techgirls_mmu",
+    "gdg.mmu",
+    "iucyber ",
+    "iss_mmucyber",
+    "jcsmmu",
+    "kcc_cyber",
+    "mmucscyber",
+    "fcammu",
+    "radiommu",
+    "gdcmmu",
+    "ieeemmusb",
+    "srcmmu_cyber",
+    "mmusuperheroes",
+    "rentakmmu",
+    "srmcyber",
+    "shsommu",
+    "sccmmu_cyber",
+    "tamucyb",
+    "mmu.akido_club",
+    "badmintonclubmmucyber",
+    "mmucyberjayachessclub",
+    "volbees_mmu",
+    "mmucyberjayarchery",
+    "mmusports",
+    "mmuswimmingclub",
+    "mmufccyber",
+    "mmuwatersports",
+    "netbeesmmu",
+    "oarsmmucyber",
+    "mmuhornbillsreds "
+  ]
+}
+
+    run = client.actor("nH2AHrwxeTRJoN5hX").call(run_input=run_input)
+
+    dataset_items = list(client.dataset(run["defaultDatasetId"]).iterate_items())
+    df = pd.DataFrame(dataset_items)
+
+    time = datetime.now().strftime("%Y%m%d")
+    csv_filename = f"instagram_posts_{time}.csv"
+
+    csv_filepath = os.path.join(csv_folder_path, csv_filename)
+    with open(csv_filepath, 'w', encoding='utf-8-sig') as f:
+        ds = pd.read_csv(f)
+
+    ds["caption"] = df["caption"]
+    ds["alt"] = df["alt"]
+    ds["shortCode"] = df["shortCode"]
+    ds["displayUrl"] = df["displayUrl"]
+    ds["locationName"] = df["locationName"]
+    ds["timestamp"] = df["timestamp"]
+    
+    ds.to_csv(csv_filepath, index=False)
+
 
 def get_post_img(post_path):
     with open(post_path, 'r', encoding='utf-8') as f:
@@ -80,6 +156,9 @@ def get_events_title(post_path):
 
     df["title"] = titles
     df.to_csv(post_path, index=False, encoding='utf-8-sig')
+
+def data_pipeline(instagram_posts_path):
+    pass
 
 # PATH
 post_path = r"C:\Users\chiam\Projects\WINpass-7-05\instagram_posts.csv"
