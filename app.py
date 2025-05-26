@@ -48,7 +48,6 @@ def login_users():
             session['faculty'] = user[4]
             session['hall'] = user[5]
             session['avatar'] = user[6]
-            session['avatar'] = user[6]
 
             cursor.execute("UPDATE user SET ticket_status='collected' WHERE mmu_id = ?", (mmu_id,))
             conn.commit()
