@@ -48,6 +48,7 @@ def login_users():
             session['faculty'] = user[4]
             session['hall'] = user[5]
             session['avatar'] = user[6]
+            session['avatar'] = user[6]
 
             cursor.execute("UPDATE user SET ticket_status='collected' WHERE mmu_id = ?", (mmu_id,))
             conn.commit()
@@ -278,10 +279,28 @@ def register_checklist():
     return render_template('qr.html')
 
 
+
 @app.route('/Scan_goodies')
 def scan_goodies():
-    goodies_qr(db_path)
-    return render_template('qr.html')
+    mmu_id = goodies_qr(db_path)
+
+    if not mmu_id:
+        return "No QR code detected or failed to update database."
+
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT size FROM user WHERE mmu_id = ?", (mmu_id,))
+        result = cursor.fetchone()
+        conn.close()
+
+        size = result[0] if result else "Not Found"
+        return f"T-shirt size for {mmu_id}: {size}"
+
+    except Exception as e:
+        print("Database error:", e)
+        return "Failed to fetch T-shirt size."
+
 
 @app.route('/Scan_badge')
 def scan_badge():
@@ -298,10 +317,10 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def update_user(mmu_id, face_data, face_1):
+def update_user(mmu_id, face_data, face_1, size=None, timeslot=None):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("UPDATE user SET face_data = ?, face_1 = ? WHERE mmu_id = ?", (face_data, face_1, mmu_id))
+    cursor.execute("UPDATE user set face_data = ?, face_1 = ?, size = ?, timeslot = ? WHERE mmu_id = ?", (face_data, face_1, size, timeslot, mmu_id))
     conn.commit()
     conn.close()
 
@@ -310,6 +329,8 @@ def pre_registration_page():
     if request.method == 'POST':
         mmu_id = request.form['ID']
         name = request.form['name'].strip().replace(" ", "_")
+        size = request.form.get('size')
+        timeslot = request.form.get('timeslot')
         image_folder_path = os.path.join(app.config['UPLOAD_FOLDER'], name)
         os.makedirs(image_folder_path, exist_ok=True)
         face_1 = request.files['filename1']
@@ -317,29 +338,35 @@ def pre_registration_page():
 
         filepath_1 = filepath_2 = None
 
-
         if face_1 and allowed_file(face_1.filename):
-          filename1 = f"{name}_0001.jpg"
-          relative_path_1 = os.path.join(name, filename1).replace('\\', '/')
-          filepath_1 = os.path.join(app.config['UPLOAD_FOLDER'], relative_path_1)
-          face_1.save(filepath_1)
+            filename1 = f"{name}_0001.jpg"
+            filepath_1 = os.path.join(image_folder_path, filename1)
+            face_1.save(filepath_1)
         else:
             print("Unable to save the first picture")
  
         if face_2 and allowed_file(face_2.filename):
-          filename2 = f"{name}_0002.jpg"
-          relative_path_2 = os.path.join(name, filename2).replace('\\', '/')
-          filepath_2 = os.path.join(app.config['UPLOAD_FOLDER'], relative_path_2)
-          face_2.save(filepath_2)
+            filename2 = f"{name}_0002.jpg"
+            filepath_2 = os.path.join(image_folder_path, filename2)
+            face_2.save(filepath_2)
         else:
             print("Unable to save the second picture")
 
-
         print(f"Student ID: {mmu_id}")
-        print(f"File path: {filepath_1}")
+        print(f"File path 1: {filepath_1}")
         face_code = get_face_encodings_folders(image_folder_path)
 
-        update_user(mmu_id, relative_path_1, relative_path_2)
+        if face_code is None:
+            print("No valid face encodings found.")
+            return "Error: Face not detected in one or both images.", 400
+
+        print(f"Combined face encoding: {face_code}")
+
+        face_data = face_code.tobytes()
+
+        face_code1 = filepath_1
+
+        update_user(mmu_id, face_data, face_code1, size, timeslot)
 
         return "Form submitted successfully!"
 
