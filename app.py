@@ -280,10 +280,6 @@ def register_checklist():
     return render_template('qr.html')
 
 
-# @app.route('/Scan_goodies')
-# def scan_goodies():
-#     size = goodies_qr(db_path)
-#     return f"Tshirt size : {size}"
 
 @app.route('/Scan_goodies')
 def scan_goodies():
@@ -322,10 +318,10 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def update_user(mmu_id, face_data, face_1, size=None):
+def update_user(mmu_id, face_data, face_1, size=None, timeslot=None):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("UPDATE user set face_data = ?, face_1 = ?, size = ? WHERE mmu_id = ?", (face_data, face_1, size, mmu_id))
+    cursor.execute("UPDATE user set face_data = ?, face_1 = ?, size = ?, timeslot = ? WHERE mmu_id = ?", (face_data, face_1, size, timeslot, mmu_id))
     conn.commit()
     conn.close()
 
@@ -335,6 +331,7 @@ def pre_registration_page():
         mmu_id = request.form['ID']
         name = request.form['name'].strip().replace(" ", "_")
         size = request.form.get('size')
+        timeslot = request.form.get('timeslot')
         image_folder_path = os.path.join(app.config['UPLOAD_FOLDER'], name)
         os.makedirs(image_folder_path, exist_ok=True)
         face_1 = request.files['filename1']
@@ -370,7 +367,7 @@ def pre_registration_page():
 
         face_code1 = filepath_1
 
-        update_user(mmu_id, face_data, face_code1, size)
+        update_user(mmu_id, face_data, face_code1, size, timeslot)
 
         return "Form submitted successfully!"
 
