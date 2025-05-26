@@ -269,7 +269,14 @@ def announcement():
 
 @app.route('/post_announcement', methods=['GET', 'POST'])
 def post_announcement():
-
+    if request.method == 'POST':
+        message = request.form.get('message', '').strip()
+        if message:
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO announcements (message) VALUES (?)", (message,))
+            conn.commit()
+            conn.close()
     return render_template('post_announcement.html')
 
 
