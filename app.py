@@ -280,7 +280,7 @@ def email_button():
     body       = "We’re excited to see you at WIN 2025! Here are the details."
     image_path = r"C:\Users\chiam\Projects\WINpass-7-05\static\email.png"
 
-    #send_email(subject, body, image_path, db_path)
+    send_email(subject, body, image_path, db_path)
     flash("Invitations sent to all users!", "success")
     return redirect(url_for('admin_page'))
 
