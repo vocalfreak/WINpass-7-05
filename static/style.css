@@ -460,6 +460,7 @@ section {
 .avatar img {
   width: 150px;
   height: 150px;
+  border-radius: 80px;
 }
 
 .profile-table {
@@ -512,3 +513,4 @@ section {
 .btn-primary:hover {
   background-color: hsl(198, 53%, 78%);
 }
+

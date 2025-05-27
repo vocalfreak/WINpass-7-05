@@ -12,8 +12,6 @@ winpass_training_set
 posts_img
 dataset_instagram-post-scraper_2025-05-12_09-02-09-852.json
 
-winpass.db
-
 qr_codes
 face
 
@@ -22,3 +20,7 @@ captions.csv
 
 prediction_results.csv
 test_results.csv
+
+Test_George.csv
+instagram_posts.csv
+captions_trainingset.csv
