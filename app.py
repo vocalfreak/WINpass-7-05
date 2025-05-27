@@ -183,21 +183,35 @@ def edit_student():
     cursor = conn.cursor()
 
     if request.method == 'POST':
-        name = request.form['name']
-        career = request.form['career']
-        faculty = request.form['faculty']
-        campus = request.form['campus']
-        email = request.form['email']
+        action = request.form.get('action')
+        mmu_id = request.form['mmu_id'] 
 
-        cursor.execute("""
-            UPDATE user 
-            SET name=?, career=?, faculty=?, campus=?, email=?
-            WHERE mmu_id=?
-        """, (name, career, faculty, campus, email, mmu_id))
+        if action == 'update':
+            name = request.form['name']
+            career = request.form['career']
+            faculty = request.form['faculty']
+            campus = request.form['campus']
+            email = request.form['email']
 
-        conn.commit()
-        conn.close()
-        return redirect(url_for('admin_page'))
+            cursor.execute("""
+                UPDATE user 
+                SET name=?, career=?, faculty=?, campus=?, email=?
+                WHERE mmu_id=?
+            """, (name, career, faculty, campus, email, mmu_id))
+
+            conn.commit()
+            conn.close()
+
+            flash("Student information updated successfully.", "success")
+            return redirect(url_for('admin_page'))
+
+        elif action == 'delete':
+            cursor.execute("DELETE FROM user WHERE mmu_id = ?", (mmu_id,))
+            conn.commit()
+            conn.close()
+
+            flash("Student deleted successfully.", "success")
+            return redirect(url_for('admin_page'))
 
     cursor.execute("SELECT mmu_id, name, career, faculty, campus, email FROM user WHERE mmu_id=?", (mmu_id,))
     student = cursor.fetchone()
@@ -207,7 +221,6 @@ def edit_student():
         return "Student not found", 404
 
     return render_template('edit_student.html', student=student)
-
 
 @app.route('/Admin-Home')
 def home():
