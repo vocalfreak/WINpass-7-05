@@ -37,7 +37,7 @@ def login_users():
             return redirect(url_for('admin_landing')) 
 
        
-        cursor.execute("SELECT id, name, email, career, faculty, hall, face_1 FROM user WHERE mmu_id = ? AND password = ?", (mmu_id, password))
+        cursor.execute("SELECT id, name, email, career, faculty, hall FROM user WHERE mmu_id = ? AND password = ?", (mmu_id, password))
         user = cursor.fetchone()
 
         if user:
@@ -47,7 +47,6 @@ def login_users():
             session['career'] = user[3]
             session['faculty'] = user[4]
             session['hall'] = user[5]
-            session['avatar'] = user[6]
 
             cursor.execute("UPDATE user SET ticket_status='collected' WHERE mmu_id = ?", (mmu_id,))
             conn.commit()
@@ -79,7 +78,7 @@ def student_profile():
     cursor = conn.cursor()
 
     cursor.execute(
-        "SELECT name, mmu_id, email, career, faculty, hall, face_1 FROM user WHERE mmu_id = ?",
+        "SELECT name, mmu_id, email, career, faculty, hall FROM user WHERE mmu_id = ?",
         (session['mmu_id'],)
     )
     user = cursor.fetchone()
@@ -93,11 +92,17 @@ def student_profile():
             'career': user[3],
             'faculty': user[4],
             'hall': user[5],
-            'avatar': user[6]
         }
+
+        avatar_rel_path = get_student_avatar(user_data['name'], user_data['mmu_id'], image_folder_path)
+        if avatar_rel_path:
+            session['avatar'] = avatar_rel_path
+        else:
+            session.pop('avatar', None)
 
     else:
         user_data = None
+        session.pop('avatar', None)
 
     return render_template('student_profile.html', user=user_data)
 
@@ -201,21 +206,35 @@ def edit_student():
     cursor = conn.cursor()
 
     if request.method == 'POST':
-        name = request.form['name']
-        career = request.form['career']
-        faculty = request.form['faculty']
-        campus = request.form['campus']
-        email = request.form['email']
+        action = request.form.get('action')
+        mmu_id = request.form['mmu_id'] 
 
-        cursor.execute("""
-            UPDATE user 
-            SET name=?, career=?, faculty=?, campus=?, email=?
-            WHERE mmu_id=?
-        """, (name, career, faculty, campus, email, mmu_id))
+        if action == 'update':
+            name = request.form['name']
+            career = request.form['career']
+            faculty = request.form['faculty']
+            campus = request.form['campus']
+            email = request.form['email']
 
-        conn.commit()
-        conn.close()
-        return redirect(url_for('admin_page'))
+            cursor.execute("""
+                UPDATE user 
+                SET name=?, career=?, faculty=?, campus=?, email=?
+                WHERE mmu_id=?
+            """, (name, career, faculty, campus, email, mmu_id))
+
+            conn.commit()
+            conn.close()
+
+            flash("Student information updated successfully.", "success")
+            return redirect(url_for('admin_page'))
+
+        elif action == 'delete':
+            cursor.execute("DELETE FROM user WHERE mmu_id = ?", (mmu_id,))
+            conn.commit()
+            conn.close()
+
+            flash("Student deleted successfully.", "success")
+            return redirect(url_for('admin_page'))
 
     cursor.execute("SELECT mmu_id, name, career, faculty, campus, email FROM user WHERE mmu_id=?", (mmu_id,))
     student = cursor.fetchone()
@@ -225,7 +244,6 @@ def edit_student():
         return "Student not found", 404
 
     return render_template('edit_student.html', student=student)
-
 
 @app.route('/Admin-Home')
 def home():
@@ -399,16 +417,24 @@ def pre_registration_page():
 def email():
     return render_template("email.html")
 
-@app.route('/MMUsync', methods=['GET'])
-def mmusync():
-    return redirect(url_for('homepage'))
+def get_student_avatar(name, mmu_id, image_folder_path):
+    person_folder_path = os.path.join(image_folder_path, name.replace(' ', '_'))
+    if os.path.exists(person_folder_path):
+        image_files = [f for f in os.listdir(person_folder_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+        if image_files:
+            first_img = image_files[0]
+            img_path = os.path.join(person_folder_path, first_img)
+            rel_path = os.path.relpath(img_path, start=image_folder_path).replace("\\", "/")
+            return rel_path
+    return None
 
 if __name__ == '__main__':
 
     #Paths 
-    #df_path = r"C:\Users\adria\Projects\WINpass-7-05\Test_George.csv"
-    #db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
-    #image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
+    df_path = r"C:\Users\adria\Projects\WINpass-7-05\Test_George.csv"
+    db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
+    image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
+
     
     db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
     image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
@@ -417,9 +443,13 @@ if __name__ == '__main__':
 
     #db_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass.db"
     #image_folder_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass_training_set"
+    
+    #db_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\winpass.db"
+    #image_folder_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\winpass_training_set"
+
 
     app.run(debug=True)
 
-
+#test
 
 
