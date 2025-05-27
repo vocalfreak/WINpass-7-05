@@ -161,7 +161,7 @@ def face_verification():
         "photo_path": photo_url,
         "qr_path": qr_path
     }
-    return render_template("digital_ticket.html", student=student)
+    return render_template("digital_ticket_generation.html", student=student)
 
 @app.route('/Pre-Registration')
 def pre_registration():
@@ -318,6 +318,13 @@ def register_checklist():
         return "Checklist updated successfully!"
     return render_template('qr.html')
 
+@app.route('/Comfirm')
+def comfirm_button():
+    return render_template('admin_landing.html') 
+
+@app.route('/Reject')
+def reject_button():
+    return face_verification()
 
 
 @app.route('/Scan_goodies')
@@ -428,6 +435,10 @@ def get_student_avatar(name, mmu_id, image_folder_path):
             return rel_path
     return None
 
+@app.route('/MMUsync', methods=['GET'])
+def mmusync():
+    return redirect(url_for('homepage'))
+
 if __name__ == '__main__':
 
     #Paths 
@@ -449,7 +460,5 @@ if __name__ == '__main__':
 
 
     app.run(debug=True)
-
-#test
 
 
