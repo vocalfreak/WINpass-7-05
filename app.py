@@ -12,9 +12,6 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 
 app.secret_key = 'xp9nfcZcGQuDuoG4'
-#db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
-db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
-image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
 
 @app.route('/Landing-Page')
 def homepage():
@@ -50,7 +47,8 @@ def login_users():
             session['career'] = user[3]
             session['faculty'] = user[4]
             session['hall'] = user[5]
-            session['avatar'] = user[6].replace('\\', '/').replace('winpass_training_set/', '')
+            session['avatar'] = user[6]
+            session['avatar'] = user[6]
 
             cursor.execute("UPDATE user SET ticket_status='collected' WHERE mmu_id = ?", (mmu_id,))
             conn.commit()
@@ -96,7 +94,7 @@ def student_profile():
             'career': user[3],
             'faculty': user[4],
             'hall': user[5],
-            'avatar': user[6].replace('\\', '/').replace('winpass_training_set/', '')
+            'avatar': user[6]
         }
 
     else:
@@ -237,7 +235,7 @@ def self_service():
 @app.route('/Import-CSV', methods=['POST'])
 def import_csv():
     if request.method == 'POST':
-        #import_csv_init(df_path, db_path)
+        import_csv_init(df_path, db_path)
         flash('CSV imported successfully!', 'success')
     return admin_page()
 
@@ -281,10 +279,28 @@ def register_checklist():
     return render_template('qr.html')
 
 
+
 @app.route('/Scan_goodies')
 def scan_goodies():
-    goodies_qr(db_path)
-    return render_template('qr.html')
+    mmu_id = goodies_qr(db_path)
+
+    if not mmu_id:
+        return "No QR code detected or failed to update database."
+
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT size FROM user WHERE mmu_id = ?", (mmu_id,))
+        result = cursor.fetchone()
+        conn.close()
+
+        size = result[0] if result else "Not Found"
+        return f"T-shirt size for {mmu_id}: {size}"
+
+    except Exception as e:
+        print("Database error:", e)
+        return "Failed to fetch T-shirt size."
+
 
 @app.route('/Scan_badge')
 def scan_badge():
@@ -301,10 +317,10 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def update_user(mmu_id, face_data, face_1):
+def update_user(mmu_id, face_data, face_1, size=None, timeslot=None):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("UPDATE user SET face_data = ?, face_1 = ? WHERE mmu_id = ?", (face_data, face_1, mmu_id))
+    cursor.execute("UPDATE user set face_data = ?, face_1 = ?, size = ?, timeslot = ? WHERE mmu_id = ?", (face_data, face_1, size, timeslot, mmu_id))
     conn.commit()
     conn.close()
 
@@ -313,6 +329,8 @@ def pre_registration_page():
     if request.method == 'POST':
         mmu_id = request.form['ID']
         name = request.form['name'].strip().replace(" ", "_")
+        size = request.form.get('size')
+        timeslot = request.form.get('timeslot')
         image_folder_path = os.path.join(app.config['UPLOAD_FOLDER'], name)
         os.makedirs(image_folder_path, exist_ok=True)
         face_1 = request.files['filename1']
@@ -320,29 +338,35 @@ def pre_registration_page():
 
         filepath_1 = filepath_2 = None
 
-
         if face_1 and allowed_file(face_1.filename):
-          filename1 = f"{name}_0001.jpg"
-          relative_path_1 = os.path.join(name, filename1).replace('\\', '/')
-          filepath_1 = os.path.join(app.config['UPLOAD_FOLDER'], relative_path_1)
-          face_1.save(filepath_1)
+            filename1 = f"{name}_0001.jpg"
+            filepath_1 = os.path.join(image_folder_path, filename1)
+            face_1.save(filepath_1)
         else:
             print("Unable to save the first picture")
  
         if face_2 and allowed_file(face_2.filename):
-          filename2 = f"{name}_0002.jpg"
-          relative_path_2 = os.path.join(name, filename2).replace('\\', '/')
-          filepath_2 = os.path.join(app.config['UPLOAD_FOLDER'], relative_path_2)
-          face_2.save(filepath_2)
+            filename2 = f"{name}_0002.jpg"
+            filepath_2 = os.path.join(image_folder_path, filename2)
+            face_2.save(filepath_2)
         else:
             print("Unable to save the second picture")
 
-
         print(f"Student ID: {mmu_id}")
-        print(f"File path: {filepath_1}")
+        print(f"File path 1: {filepath_1}")
         face_code = get_face_encodings_folders(image_folder_path)
 
-        update_user(mmu_id, relative_path_1, relative_path_2)
+        if face_code is None:
+            print("No valid face encodings found.")
+            return "Error: Face not detected in one or both images.", 400
+
+        print(f"Combined face encoding: {face_code}")
+
+        face_data = face_code.tobytes()
+
+        face_code1 = filepath_1
+
+        update_user(mmu_id, face_data, face_code1, size, timeslot)
 
         return "Form submitted successfully!"
 
@@ -353,58 +377,24 @@ def pre_registration_page():
 def email():
     return render_template("email.html")
 
-
-def get_leaderboard():
-    conn = sqlite3.connect('winpass.db')
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, name, gold, silver, bronze, points FROM hall ORDER BY points DESC")
-    halls = cursor.fetchall()
-    conn.close()
-    return halls
-
-def update_points(hall_id, medal):
-    points_map = {'gold': 5, 'silver': 3, 'bronze': 1}
-    if medal not in points_map:
-        return
-
-    conn = sqlite3.connect('winpass.db')
-    cursor = conn.cursor()
-    cursor.execute(f"""
-        UPDATE hall
-        SET {medal} = {medal} + 1,
-            points = points + ?
-        WHERE id = ?
-    """, (points_map[medal], hall_id))
-    conn.commit()
-    conn.close()
-
-@app.route('/leaderboard')
-def leaderboard():
-    halls = get_leaderboard()
-    return render_template('leaderboards.html', halls=halls)
-
-@app.route('/add/<int:hall_id>/<medal>', methods=['POST'])
-def add_medal(hall_id, medal):
-    update_points(hall_id, medal)
-    return redirect(url_for('leaderboard'))
-
-@app.route('/update', methods=['POST'])
-def update():
-    hall_id = request.form['hall']
-    medal = request.form['medal']
-    update_points(hall_id, medal)
-    return redirect(url_for('leaderboard'))
-
 if __name__ == '__main__':
 
     #Paths 
-    df_path = r"C:\Users\adria\Projects\WINpass-7-05\Test_George.csv"
-    db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
-    image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
-    #db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+    #df_path = r"C:\Users\adria\Projects\WINpass-7-05\Test_George.csv"
+    #db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
+    #image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
+
+    
+    db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+    image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
+    df_path = r"C:\Users\chiam\Projects\WINpass-7-05\Test_George.csv"
+
     #db_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass.db"
     #image_folder_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass_training_set"
-    #image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
+    
+    #db_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\winpass.db"
+    #image_folder_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\winpass_training_set"
+
 
     app.run(debug=True)
 
