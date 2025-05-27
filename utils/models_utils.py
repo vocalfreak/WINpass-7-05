@@ -9,7 +9,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
 from transformers import T5Tokenizer, T5ForConditionalGeneration
-from dateparser import parse 
 
 def logistic_regression(captions_train_path, test_set_path):
     df = pd.read_csv(captions_train_path)
@@ -33,7 +32,7 @@ def logistic_regression(captions_train_path, test_set_path):
     ds.to_csv(test_set_path, index=False, encoding="utf-8-sig")
 
 
-def get_title_date(test_set_path, output_path):
+def get_title_date(test_set_path):
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
     tokenizer = T5Tokenizer.from_pretrained("google/flan-t5-large")
