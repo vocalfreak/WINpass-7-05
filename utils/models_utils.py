@@ -32,7 +32,7 @@ def logistic_regression(captions_train_path, test_set_path):
     ds.to_csv(test_set_path, index=False, encoding="utf-8-sig")
 
 
-def get_title_date(test_set_path, output_path):
+def get_title_date(test_set_path):
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
     tokenizer = T5Tokenizer.from_pretrained("google/flan-t5-large")
