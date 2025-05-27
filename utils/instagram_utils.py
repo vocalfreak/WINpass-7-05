@@ -81,6 +81,8 @@ def scrape_instagram(csv_folder_path):
     ds["shortCode"] = df["shortCode"]
     ds["displayUrl"] = df["displayUrl"]
     ds["locationName"] = df["locationName"]
+    ds["ownerFullName"] = df["ownerFullName"]
+    ds["locationId"] = df["locationId"]
     ds["timestamp"] = df["timestamp"]
     
     ds.to_csv(csv_filepath, index=False)
@@ -138,14 +140,16 @@ def store_to_db(post_path, db_path):
 
     for row in df:
         cursor.execute("""
-        INSERT INTO intagram (caption, alt, shortCode, displayUrl, locationName, timestamp, predicted, details, title, date, time, location)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO intagram (caption, alt, shortCode, displayUrl, locationName, ownerFullName, locationId, timestamp, predicted, details, title, date, time, location)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             row['caption'],
             row['alt'],
             row['shortCode'],
             row['displayUrl'],
             row['locationName'],
+            row['ownerFullName'],
+            row['locationId'],
             row['timestamp'],
             row['predicted'],
             row['details'],
