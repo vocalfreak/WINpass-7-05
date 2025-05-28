@@ -57,23 +57,16 @@
           </div>
         </div>
         
-        <div class="timeslot-status">
-          <h2>Timeslot Availability</h2>
-          <div class="timeslot-list">
-            <div class="timeslot-row">
-              <span class="status-dot green"></span>
-              <span class="time">10:00 AM - 12:00 PM</span>
-              <span class="count">23 pre-registrations</span>
-            </div>
-            <div class="timeslot-row">
-              <span class="status-dot green"></span>
-              <span class="time">12:00 PM - 2:00 PM</span>
-              <span class="count">31 pre-registrations</span>
-            </div>
-            <div class="timeslot-row">
-              <span class="status-dot yellow"></span>
-              <span class="time">2:00 PM - 4:00 PM</span>
-              <span class="count">47 pre-registrations</span>
+          <div class="timeslot-status">
+            <h2>Timeslot Availability</h2>
+            <div class="timeslot-list">
+              {% for slot in timeslots %}
+              <div class="timeslot-row">
+                <span class="status-dot {{ slot.status }}"></span>
+                <span class="time">{{ slot.time }}</span>
+                <span class="count">{{ slot.count }} pre-registrations</span>
+              </div>
+              {% endfor %}
             </div>
           </div>
           

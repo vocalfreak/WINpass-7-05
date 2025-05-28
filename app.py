@@ -1,4 +1,4 @@
-from utils.route_utils import import_csv_init, photobooth
+from utils.route_utils import import_csv_init, photobooth, get_timeslot, get_timeslot_status
 from utils.image_utils import real_time_recognition, get_winpass_info
 from utils.image_utils import get_face_encodings_folders
 from utils.image_utils import badge_qr, goodies_qr
@@ -13,9 +13,18 @@ app = Flask(__name__)
 
 app.secret_key = 'xp9nfcZcGQuDuoG4'
 
-@app.route('/Landing-Page')
+@app.route('/')
 def homepage():
-    return render_template("landing_page.html")
+    slot_1, slot_2, slot_3, time_slots = get_timeslot(db_path)
+
+    timeslot_status = get_timeslot_status(time_slots)
+
+    timeslots=[
+        {'status': timeslot_status[0], 'count': slot_1, 'time': '10:00 AM - 12:00 PM'},
+        {'status': timeslot_status[1], 'count': slot_2, 'time': '12:00 PM - 2:00 PM'},
+        {'status': timeslot_status[2], 'count': slot_3, 'time': '2:00 PM - 4:00 PM'}
+    ]
+    return render_template("test.html", timeslots=timeslots)
 
 @app.route('/Login-Users', methods=['GET', 'POST'])
 def login_users():
@@ -141,9 +150,9 @@ def digital_ticket():
 def photos(filename):
     return send_from_directory(image_folder_path, filename)
 
-@app.route('/')
-def temporary():
-    return render_template('landing_page.html')
+# @app.route('/')
+# def temporary():
+#     return render_template('landing_page.html')
 
 @app.route('/Face-Verification')
 def face_verification():
@@ -173,10 +182,10 @@ def comfirm_button():
     return render_template('admin_landing.html') 
 
 @app.route('/Reject')
-def reject_button():
+def reject_button(qr_folder_path):
     qr_path = session['qr_path']
     
-    qr_path = os.path.join(r"C:\Users\chiam\Projects\WINpass-7-05\static", qr_path)
+    qr_path = os.path.join(qr_folder_path, qr_path)
     os.remove(qr_path)
     
     session.pop('qr_path', None)
@@ -455,18 +464,14 @@ if __name__ == '__main__':
     db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
     image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
 
-    
-    # db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
-    # image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
-    # df_path = r"C:\Users\chiam\Projects\WINpass-7-05\Test_George.csv"
-    # qr_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\static\qr_codes"
+    db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+    image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
+    df_path = r"C:\Users\chiam\Projects\WINpass-7-05\Test_George.csv"
+    qr_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\static"
 
-    db_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
-    image_folder_path = r"C:\Mini IT\WINpass-7-05\winpass_training_set"
+    #db_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
+    #image_folder_path = r"C:\Mini IT\WINpass-7-05\winpass_training_set"
     
-    #db_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\winpass.db"
-    #image_folder_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\winpass_training_set"
-
 
     app.run(debug=True)
 
