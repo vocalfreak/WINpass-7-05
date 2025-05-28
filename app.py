@@ -339,10 +339,10 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def update_user(mmu_id, face_data, face_1, size=None, timeslot=None):
+def update_user(mmu_id, face_data, size=None, timeslot=None):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("UPDATE user set face_data = ?, face_1 = ?, size = ?, timeslot = ? WHERE mmu_id = ?", (face_data, face_1, size, timeslot, mmu_id))
+    cursor.execute("UPDATE user set face_data = ?, size = ?, timeslot = ? WHERE mmu_id = ?", (face_data, size, timeslot, mmu_id))
     conn.commit()
     conn.close()
 
@@ -375,7 +375,6 @@ def pre_registration_page():
             print("Unable to save the second picture")
 
         print(f"Student ID: {mmu_id}")
-        print(f"File path 1: {filepath_1}")
         face_code = get_face_encodings_folders(image_folder_path)
 
         if face_code is None:
@@ -386,9 +385,7 @@ def pre_registration_page():
 
         face_data = face_code.tobytes()
 
-        face_code1 = filepath_1
-
-        update_user(mmu_id, face_data, face_code1, size, timeslot)
+        update_user(mmu_id, face_data, size, timeslot)
 
         return "Form submitted successfully!"
 
@@ -413,13 +410,13 @@ if __name__ == '__main__':
     #image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
 
     
-    db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
-    image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
-    df_path = r"C:\Users\chiam\Projects\WINpass-7-05\Test_George.csv"
-    qr_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\static\qr_codes"
+    # db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+    # image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
+    # df_path = r"C:\Users\chiam\Projects\WINpass-7-05\Test_George.csv"
+    # qr_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\static\qr_codes"
 
-    #db_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass.db"
-    #image_folder_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass_training_set"
+    db_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
+    image_folder_path = r"C:\Mini IT\WINpass-7-05\winpass_training_set"
     
     #db_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\winpass.db"
     #image_folder_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\winpass_training_set"
