@@ -348,9 +348,20 @@ def update_user(mmu_id, face_data, size=None, timeslot=None):
 
 @app.route('/Pre_Registration_page', methods=['POST', 'GET'])
 def pre_registration_page():
+    token = request.args.get('token') or request.form.get('token')
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT mmu_id, name FROM user WHERE nonce = ?", (token,))
+    user = cursor.fetchone()
+    conn.close()
+
+    if not user:
+        return "Invalid token", 404
+
+    mmu_id, name = user
+
     if request.method == 'POST':
-        mmu_id = request.form['ID']
-        name = request.form['name'].strip().replace(" ", "_")
+        name = name.strip().replace(" ", "_")
         size = request.form.get('size')
         timeslot = request.form.get('timeslot')
         image_folder_path = os.path.join(app.config['UPLOAD_FOLDER'], name)
