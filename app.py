@@ -339,10 +339,10 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def update_user(mmu_id, face_data, size=None, timeslot=None):
+def update_user(nonce, face_data, size=None, timeslot=None):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("UPDATE user set face_data = ?, size = ?, timeslot = ? WHERE mmu_id = ?", (face_data, size, timeslot, mmu_id))
+    cursor.execute("UPDATE user set face_data = ?, size = ?, timeslot = ? WHERE nonce = ?", (face_data, size, timeslot, nonce))
     conn.commit()
     conn.close()
 
@@ -353,11 +353,12 @@ def pre_registration_page():
     cursor = conn.cursor()
     cursor.execute("SELECT mmu_id, name FROM user WHERE nonce = ?", (token,))
     user = cursor.fetchone()
+    print(f"User full name: {user}")
     conn.close()
 
-    if not user:
-        return "Invalid token", 404
-
+    if user is None:
+        return "Invalid token or user not found", 404
+    
     mmu_id, name = user
 
     if request.method == 'POST':
@@ -396,11 +397,11 @@ def pre_registration_page():
 
         face_data = face_code.tobytes()
 
-        update_user(mmu_id, face_data, size, timeslot)
+        update_user(token, face_data, size, timeslot)
 
         return "Form submitted successfully!"
 
-    return render_template('pre_registration_page.html')
+    return render_template('pre_registration_page.html', token=token)
 
 
 @app.route('/Email')
