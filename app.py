@@ -432,7 +432,7 @@ def get_student_avatar(name, mmu_id, image_folder_path):
 
 @app.route('/MMUsync', methods=['GET'])
 def mmusync():
-    return redirect(url_for('homepage'))
+    return render_template("event_page.html")
 
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>WINpass</title>
+  <title>Event Page</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <link href="https://fonts.googleapis.com/css?family=Trirong">
 </head>
@@ -31,19 +31,34 @@
         <li><a href="{{ url_for('student_profile') }}">Student Profile</a></li>
         <li><a href="{{ url_for('booth_info') }}">Booth Information</a></li>
         <li><a href="{{ url_for('digital_ticket') }}">Digital Ticket View</a></li>
-        <li><a href="{{ url_for('email') }}">Email</a></li>
-        <li><a href="{{ url_for('pre_registration_page') }}">Pre Register</a></li>
-        <li><a href="{{ url_for('register_checklist') }}">Checklist</a></li>
-        <li><a href="{{ url_for('mmusync') }}">Event Page</a></li>
+        <li><a href="{{ url_for('pre_registration_page') }}">Photobooth</a></li>
       </ul>
     </nav>
   </header>
 
-  <main class="background">
-    <div class="overlay">
-      <h1>WELCOME TO WIN 2025!</h1>
-      <p>We are excited to have you here!</p>
-    </div>
-  </main>
+  <div class="main-container">
+    <aside class="sidebar">
+      <h2>Search Events</h2>
+      <input type="text" placeholder="Search..." />
+      <h3>Dates</h3>
+      <label><input type="radio" name="date"> Tomorrow</label><br>
+      <label><input type="radio" name="date"> This Weekend</label><br>
+      <input type="date" />
+      <label class="event-checkbox-label"> <input type="checkbox" class="event-checkbox" />Online</label>
+      <h3>Branches</h3>
+      <select><option>Select branches</option></select>
+      <h3>Themes</h3>
+      <select><option>Select themes</option></select>
+      <h3>Categories</h3>
+      <select><option>Select categories</option></select>
+    </aside>
+
+     <main class="events">
+      <div class="events-header">
+        <h1>Events</h1>
+      </div>
+    </main>
+  </div>
 </body>
 </html>
+   

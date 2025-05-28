@@ -514,3 +514,83 @@ section {
   background-color: hsl(198, 53%, 78%);
 }
 
+.main-container {
+  display: flex;
+}
+
+.sidebar {
+  width: 250px;
+  padding: 10px;
+  background: #fff;
+  border-right: 1px solid #ccc;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sidebar h2, .sidebar h3 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: bold;
+  color: #0047ba;
+}
+
+.sidebar input[type="text"],
+.sidebar input[type="date"],
+.sidebar select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #aaa;
+  font-size: 14px;
+}
+
+.event-checkbox-label {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  margin-top: 4px;
+  gap: 8px;
+}
+
+.event-checkbox {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid hsl(195, 3%, 53%);
+  border-radius: 3px;
+  position: relative;
+  cursor: pointer;
+}
+
+.event-checkbox:checked::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  width: 4px;
+  height: 9px;
+  border: solid hsl(195, 3%, 53%);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.past-events-btn {
+  padding: 8px 8px;
+  background-color: hsl(195, 3%, 53%);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.past-events-btn:hover {
+  background-color: hsl(198, 53%, 78%);
+}
+
+.events-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
