@@ -8,10 +8,12 @@ import sqlite3
 from flask_sqlalchemy import SQLAlchemy
 import os
 from werkzeug.utils import secure_filename
+from datetime import timedelta
 
 app = Flask(__name__)
 
 app.secret_key = 'xp9nfcZcGQuDuoG4'
+app.permanent_session_lifetime = timedelta(minutes=20) 
 
 @app.route('/Landing-Page')
 def homepage():
@@ -30,6 +32,7 @@ def login_users():
         admin = cursor.fetchone()
 
         if admin:
+            session.permanent = True
             session['mmu_id'] = mmu_id
             session['name'] = admin[0]
             session['email'] = admin[1]
@@ -41,6 +44,7 @@ def login_users():
         user = cursor.fetchone()
 
         if user:
+            session.permanent = True
             session['mmu_id'] = mmu_id
             session['name'] = user[1]
             session['email'] = user[2]
@@ -440,6 +444,7 @@ if __name__ == '__main__':
     df_path = r"C:\Users\adria\Projects\WINpass-7-05\Test_George.csv"
     db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
     image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
+    qr_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\static\qr_codes"
 
     
     #db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
@@ -449,7 +454,7 @@ if __name__ == '__main__':
 
     #db_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass.db"
     #image_folder_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass_training_set"
-    
+
     #db_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\winpass.db"
     #image_folder_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\winpass_training_set"
 
