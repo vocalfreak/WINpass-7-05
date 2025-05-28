@@ -1,5 +1,5 @@
 from utils.route_utils import import_csv_init, photobooth
-from utils.image_utils import real_time_recognition
+from utils.image_utils import real_time_recognition, get_winpass_info
 from utils.image_utils import get_face_encodings_folders
 from utils.image_utils import badge_qr, goodies_qr
 from utils.email_utils import send_email
@@ -47,7 +47,6 @@ def login_users():
             session['career'] = user[3]
             session['faculty'] = user[4]
             session['hall'] = user[5]
-            session['avatar'] = user[6]
             session['avatar'] = user[6]
 
             cursor.execute("UPDATE user SET ticket_status='collected' WHERE mmu_id = ?", (mmu_id,))
@@ -108,7 +107,30 @@ def booth_info():
 
 @app.route('/Digital-Ticket')
 def digital_ticket():
-    return render_template('digital_ticket.html')
+    if 'mmu_id' not in session:
+        return redirect(url_for('login_users')) 
+    
+    mmu_id = (session['mmu_id'])
+
+    result = get_winpass_info(mmu_id, db_path, image_folder_path)
+    name, mmu_id, hall, career, img_path = result
+
+    rel_path = os.path.relpath(img_path, start=image_folder_path).replace('\\','/')
+    photo_url = url_for('photos', filename=rel_path)
+
+    qr_path = f"qr_codes/{mmu_id}.png"
+
+    student = {
+        "name": name,
+        "mmu_id": mmu_id,
+        "hall": hall,       
+        "career": career,
+        "photo_path": photo_url,
+        "qr_path": qr_path
+    }
+
+    return render_template("digital_ticket.html", student=student)
+
 
 @app.route('/photos/<path:filename>')
 def photos(filename):
@@ -258,7 +280,7 @@ def email_button():
     body       = "We’re excited to see you at WIN 2025! Here are the details."
     image_path = r"C:\Users\chiam\Projects\WINpass-7-05\static\email.png"
 
-    #send_email(subject, body, image_path, db_path)
+    send_email(subject, body, image_path, db_path)
     flash("Invitations sent to all users!", "success")
     return redirect(url_for('admin_page'))
 
@@ -377,6 +399,12 @@ def pre_registration_page():
 def email():
     return render_template("email.html")
 
+
+@app.route('/MMUsync', methods=['GET'])
+def mmusync():
+    return redirect(url_for('homepage'))
+
+
 if __name__ == '__main__':
 
     #Paths 
@@ -388,6 +416,7 @@ if __name__ == '__main__':
     db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
     image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
     df_path = r"C:\Users\chiam\Projects\WINpass-7-05\Test_George.csv"
+    qr_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\static\qr_codes"
 
     #db_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass.db"
     #image_folder_path = r"C:\Foundation\WINpass\WINpass-7-05\winpass_training_set"
