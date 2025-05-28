@@ -161,7 +161,27 @@ def face_verification():
         "photo_path": photo_url,
         "qr_path": qr_path
     }
+
+    session['qr_path'] = qr_path
+
     return render_template("digital_ticket_generation.html", student=student)
+
+@app.route('/Comfirm')
+def comfirm_button():
+    session.pop('qr_path', None)
+
+    return render_template('admin_landing.html') 
+
+@app.route('/Reject')
+def reject_button():
+    qr_path = session['qr_path']
+    
+    qr_path = os.path.join(r"C:\Users\chiam\Projects\WINpass-7-05\static", qr_path)
+    os.remove(qr_path)
+    
+    session.pop('qr_path', None)
+
+    return face_verification()
 
 @app.route('/Pre-Registration')
 def pre_registration():
@@ -317,14 +337,6 @@ def register_checklist():
 
         return "Checklist updated successfully!"
     return render_template('qr.html')
-
-@app.route('/Comfirm')
-def comfirm_button():
-    return render_template('admin_landing.html') 
-
-@app.route('/Reject')
-def reject_button():
-    return face_verification()
 
 
 @app.route('/Scan_goodies')
