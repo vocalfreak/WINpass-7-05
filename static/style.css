@@ -183,7 +183,7 @@ table {
 
 th, td {
     padding: 10px; 
-    text-align: left;
+    text-align: center;
     border-bottom: 2px solid #ddd;
     overflow: hidden; 
     text-overflow: ellipsis;
@@ -460,6 +460,7 @@ section {
 .avatar img {
   width: 150px;
   height: 150px;
+  border-radius: 80px;
 }
 
 .profile-table {
@@ -495,3 +496,21 @@ section {
 .logout-btn:hover {
   background-color: #a59e9e;
 }
+
+.btn {
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: bolder;
+}
+
+.btn-primary {
+  background-color: hsl(195, 3%, 53%);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: hsl(198, 53%, 78%);
+}
+
