@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ANNOUNCEMENT</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css?family=Trirong">
+</head>
+<body>
+    <header>
+     <div class="top-bar">
+       <div class="logo-area">
+         <img src="{{ url_for('static', filename='img_mmu.png') }}" alt="MMU Logo" class="logo"/>
+         <span class="win">WIN<span class="pass">pass</span></span>
+       </div>
+     </div>
+     <nav>
+       <ul>
+           <li><a href="{{ url_for('admin_landing') }}">Home</a></li>
+         <li><a href="{{ url_for('face_verification') }}">Face Verification</a></li>
+       </ul>
+     </nav>
+   </header>
+    
+</body>
+</html>

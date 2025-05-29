@@ -87,66 +87,66 @@ def get_winpass_info(mmu_id, db_path, image_folder_path):
     
     return name, mmu_id, hall, career, img_path
     
-# def get_face_encodings_folders(image_folder_path, db_path):
+def get_face_encodings_batch(image_folder_path, db_path):
 
-#     conn = sqlite3.connect(db_path)
-#     cursor = conn.cursor()
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
     
-#     total_encodings = 0
+    total_encodings = 0
     
-#     for person_folder in os.listdir(image_folder_path):
-#         folder_path = os.path.join(image_folder_path, person_folder)
-#         if not os.path.isdir(folder_path):
-#             continue
+    for person_folder in os.listdir(image_folder_path):
+        folder_path = os.path.join(image_folder_path, person_folder)
+        if not os.path.isdir(folder_path):
+            continue
         
-#         person_name = person_folder.replace('_', ' ')
+        person_name = person_folder.replace('_', ' ')
         
-#         all_encodings = []
+        all_encodings = []
         
-#         for image_name in os.listdir(folder_path):
-#             image_path = os.path.join(folder_path, image_name)
-#             try:
-#                 img = cv2.imread(image_path)
-#                 if img is None:
-#                     print(f"Could not read image: {image_path}")
-#                     continue
+        for image_name in os.listdir(folder_path):
+            image_path = os.path.join(folder_path, image_name)
+            try:
+                img = cv2.imread(image_path)
+                if img is None:
+                    print(f"Could not read image: {image_path}")
+                    continue
 
-#                 rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-#                 encodings = fr.face_encodings(rgb_img)
+                rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                encodings = fr.face_encodings(rgb_img)
                 
-#                 if encodings:
-#                     for encoding in encodings:
-#                         all_encodings.append(encoding)
-#                         total_encodings += 1
-#                         print(f"[+] Collected encoding for {person_name} - {image_name}")
-#                 else:
-#                     print(f"[-] No face found in {person_name} - {image_name}")
+                if encodings:
+                    for encoding in encodings:
+                        all_encodings.append(encoding)
+                        total_encodings += 1
+                        print(f"[+] Collected encoding for {person_name} - {image_name}")
+                else:
+                    print(f"[-] No face found in {person_name} - {image_name}")
                     
-#             except Exception as e:
-#                 print(f"Error processing {person_name} - {image_name}: {e}")
+            except Exception as e:
+                print(f"Error processing {person_name} - {image_name}: {e}")
         
-#         if all_encodings:
+        if all_encodings:
 
-#             all_encodings_array = np.array(all_encodings)
-#             encodings_blob = all_encodings_array.tobytes()
+            all_encodings_array = np.array(all_encodings)
+            encodings_blob = all_encodings_array.tobytes()
 
-#             cursor.execute("SELECT id FROM user WHERE name = ?", (person_name,))
-#             existing_user = cursor.fetchone()
+            cursor.execute("SELECT id FROM user WHERE name = ?", (person_name,))
+            existing_user = cursor.fetchone()
             
-#             if existing_user:
-#                 cursor.execute("UPDATE user SET face_data = ? WHERE id = ?", 
-#                               (encodings_blob, existing_user[0]))
-#                 print(f"Updated face data for {person_name} with {len(all_encodings)} encodings")
-#             else:
-#                 cursor.execute('''
-#                 INSERT INTO user (name, face_data)
-#                 VALUES (?, ?)
-#                 ''', (person_name, encodings_blob))
-#                 print(f"Added new user {person_name} with {len(all_encodings)} encodings")
+            if existing_user:
+                cursor.execute("UPDATE user SET face_data = ? WHERE id = ?", 
+                              (encodings_blob, existing_user[0]))
+                print(f"Updated face data for {person_name} with {len(all_encodings)} encodings")
+            else:
+                cursor.execute('''
+                INSERT INTO user (name, face_data)
+                VALUES (?, ?)
+                ''', (person_name, encodings_blob))
+                print(f"Added new user {person_name} with {len(all_encodings)} encodings")
                       
-#     conn.commit()
-#     conn.close()
-#     print(f"\nTotal encodings collected and stored: {total_encodings}")
+    conn.commit()
+    conn.close()
+    print(f"\nTotal encodings collected and stored: {total_encodings}")
 
 
 
@@ -401,18 +401,18 @@ def badge_qr( db_path):
 
 # Paths
 dataset_path = r"C:\Users\chiam\Downloads\winpass_training_set"
-#database_path = "winpass.db"
-database_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
-db_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
-#image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
-image_folder_path = r"C:\Mini IT\WINpass-7-05\winpass_training_set"
+database_path = "winpass.db"
+image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
+
+#database_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
+#db_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
+#image_folder_path = r"C:\Mini IT\WINpass-7-05\winpass_training_set"
 
 
 db_path = database_path 
 
 if __name__ == "__main__":
-    #get_face_encodings_folders(dataset_path, db_path)
-    real_time_recognition(db_path, image_folder_path)
+    #get_face_encodings_batch(image_folder_path, db_path)
 
 
 

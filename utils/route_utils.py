@@ -122,7 +122,7 @@ def get_queue_time(db_path):
     results = cursor.fetchall()
 
     for status in results:
-        if status[0] == "Collected":
+        if status[0] == "collected":
             hall_occupancy += 1
         else:
             continue 

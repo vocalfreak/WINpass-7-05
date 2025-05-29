@@ -8,10 +8,12 @@ import sqlite3
 from flask_sqlalchemy import SQLAlchemy
 import os
 from werkzeug.utils import secure_filename
+from datetime import timedelta
 
 app = Flask(__name__)
 
 app.secret_key = 'xp9nfcZcGQuDuoG4'
+app.permanent_session_lifetime = timedelta(minutes=1) 
 
 @app.route('/')
 def homepage():
@@ -67,6 +69,7 @@ def login_users():
         admin = cursor.fetchone()
 
         if admin:
+            session.permanent = True
             session['mmu_id'] = mmu_id
             session['name'] = admin[0]
             session['email'] = admin[1]
@@ -78,6 +81,7 @@ def login_users():
         user = cursor.fetchone()
 
         if user:
+            session.permanent = True
             session['mmu_id'] = mmu_id
             session['name'] = user[1]
             session['email'] = user[2]
@@ -183,6 +187,8 @@ def face_verification():
     result = real_time_recognition(db_path, image_folder_path)
     name, mmu_id, hall, career, img_path, qr_path = result
 
+    session['mmu_id'] = mmu_id
+
     rel_path = os.path.relpath(img_path, start=image_folder_path).replace('\\','/')
     photo_url = url_for('photos', filename=rel_path)
 
@@ -206,21 +212,23 @@ def comfirm_button():
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    cursor.execute("UPDATE user SET ticket_status='Collected' WHERE mmu_id = ?", (mmu_id,))
+    cursor.execute("UPDATE user SET ticket_status='collected' WHERE mmu_id = ?", (mmu_id,))
     conn.commit()
     conn.close()
 
+    session.pop( 'mmu_id', None)
     session.pop('qr_path', None)
 
     return redirect(url_for('admin_landing')) 
 
 @app.route('/Reject')
-def reject_button(qr_folder_path):
+def reject_button():
     qr_path = session['qr_path']
     
     qr_path = os.path.join(qr_folder_path, qr_path)
     os.remove(qr_path)
     
+    session.pop( 'mmu_id', None)
     session.pop('qr_path', None)
 
     return face_verification()
@@ -351,6 +359,23 @@ def email_button():
     flash("Invitations sent to all users!", "success")
     return redirect(url_for('admin_page'))
 
+@app.route('/Announcement')
+def announcement():
+    return render_template('announcement.html')
+
+@app.route('/post_announcement', methods=['GET', 'POST'])
+def post_announcement():
+    if request.method == 'POST':
+        message = request.form.get('message', '').strip()
+        if message:
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO announcements (message) VALUES (?)", (message,))
+            conn.commit()
+            conn.close()
+    return render_template('post_announcement.html')
+
+
 @app.route('/Checklist_page', methods=['POST', 'GET'])
 def register_checklist():
     if request.method == 'POST':
@@ -405,18 +430,30 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def update_user(mmu_id, face_data, size=None, timeslot=None):
+def update_user(nonce, face_data, size=None, timeslot=None):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("UPDATE user set face_data = ?, size = ?, timeslot = ? WHERE mmu_id = ?", (face_data, size, timeslot, mmu_id))
+    cursor.execute("UPDATE user set face_data = ?, size = ?, timeslot = ? WHERE nonce = ?", (face_data, size, timeslot, nonce))
     conn.commit()
     conn.close()
 
 @app.route('/Pre_Registration_page', methods=['POST', 'GET'])
 def pre_registration_page():
+    token = request.args.get('token') or request.form.get('token')
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT mmu_id, name FROM user WHERE nonce = ?", (token,))
+    user = cursor.fetchone()
+    print(f"User full name: {user}")
+    conn.close()
+
+    if user is None:
+        return "Invalid token or user not found", 404
+    
+    mmu_id, name = user
+
     if request.method == 'POST':
-        mmu_id = request.form['ID']
-        name = request.form['name'].strip().replace(" ", "_")
+        name = name.strip().replace(" ", "_")
         size = request.form.get('size')
         timeslot = request.form.get('timeslot')
         image_folder_path = os.path.join(app.config['UPLOAD_FOLDER'], name)
@@ -451,11 +488,11 @@ def pre_registration_page():
 
         face_data = face_code.tobytes()
 
-        update_user(mmu_id, face_data, size, timeslot)
+        update_user(token, face_data, size, timeslot)
 
         return "Form submitted successfully!"
 
-    return render_template('pre_registration_page.html')
+    return render_template('pre_registration_page.html', token=token)
 
 
 @app.route('/Email')
@@ -473,16 +510,19 @@ def get_student_avatar(name, mmu_id, image_folder_path):
             return rel_path
     return None
 
+
 @app.route('/MMUsync', methods=['GET'])
 def mmusync():
-    return redirect(url_for('homepage'))
+    return render_template("event_page.html")
+
 
 if __name__ == '__main__':
 
     #Paths 
-    df_path = r"C:\Users\adria\Projects\WINpass-7-05\Test_George.csv"
-    db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
-    image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
+    # df_path = r"C:\Users\adria\Projects\WINpass-7-05\Test_George.csv"
+    # db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
+    # image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
+    # qr_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\static\qr_codes"
 
     db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
     image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
