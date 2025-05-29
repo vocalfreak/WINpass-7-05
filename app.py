@@ -284,6 +284,23 @@ def email_button():
     flash("Invitations sent to all users!", "success")
     return redirect(url_for('admin_page'))
 
+@app.route('/Announcement')
+def announcement():
+    return render_template('announcement.html')
+
+@app.route('/post_announcement', methods=['GET', 'POST'])
+def post_announcement():
+    if request.method == 'POST':
+        message = request.form.get('message', '').strip()
+        if message:
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO announcements (message) VALUES (?)", (message,))
+            conn.commit()
+            conn.close()
+    return render_template('post_announcement.html')
+
+
 @app.route('/Checklist_page', methods=['POST', 'GET'])
 def register_checklist():
     if request.method == 'POST':
