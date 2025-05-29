@@ -277,48 +277,32 @@ def pre_registration_page():
 def email():
     return render_template("email.html")
 
+DB_FILE = 'leaderboard.db'
 
 def get_leaderboard():
-    conn = sqlite3.connect('winpass.db')
+    conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, name, gold, silver, bronze, points FROM hall ORDER BY points DESC")
-    halls = cursor.fetchall()
+    cursor.execute("SELECT name, points FROM halls ORDER BY points DESC")
+    rows = cursor.fetchall()
     conn.close()
-    return halls
-
-def update_points(hall_id, medal):
-    points_map = {'gold': 5, 'silver': 3, 'bronze': 1}
-    if medal not in points_map:
-        return
-
-    conn = sqlite3.connect('winpass.db')
-    cursor = conn.cursor()
-    cursor.execute(f"""
-        UPDATE hall
-        SET {medal} = {medal} + 1,
-            points = points + ?
-        WHERE id = ?
-    """, (points_map[medal], hall_id))
-    conn.commit()
-    conn.close()
+    return rows
 
 @app.route('/leaderboard')
 def leaderboard():
     halls = get_leaderboard()
-    return render_template('leaderboards.html', halls=halls)
-
-@app.route('/add/<int:hall_id>/<medal>', methods=['POST'])
-def add_medal(hall_id, medal):
-    update_points(hall_id, medal)
-    return redirect(url_for('leaderboard'))
+    return render_template('leaderboard.html', halls=halls)
 
 @app.route('/update', methods=['POST'])
-def update():
-    hall_id = request.form['hall']
-    medal = request.form['medal']
-    update_points(hall_id, medal)
-    return redirect(url_for('leaderboard'))
+def update_points():
+    hall_name = request.form['hall']
+    points = int(request.form['points'])
 
+    with sqlite3.connect('leaderboard.db') as conn:
+        cursor = conn.cursor()
+        cursor.execute("UPDATE halls SET points = points + ? WHERE name = ?", (points, hall_name))
+        conn.commit()
+
+    return redirect('/leaderboard')
 if __name__ == '__main__':
 
     #Paths 
@@ -326,7 +310,8 @@ if __name__ == '__main__':
     #db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
     #image_folder_path = r"C:\Users\adria\Downloads\winpass_training_set"
     # db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
-    db_path = r"C:\Users\user\projects\WINpass-7-05\winpass.db"
+    #db_path = r"C:\Users\user\projects\WINpass-7-05\winpass.db"
+    db_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\leaderboard.db"
     image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
 
     app.run(debug=True)
