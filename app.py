@@ -1,4 +1,4 @@
-from utils.route_utils import import_csv_init, photobooth, get_timeslot, get_timeslot_status
+from utils.route_utils import import_csv_init, photobooth, get_timeslot, get_timeslot_status, get_queue_time 
 from utils.image_utils import real_time_recognition, get_winpass_info
 from utils.image_utils import get_face_encodings_folders
 from utils.image_utils import badge_qr, goodies_qr
@@ -19,12 +19,40 @@ def homepage():
 
     timeslot_status = get_timeslot_status(time_slots)
 
+    queue_time, hall_occupancy = get_queue_time(db_path)
+
     timeslots=[
         {'status': timeslot_status[0], 'count': slot_1, 'time': '10:00 AM - 12:00 PM'},
         {'status': timeslot_status[1], 'count': slot_2, 'time': '12:00 PM - 2:00 PM'},
         {'status': timeslot_status[2], 'count': slot_3, 'time': '2:00 PM - 4:00 PM'}
     ]
-    return render_template("test.html", timeslots=timeslots)
+
+    queue= {
+        'occupancy': hall_occupancy, 
+        'queue_time': queue_time
+    }
+    return render_template("landing_page.html", timeslots=timeslots, queue=queue)
+
+@app.route('/admin_landing')
+def admin_landing():
+    slot_1, slot_2, slot_3, time_slots = get_timeslot(db_path)
+
+    timeslot_status = get_timeslot_status(time_slots)
+
+    queue_time, hall_occupancy = get_queue_time(db_path)
+
+    timeslots=[
+        {'status': timeslot_status[0], 'count': slot_1, 'time': '10:00 AM - 12:00 PM'},
+        {'status': timeslot_status[1], 'count': slot_2, 'time': '12:00 PM - 2:00 PM'},
+        {'status': timeslot_status[2], 'count': slot_3, 'time': '2:00 PM - 4:00 PM'}
+    ]
+
+    queue= {
+        'occupancy': hall_occupancy, 
+        'queue_time': queue_time
+    }
+    return render_template("admin_landing.html", timeslots=timeslots, queue=queue)
+
 
 @app.route('/Login-Users', methods=['GET', 'POST'])
 def login_users():
@@ -150,10 +178,6 @@ def digital_ticket():
 def photos(filename):
     return send_from_directory(image_folder_path, filename)
 
-# @app.route('/')
-# def temporary():
-#     return render_template('landing_page.html')
-
 @app.route('/Face-Verification')
 def face_verification():
     result = real_time_recognition(db_path, image_folder_path)
@@ -177,9 +201,18 @@ def face_verification():
 
 @app.route('/Comfirm')
 def comfirm_button():
+    mmu_id = (session['mmu_id'])
+    
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute("UPDATE user SET ticket_status='Collected' WHERE mmu_id = ?", (mmu_id,))
+    conn.commit()
+    conn.close()
+
     session.pop('qr_path', None)
 
-    return render_template('admin_landing.html') 
+    return redirect(url_for('admin_landing')) 
 
 @app.route('/Reject')
 def reject_button(qr_folder_path):
@@ -191,15 +224,6 @@ def reject_button(qr_folder_path):
     session.pop('qr_path', None)
 
     return face_verification()
-
-@app.route('/Pre-Registration')
-def pre_registration():
-    pass
-
-@app.route('/admin_landing')
-def admin_landing():
-    return render_template('admin_landing.html') 
-
 
 @app.route('/Admin-Page')
 def admin_page():
@@ -273,10 +297,6 @@ def edit_student():
         return "Student not found", 404
 
     return render_template('edit_student.html', student=student)
-
-@app.route('/Admin-Home')
-def home():
-    return render_template('landing_page.html')
 
 @app.route('/Self-Service', methods=['GET', 'POST'])
 def self_service():

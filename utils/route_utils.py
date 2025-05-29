@@ -112,8 +112,26 @@ def get_timeslot_status(timeslots):
             timeslots_status.append("red")
     return timeslots_status
 
-        
+def get_queue_time(db_path):      
 
+    hall_occupancy = 0
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT ticket_status FROM user")
+    results = cursor.fetchall()
+
+    for status in results:
+        if status[0] == "Collected":
+            hall_occupancy += 1
+        else:
+            continue 
+    
+    queue_time = hall_occupancy * 2 
+
+    conn.close()
+
+    return queue_time, hall_occupancy
             
 
                 
