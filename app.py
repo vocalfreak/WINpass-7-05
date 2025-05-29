@@ -425,12 +425,37 @@ def pre_registration_page():
 def email():
     return render_template("email.html")
 
+DB_FILE = 'leaderboard.db'
 
 @app.route('/MMUsync', methods=['GET'])
 def mmusync():
     return redirect(url_for('homepage'))
 
 
+def get_leaderboard():
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute("SELECT name, points FROM halls ORDER BY points DESC")
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
+@app.route('/leaderboard')
+def leaderboard():
+    halls = get_leaderboard()
+    return render_template('leaderboard.html', halls=halls)
+
+@app.route('/update', methods=['POST'])
+def update_points():
+    hall_name = request.form['hall']
+    points = int(request.form['points'])
+
+    with sqlite3.connect('leaderboard.db') as conn:
+        cursor = conn.cursor()
+        cursor.execute("UPDATE halls SET points = points + ? WHERE name = ?", (points, hall_name))
+        conn.commit()
+
+    return redirect('/leaderboard')
 if __name__ == '__main__':
 
     #Paths 
@@ -439,10 +464,14 @@ if __name__ == '__main__':
     #image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
 
     
+    db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+    #image_folder_path = r"C:\Users\adria\Downloads\winpass_training_set"
     # db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
-    # image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
-    # df_path = r"C:\Users\chiam\Projects\WINpass-7-05\Test_George.csv"
-    # qr_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\static\qr_codes"
+    #db_path = r"C:\Users\user\projects\WINpass-7-05\winpass.db"
+    db_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\leaderboard.db"
+    image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
+    df_path = r"C:\Users\chiam\Projects\WINpass-7-05\Test_George.csv"
+    qr_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\static\qr_codes"
 
     db_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
     image_folder_path = r"C:\Mini IT\WINpass-7-05\winpass_training_set"
