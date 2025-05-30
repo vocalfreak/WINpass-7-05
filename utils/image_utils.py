@@ -411,8 +411,6 @@ image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
 
 db_path = database_path 
 
-if __name__ == "__main__":
-    #get_face_encodings_batch(image_folder_path, db_path)
 
 
 
