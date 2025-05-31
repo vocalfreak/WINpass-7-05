@@ -13,11 +13,25 @@
           <img src="{{ url_for('static', filename='img_mmu.png') }}" alt="MMU Logo" class="logo"/>
           <span class="win">WIN<span class="pass">pass</span></span>
         </div>
+        <div class="user-icon">
+        {% if 'mmu_id' in session %}
+        <form action="{{ url_for('logout') }}" method="POST">
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+    {% else %}
+        <a href="{{ url_for('login_users') }}">
+            <img src="{{ url_for('static', filename='img_user.png') }}" alt="User Icon" class="user-avatar">
+        </a>
+    {% endif %}
+      </div>
       </div>
       <nav>
         <ul>
-            <li><a href="{{ url_for('admin_page') }}">Admin Page</a></li>
+          <li><a href="{{ url_for('admin_page') }}">Admin Page</a></li>
           <li><a href="{{ url_for('face_verification') }}">Face Verification</a></li>
+          <li><a href="{{ url_for('register_checklist') }}">Checklist</a></li>
+          <li><a href="{{ url_for('leaderboard') }}">Leaderboard</a></li>
+         <li><a href="{{ url_for('post_announcement') }}">Post Announcement</a></li>
         </ul>
       </nav>
     </header>
