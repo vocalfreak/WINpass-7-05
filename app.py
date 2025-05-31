@@ -464,14 +464,14 @@ if __name__ == '__main__':
     #image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
 
     
-    db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+    # db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
     #image_folder_path = r"C:\Users\adria\Downloads\winpass_training_set"
     # db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
     #db_path = r"C:\Users\user\projects\WINpass-7-05\winpass.db"
-    db_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\leaderboard.db"
-    image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
-    df_path = r"C:\Users\chiam\Projects\WINpass-7-05\Test_George.csv"
-    qr_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\static\qr_codes"
+    # db_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\leaderboard.db"
+    # image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
+    # df_path = r"C:\Users\chiam\Projects\WINpass-7-05\Test_George.csv"
+    # qr_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\static\qr_codes"
 
     db_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
     image_folder_path = r"C:\Mini IT\WINpass-7-05\winpass_training_set"
