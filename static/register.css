@@ -103,6 +103,7 @@ h1 {
     margin-top: 10vh;
 }
 
+/* pre_registration.html */
 .Register{
     display: flex;
     justify-content: center;
@@ -152,7 +153,9 @@ h1 {
   background-color: #0047ba;
   border-radius: 5px;
  }
- 
+
+
+ /* post_announcemet.html */
 .Post form {
   max-width: 600px;
   margin: 40px auto;
@@ -196,6 +199,7 @@ h1 {
   background-color: #1652b3;
 }
 
+/* qr.html */
 .Checklist form {
   max-width: 600px;
   margin: 40px auto;
@@ -256,4 +260,28 @@ h1 {
 
 .Checklist input[type="submit"]:hover {
   background-color: #0056b3;
+}
+
+/* announcement.html */
+.Announcement h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 25px;
+  font-size: 50px;
+}
+
+.Announcement ul li {
+  background-color: white;
+  padding: 15px 20px;
+  text-align: center;
+  margin-bottom: 15px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  font-size: 20px;
+  color: #444;
+  transition: background-color 0.3s ease;
+}
+
+.Announcement ul li:hover {
+  background-color: #e6f0ff;
+  cursor: default;
 }

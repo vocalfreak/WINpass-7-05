@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>ANNOUNCEMENT</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='register.css') }}">
   <link href="https://fonts.googleapis.com/css?family=Trirong">
 </head>
 <body>
@@ -21,6 +21,17 @@
        </ul>
      </nav>
    </header>
-    
+   <section class="Announcement">
+      <h1>Announcements</h1>
+      {% if announcements %}
+      <ul>
+        {% for message in announcements %}
+          <li>{{ message[0] }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No announcements yet.</p>
+    {% endif %}
+    </section>
 </body>
 </html>

@@ -3,6 +3,7 @@ from utils.image_utils import real_time_recognition, get_winpass_info
 from utils.image_utils import get_face_encodings_folders
 from utils.image_utils import badge_qr, goodies_qr
 from utils.email_utils import send_email
+from datetime import datetime
 from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory, session 
 import sqlite3
 from flask_sqlalchemy import SQLAlchemy
@@ -359,7 +360,13 @@ def email_button():
 
 @app.route('/Announcement')
 def announcement():
-    return render_template('announcement.html')
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT message FROM announcements ORDER BY time DESC")
+    announcements = cursor.fetchall()
+    conn.close()
+    return render_template('announcement.html', announcements=announcements)
+
 
 @app.route('/post_announcement', methods=['GET', 'POST'])
 def post_announcement():
@@ -371,6 +378,7 @@ def post_announcement():
             cursor.execute("INSERT INTO announcements (message) VALUES (?)", (message,))
             conn.commit()
             conn.close()
+            return redirect(url_for('announcement'))
     return render_template('post_announcement.html')
 
 
