@@ -183,8 +183,6 @@ def get_face_encodings_folders(image_folder_path):
     return combined_encoding
 
 
-
-
 def get_decode_face_data(db_path):
     
     conn = sqlite3.connect(db_path)
@@ -410,6 +408,8 @@ image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
 
 
 db_path = database_path 
+
+#get_face_encodings_batch(image_folder_path, db_path)
 
 
 

@@ -89,8 +89,6 @@ def login_users():
             session['faculty'] = user[4]
             session['hall'] = user[5]
 
-            cursor.execute("UPDATE user SET ticket_status='collected' WHERE mmu_id = ?", (mmu_id,))
-            conn.commit()
             conn.close()
             return redirect(url_for('homepage'))
 
@@ -355,7 +353,7 @@ def email_button():
     body       = "We’re excited to see you at WIN 2025! Here are the details."
     image_path = r"C:\Users\chiam\Projects\WINpass-7-05\static\email.png"
 
-    send_email(subject, body, image_path, db_path)
+    send_email(subject, body, image_path, db_path, html_template_path)
     flash("Invitations sent to all users!", "success")
     return redirect(url_for('admin_page'))
 
@@ -434,6 +432,7 @@ def update_user(nonce, face_data, size=None, timeslot=None):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute("UPDATE user set face_data = ?, size = ?, timeslot = ? WHERE nonce = ?", (face_data, size, timeslot, nonce))
+    cursor.execute("UPDATE user set face_data = ?, size = ?, timeslot = ? WHERE nonce = ?", (face_data, size, timeslot, nonce))
     conn.commit()
     conn.close()
 
@@ -452,7 +451,21 @@ def pre_registration_page():
     
     mmu_id, name = user
 
+    token = request.args.get('token') or request.form.get('token')
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT mmu_id, name FROM user WHERE nonce = ?", (token,))
+    user = cursor.fetchone()
+    print(f"User full name: {user}")
+    conn.close()
+
+    if user is None:
+        return "Invalid token or user not found", 404
+    
+    mmu_id, name = user
+
     if request.method == 'POST':
+        name = name.strip().replace(" ", "_")
         name = name.strip().replace(" ", "_")
         size = request.form.get('size')
         timeslot = request.form.get('timeslot')
@@ -489,9 +502,11 @@ def pre_registration_page():
         face_data = face_code.tobytes()
 
         update_user(token, face_data, size, timeslot)
+        update_user(token, face_data, size, timeslot)
 
         return "Form submitted successfully!"
 
+    return render_template('pre_registration_page.html', token=token)
     return render_template('pre_registration_page.html', token=token)
 
 
@@ -510,15 +525,37 @@ def get_student_avatar(name, mmu_id, image_folder_path):
             return rel_path
     return None
 
-
 @app.route('/MMUsync', methods=['GET'])
 def mmusync():
     return render_template("event_page.html")
 
 
+def get_leaderboard():
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute("SELECT name, points FROM halls ORDER BY points DESC")
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
+@app.route('/leaderboard')
+def leaderboard():
+    halls = get_leaderboard()
+    return render_template('leaderboard.html', halls=halls)
+
+@app.route('/update', methods=['POST'])
+def update_points():
+    hall_name = request.form['hall']
+    points = int(request.form['points'])
+
+    with sqlite3.connect('leaderboard.db') as conn:
+        cursor = conn.cursor()
+        cursor.execute("UPDATE halls SET points = points + ? WHERE name = ?", (points, hall_name))
+        conn.commit()
+
+    return redirect('/leaderboard')
 if __name__ == '__main__':
 
-    #Paths 
     # df_path = r"C:\Users\adria\Projects\WINpass-7-05\Test_George.csv"
     # db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
     # image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
@@ -528,10 +565,13 @@ if __name__ == '__main__':
     image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
     df_path = r"C:\Users\chiam\Projects\WINpass-7-05\Test_George.csv"
     qr_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\static"
+    html_template_path = r'C:\Users\chiam\Projects\WINpass-7-05\templates\email.html'
 
-    #db_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
-    #image_folder_path = r"C:\Mini IT\WINpass-7-05\winpass_training_set"
+    # db_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
+    # image_folder_path = r"C:\Mini IT\WINpass-7-05\winpass_training_set"
+    # html_template_path = r'C:\Mini IT\WINpass-7-05\templates\email.html'
     
+    DB_FILE = 'leaderboard.db'
 
     app.run(debug=True)
 

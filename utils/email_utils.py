@@ -14,15 +14,13 @@ SMTP_PORT = 587
 EMAIL_ADDRESS = "vocalfreak525@gmail.com"
 EMAIL_PASSWORD = "frmu enzt celh dpvj"
 
-def send_email(subject, body, image_path, db_path):
+def send_email(subject, body, image_path, db_path, html_template_path):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute("SELECT email, nonce FROM user")
     users = cursor.fetchall()
     conn.close()
 
-    #html_template_path = r'C:\Users\chiam\Projects\WINpass-7-05\templates\email.html'
-    html_template_path = r'C:\Mini IT\WINpass-7-05\templates\email.html'
     with open(html_template_path, 'r', encoding='utf-8') as f:
         html_template = f.read()
 
