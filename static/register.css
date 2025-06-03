@@ -96,6 +96,7 @@ nav a {
   font-size: 38px;
   font-weight: bold;
 }
+
 h1 {
     display: flex;
     justify-content: center;
@@ -113,7 +114,7 @@ h1 {
   background-color: #ffffff;
 }
    
- .Register form{
+.Register form{
    background-color: #ffffff;
    padding: 30px;
    border-radius: 8px;
@@ -123,11 +124,11 @@ h1 {
    box-sizing: border-box;
  }
 
- .Register form input {
+.Register form input {
   background-color: #ffffff;
  }
 
- .Register form select {
+.Register form select {
   width: 100%;
   padding: 4px;
   margin-bottom: 15px;
@@ -137,7 +138,7 @@ h1 {
   font-size: 16px;
 }
 
- .Register form input[type="file"] {
+.Register form input[type="file"] {
    width: 100%;
    padding: 10px;
    border: none;
@@ -145,14 +146,14 @@ h1 {
    margin-bottom: 10px;
  }
 
- .Register form input[type='submit'] {
+.Register form input[type='submit'] {
   padding: 4px;
   color: rgb(255, 255, 255);
   background-color: #0047ba;
   border-radius: 5px;
  }
  
- form {
+.Post form {
   max-width: 600px;
   margin: 40px auto;
   padding: 30px;
@@ -162,14 +163,14 @@ h1 {
   text-align: center;
 }
 
-h1 {
+.Post h1 {
   text-align: center;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #333;
   margin-bottom: 20px;
 }
 
-textarea {
+.Post textarea {
   width: 100%;
   padding: 15px;
   font-size: 16px;
@@ -180,7 +181,7 @@ textarea {
   margin-bottom: 20px;
 }
 
-input[type="submit"] {
+.Post input[type="submit"] {
   padding: 12px 30px;
   font-size: 18px;
   background-color: #4281e7;
@@ -191,7 +192,7 @@ input[type="submit"] {
   transition: background-color 0.3s ease;
 }
 
-input[type="submit"]:hover {
+.Post input[type="submit"]:hover {
   background-color: #1652b3;
 }
 

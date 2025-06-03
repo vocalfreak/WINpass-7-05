@@ -1,4 +1,4 @@
-from utils.route_utils import import_csv_init, photobooth
+from utils.route_utils import import_csv_init, photobooth, get_timeslot, get_timeslot_status, get_queue_time 
 from utils.image_utils import real_time_recognition, get_winpass_info
 from utils.image_utils import get_face_encodings_folders
 from utils.image_utils import badge_qr, goodies_qr
@@ -8,14 +8,53 @@ import sqlite3
 from flask_sqlalchemy import SQLAlchemy
 import os
 from werkzeug.utils import secure_filename
+from datetime import timedelta
 
 app = Flask(__name__)
 
 app.secret_key = 'xp9nfcZcGQuDuoG4'
+app.permanent_session_lifetime = timedelta(minutes=1) 
 
-@app.route('/Landing-Page')
+@app.route('/')
 def homepage():
-    return render_template("landing_page.html")
+    slot_1, slot_2, slot_3, time_slots = get_timeslot(db_path)
+
+    timeslot_status = get_timeslot_status(time_slots)
+
+    queue_time, hall_occupancy = get_queue_time(db_path)
+
+    timeslots=[
+        {'status': timeslot_status[0], 'count': slot_1, 'time': '10:00 AM - 12:00 PM'},
+        {'status': timeslot_status[1], 'count': slot_2, 'time': '12:00 PM - 2:00 PM'},
+        {'status': timeslot_status[2], 'count': slot_3, 'time': '2:00 PM - 4:00 PM'}
+    ]
+
+    queue= {
+        'occupancy': hall_occupancy, 
+        'queue_time': queue_time
+    }
+    return render_template("landing_page.html", timeslots=timeslots, queue=queue)
+
+@app.route('/admin_landing')
+def admin_landing():
+    slot_1, slot_2, slot_3, time_slots = get_timeslot(db_path)
+
+    timeslot_status = get_timeslot_status(time_slots)
+
+    queue_time, hall_occupancy = get_queue_time(db_path)
+
+    timeslots=[
+        {'status': timeslot_status[0], 'count': slot_1, 'time': '10:00 AM - 12:00 PM'},
+        {'status': timeslot_status[1], 'count': slot_2, 'time': '12:00 PM - 2:00 PM'},
+        {'status': timeslot_status[2], 'count': slot_3, 'time': '2:00 PM - 4:00 PM'}
+    ]
+
+    queue= {
+        'occupancy': hall_occupancy, 
+        'queue_time': queue_time
+    }
+    return render_template("admin_landing.html", timeslots=timeslots, queue=queue)
+
 
 @app.route('/Login-Users', methods=['GET', 'POST'])
 def login_users():
@@ -30,6 +69,7 @@ def login_users():
         admin = cursor.fetchone()
 
         if admin:
+            session.permanent = True
             session['mmu_id'] = mmu_id
             session['name'] = admin[0]
             session['email'] = admin[1]
@@ -37,20 +77,18 @@ def login_users():
             return redirect(url_for('admin_landing')) 
 
        
-        cursor.execute("SELECT id, name, email, career, faculty, hall, face_1 FROM user WHERE mmu_id = ? AND password = ?", (mmu_id, password))
+        cursor.execute("SELECT id, name, email, career, faculty, hall FROM user WHERE mmu_id = ? AND password = ?", (mmu_id, password))
         user = cursor.fetchone()
 
         if user:
+            session.permanent = True
             session['mmu_id'] = mmu_id
             session['name'] = user[1]
             session['email'] = user[2]
             session['career'] = user[3]
             session['faculty'] = user[4]
             session['hall'] = user[5]
-            session['avatar'] = user[6]
 
-            cursor.execute("UPDATE user SET ticket_status='collected' WHERE mmu_id = ?", (mmu_id,))
-            conn.commit()
             conn.close()
             return redirect(url_for('homepage'))
 
@@ -79,7 +117,7 @@ def student_profile():
     cursor = conn.cursor()
 
     cursor.execute(
-        "SELECT name, mmu_id, email, career, faculty, hall, face_1 FROM user WHERE mmu_id = ?",
+        "SELECT name, mmu_id, email, career, faculty, hall FROM user WHERE mmu_id = ?",
         (session['mmu_id'],)
     )
     user = cursor.fetchone()
@@ -93,11 +131,17 @@ def student_profile():
             'career': user[3],
             'faculty': user[4],
             'hall': user[5],
-            'avatar': user[6]
         }
+
+        avatar_rel_path = get_student_avatar(user_data['name'], user_data['mmu_id'], image_folder_path)
+        if avatar_rel_path:
+            session['avatar'] = avatar_rel_path
+        else:
+            session.pop('avatar', None)
 
     else:
         user_data = None
+        session.pop('avatar', None)
 
     return render_template('student_profile.html', user=user_data)
 
@@ -136,14 +180,12 @@ def digital_ticket():
 def photos(filename):
     return send_from_directory(image_folder_path, filename)
 
-@app.route('/')
-def temporary():
-    return render_template('landing_page.html')
-
 @app.route('/Face-Verification')
 def face_verification():
     result = real_time_recognition(db_path, image_folder_path)
     name, mmu_id, hall, career, img_path, qr_path = result
+
+    session['mmu_id'] = mmu_id
 
     rel_path = os.path.relpath(img_path, start=image_folder_path).replace('\\','/')
     photo_url = url_for('photos', filename=rel_path)
@@ -156,16 +198,38 @@ def face_verification():
         "photo_path": photo_url,
         "qr_path": qr_path
     }
-    return render_template("digital_ticket.html", student=student)
 
-@app.route('/Pre-Registration')
-def pre_registration():
-    pass
+    session['qr_path'] = qr_path
 
-@app.route('/admin_landing')
-def admin_landing():
-    return render_template('admin_landing.html') 
+    return render_template("digital_ticket_generation.html", student=student)
 
+@app.route('/Comfirm')
+def comfirm_button():
+    mmu_id = (session['mmu_id'])
+    
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute("UPDATE user SET ticket_status='collected' WHERE mmu_id = ?", (mmu_id,))
+    conn.commit()
+    conn.close()
+
+    session.pop( 'mmu_id', None)
+    session.pop('qr_path', None)
+
+    return redirect(url_for('admin_landing')) 
+
+@app.route('/Reject')
+def reject_button():
+    qr_path = session['qr_path']
+    
+    qr_path = os.path.join(qr_folder_path, qr_path)
+    os.remove(qr_path)
+    
+    session.pop( 'mmu_id', None)
+    session.pop('qr_path', None)
+
+    return face_verification()
 
 @app.route('/Admin-Page')
 def admin_page():
@@ -201,21 +265,35 @@ def edit_student():
     cursor = conn.cursor()
 
     if request.method == 'POST':
-        name = request.form['name']
-        career = request.form['career']
-        faculty = request.form['faculty']
-        campus = request.form['campus']
-        email = request.form['email']
+        action = request.form.get('action')
+        mmu_id = request.form['mmu_id'] 
 
-        cursor.execute("""
-            UPDATE user 
-            SET name=?, career=?, faculty=?, campus=?, email=?
-            WHERE mmu_id=?
-        """, (name, career, faculty, campus, email, mmu_id))
+        if action == 'update':
+            name = request.form['name']
+            career = request.form['career']
+            faculty = request.form['faculty']
+            campus = request.form['campus']
+            email = request.form['email']
 
-        conn.commit()
-        conn.close()
-        return redirect(url_for('admin_page'))
+            cursor.execute("""
+                UPDATE user 
+                SET name=?, career=?, faculty=?, campus=?, email=?
+                WHERE mmu_id=?
+            """, (name, career, faculty, campus, email, mmu_id))
+
+            conn.commit()
+            conn.close()
+
+            flash("Student information updated successfully.", "success")
+            return redirect(url_for('admin_page'))
+
+        elif action == 'delete':
+            cursor.execute("DELETE FROM user WHERE mmu_id = ?", (mmu_id,))
+            conn.commit()
+            conn.close()
+
+            flash("Student deleted successfully.", "success")
+            return redirect(url_for('admin_page'))
 
     cursor.execute("SELECT mmu_id, name, career, faculty, campus, email FROM user WHERE mmu_id=?", (mmu_id,))
     student = cursor.fetchone()
@@ -225,11 +303,6 @@ def edit_student():
         return "Student not found", 404
 
     return render_template('edit_student.html', student=student)
-
-
-@app.route('/Admin-Home')
-def home():
-    return render_template('landing_page.html')
 
 @app.route('/Self-Service', methods=['GET', 'POST'])
 def self_service():
@@ -280,7 +353,7 @@ def email_button():
     body       = "We’re excited to see you at WIN 2025! Here are the details."
     image_path = r"C:\Users\chiam\Projects\WINpass-7-05\static\email.png"
 
-    send_email(subject, body, image_path, db_path)
+    send_email(subject, body, image_path, db_path, html_template_path)
     flash("Invitations sent to all users!", "success")
     return redirect(url_for('admin_page'))
 
@@ -316,7 +389,6 @@ def register_checklist():
 
         return "Checklist updated successfully!"
     return render_template('qr.html')
-
 
 
 @app.route('/Scan_goodies')
@@ -360,6 +432,7 @@ def update_user(nonce, face_data, size=None, timeslot=None):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute("UPDATE user set face_data = ?, size = ?, timeslot = ? WHERE nonce = ?", (face_data, size, timeslot, nonce))
+    cursor.execute("UPDATE user set face_data = ?, size = ?, timeslot = ? WHERE nonce = ?", (face_data, size, timeslot, nonce))
     conn.commit()
     conn.close()
 
@@ -378,7 +451,21 @@ def pre_registration_page():
     
     mmu_id, name = user
 
+    token = request.args.get('token') or request.form.get('token')
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT mmu_id, name FROM user WHERE nonce = ?", (token,))
+    user = cursor.fetchone()
+    print(f"User full name: {user}")
+    conn.close()
+
+    if user is None:
+        return "Invalid token or user not found", 404
+    
+    mmu_id, name = user
+
     if request.method == 'POST':
+        name = name.strip().replace(" ", "_")
         name = name.strip().replace(" ", "_")
         size = request.form.get('size')
         timeslot = request.form.get('timeslot')
@@ -415,9 +502,11 @@ def pre_registration_page():
         face_data = face_code.tobytes()
 
         update_user(token, face_data, size, timeslot)
+        update_user(token, face_data, size, timeslot)
 
         return "Form submitted successfully!"
 
+    return render_template('pre_registration_page.html', token=token)
     return render_template('pre_registration_page.html', token=token)
 
 
@@ -425,11 +514,20 @@ def pre_registration_page():
 def email():
     return render_template("email.html")
 
-DB_FILE = 'leaderboard.db'
+def get_student_avatar(name, mmu_id, image_folder_path):
+    person_folder_path = os.path.join(image_folder_path, name.replace(' ', '_'))
+    if os.path.exists(person_folder_path):
+        image_files = [f for f in os.listdir(person_folder_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+        if image_files:
+            first_img = image_files[0]
+            img_path = os.path.join(person_folder_path, first_img)
+            rel_path = os.path.relpath(img_path, start=image_folder_path).replace("\\", "/")
+            return rel_path
+    return None
 
 @app.route('/MMUsync', methods=['GET'])
 def mmusync():
-    return redirect(url_for('homepage'))
+    return render_template("event_page.html")
 
 
 def get_leaderboard():
@@ -472,16 +570,23 @@ if __name__ == '__main__':
     # image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
     # df_path = r"C:\Users\chiam\Projects\WINpass-7-05\Test_George.csv"
     # qr_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\static\qr_codes"
+    # df_path = r"C:\Users\adria\Projects\WINpass-7-05\Test_George.csv"
+    # db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
+    # image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
+    # qr_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\static\qr_codes"
+
+    # db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+    # image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
+    # df_path = r"C:\Users\chiam\Projects\WINpass-7-05\Test_George.csv"
+    # qr_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\static"
+    # html_template_path = r'C:\Users\chiam\Projects\WINpass-7-05\templates\email.html'
 
     db_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
     image_folder_path = r"C:\Mini IT\WINpass-7-05\winpass_training_set"
+    html_template_path = r'C:\Mini IT\WINpass-7-05\templates\email.html'
     
-    #db_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\winpass.db"
-    #image_folder_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\winpass_training_set"
-
+    DB_FILE = 'leaderboard.db'
 
     app.run(debug=True)
-
-
 
 
