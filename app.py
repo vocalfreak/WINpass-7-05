@@ -358,14 +358,23 @@ def email_button():
     flash("Invitations sent to all users!", "success")
     return redirect(url_for('admin_page'))
 
-@app.route('/Announcement')
-def announcement():
+@app.route('/Announcement_student')
+def announcement_student():
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute("SELECT message FROM announcements ORDER BY time DESC")
     announcements = cursor.fetchall()
     conn.close()
-    return render_template('announcement.html', announcements=announcements)
+    return render_template('announcement_student.html', announcements=announcements)
+
+@app.route('/Announcement_admin')
+def announcement_admin():
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT message FROM announcements ORDER BY time DESC")
+    announcements = cursor.fetchall()
+    conn.close()
+    return render_template('announcement_admin.html', announcements=announcements)
 
 
 @app.route('/post_announcement', methods=['GET', 'POST'])
@@ -378,7 +387,7 @@ def post_announcement():
             cursor.execute("INSERT INTO announcements (message) VALUES (?)", (message,))
             conn.commit()
             conn.close()
-            return redirect(url_for('announcement'))
+            return redirect(url_for('announcement_admin'))
     return render_template('post_announcement.html')
 
 
