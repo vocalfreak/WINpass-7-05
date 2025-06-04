@@ -371,10 +371,23 @@ def announcement_student():
 def announcement_admin():
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("SELECT message FROM announcements ORDER BY time DESC")
+    cursor.execute("SELECT id, message FROM announcements ORDER BY time DESC")
     announcements = cursor.fetchall()
     conn.close()
     return render_template('announcement_admin.html', announcements=announcements)
+
+@app.route('/delete/<int:id>')
+def delete(id):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM announcements WHERE id = ?", (id,))
+        conn.commit()
+    except Exception as e:
+        conn.close()
+        return f"Deletion failed: {e}"
+    conn.close()
+    return redirect(url_for('announcement_admin'))
 
 
 @app.route('/post_announcement', methods=['GET', 'POST'])
