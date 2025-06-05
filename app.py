@@ -408,12 +408,17 @@ def post_announcement():
 def register_checklist():
     if request.method == 'POST':
         mmu_id = request.form.get('ID')
-        goodies_status = request.form.get('goodies_status', 'Pending')
-        badge_status = request.form.get('badge_status', 'Pending')
-
+        goodies_status = request.form.get('goodies_status')
+        badge_status = request.form.get('badge_status')
+        ticket_status = request.form.get('ticket_status')
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
-        cursor.execute("UPDATE user set goodies_status = ?, badge_status = ? WHERE mmu_id = ?", (goodies_status, badge_status, mmu_id))
+        if goodies_status is not None:
+            cursor.execute("UPDATE user set goodies_status = ? WHERE mmu_id = ?", (goodies_status, mmu_id))
+        if badge_status is not None:
+            cursor.execute("UPDATE user set badge_status = ? WHERE mmu_id = ?", (badge_status, mmu_id))
+        if ticket_status is not None:
+            cursor.execute("UPDATE user set ticket_status = ? WHERE mmu_id = ?", (ticket_status, mmu_id))
         conn.commit()
         conn.close()
 
