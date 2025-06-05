@@ -18,11 +18,11 @@
         <form action="{{ url_for('logout') }}" method="POST">
             <button type="submit" class="logout-btn">Logout</button>
         </form>
-    {% else %}
+        {% else %}
         <a href="{{ url_for('login_users') }}">
             <img src="{{ url_for('static', filename='img_user.png') }}" alt="User Icon" class="user-avatar">
         </a>
-    {% endif %}
+        {% endif %}
       </div>
     </div>
     <nav>
@@ -31,19 +31,63 @@
         <li><a href="{{ url_for('student_profile') }}">Student Profile</a></li>
         <li><a href="{{ url_for('booth_info') }}">Booth Information</a></li>
         <li><a href="{{ url_for('digital_ticket') }}">Digital Ticket View</a></li>
-        <li><a href="{{ url_for('email') }}">Email</a></li>
-        <li><a href="{{ url_for('pre_registration_page') }}">Pre Register</a></li>
-        <li><a href="{{ url_for('register_checklist') }}">Checklist</a></li>
+        <li><a href="{{ url_for('announcement') }}">Announcement</a></li>
+        <!-- <li><a href="{{ url_for('post_announcement') }}">Post Announcement</a></li> -->
+        <!-- <li><a href="{{ url_for('register_checklist') }}">Checklist</a></li> -->
         <li><a href="{{ url_for('mmusync') }}">Event Page</a></li>
+        <li><a href="{{ url_for('photobooth_page') }}">Photobooth</a></li>
+
       </ul>
     </nav>
   </header>
-
   <main class="background">
     <div class="overlay">
       <h1>WELCOME TO WIN 2025!</h1>
       <p>We are excited to have you here!</p>
-    </div>
+      
+      <div class="dashboard-section">
+        <div class="queue-status">
+          <div class="status-item">
+            <h2>Current Hall Occupancy</h2>
+            <div class="status-number">{{ queue.occupancy }}</div>
+            <div class="status-label">students currently inside</div>
+          </div>
+          
+          <div class="status-item">
+            <h2>Expected Wait Time</h2>
+            <div class="status-number wait-time">{{ queue.queue_time }}</div>
+            <div class="status-label">minutes estimated wait</div>
+          </div>
+        </div>
+        
+          <div class="timeslot-status">
+            <h2>Timeslot Availability</h2>
+            <div class="timeslot-list">
+              {% for slot in timeslots %}
+              <div class="timeslot-row">
+                <span class="status-dot {{ slot.status }}"></span>
+                <span class="time">{{ slot.time }}</span>
+                <span class="count">{{ slot.count }} pre-registrations</span>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          
+          <div class="legend">
+            <span class="legend-item">
+              <span class="legend-dot green"></span>
+              Low crowd (0-2)
+            </span>
+            <span class="legend-item">
+              <span class="legend-dot yellow"></span>
+              Moderate crowd (2-5)
+            </span>
+            <span class="legend-item">
+              <span class="legend-dot red"></span>
+              High crowd (5+)
+            </span>
+          </div>
+        </div>
   </main>
 </body>
 </html>

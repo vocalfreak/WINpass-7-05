@@ -1,0 +1,145 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+  }
+
+  body {
+    background-color: #f2f2f2;
+  }
+
+  .top-bar {
+    background-color: #e6e6e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 30px;
+  }
+
+  .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  p.one {
+    border-right-style: solid;
+    border-right-width: 5px 5px; 
+    border-right-color: rgb(28, 27, 27);
+  }
+
+  .logo {
+    height: 50px;
+  }
+  
+  .win {
+    font-family: "Trirong", serif;
+    font-size: 24px;
+    font-weight: bold;
+    color: #0047ba;
+  }
+  
+  .pass {
+    font-family: "Trirong", serif;
+    color: red;
+  }
+
+  nav {
+    background-color: white;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  nav ul {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+    list-style: none;
+    gap: 40px;
+  }
+
+  nav a {
+    color: red;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .background {
+    background-image: url(img_win.jpeg); 
+    background-size: cover;
+    background-position: center;
+    height: 80vh;
+    position: relative;
+  }
+  
+  .overlay {
+    background-color: rgba(255, 255, 255, 0.7);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .overlay h1 {
+    color: #0012a9;
+    font-size: 58px;
+    font-weight: 800;
+    margin-bottom: 20px;
+  }
+  
+  .overlay p {
+    color: red;
+    font-size: 38px;
+    font-weight: bold;
+  }
+
+  /* Photobooh css */
+  .Camera {
+    height: 75vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    margin: 40px auto;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    max-width: 700px;
+    text-align: center;
+}
+
+.Camera h1 {
+    font-size: 60px;
+    color: #222;
+    margin-bottom: 50px;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+.Camera h4 {
+    margin-top: 50px;
+    font-size: 13px;
+    color: #444;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    line-height: 1.6;
+}
+
+button {
+    padding: 13px 30px;
+    cursor: pointer;
+    background-color: #4281e7;
+    color: #fff;
+    font-size: 22px;
+    border: none;
+    border-radius: 12px;
+    margin: 5px 10px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #1652b3;
+}

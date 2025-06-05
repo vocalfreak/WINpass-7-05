@@ -76,8 +76,62 @@ def photobooth():
     cam.release()
     cv2.destroyAllWindows()
 
+def get_timeslot(db_path):
 
+    slot_1 = 0
+    slot_2 = 0
+    slot_3 = 0
 
-                
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT timeslot FROM user")
+    results = cursor.fetchall()
+
+    for row in results:
+        timeslot_value = row[0]  
+            
+        if timeslot_value == 'slot_1' or timeslot_value == 1:
+            slot_1 += 1
+        elif timeslot_value == 'slot_2' or timeslot_value == 2:
+            slot_2 += 1
+        elif timeslot_value == 'slot_3' or timeslot_value == 3:
+            slot_3 += 1
+
+    conn.close()
+    time_slots = [slot_1, slot_2, slot_3]
+    return slot_1, slot_2, slot_3, time_slots
+
+def get_timeslot_status(timeslots):
+    timeslots_status = []
+    for count in timeslots:
+        if count < 2:
+            timeslots_status.append("green")
+        elif count < 5:
+            timeslots_status.append("yellow")
+        else:
+            timeslots_status.append("red")
+    return timeslots_status
+
+def get_queue_time(db_path):      
+
+    hall_occupancy = 0
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT ticket_status FROM user")
+    results = cursor.fetchall()
+
+    for status in results:
+        if status[0] == "collected":
+            hall_occupancy += 1
+        else:
+            continue 
+    
+    queue_time = hall_occupancy * 2 
+
+    conn.close()
+
+    return queue_time, hall_occupancy
+            
 
                 

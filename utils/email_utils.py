@@ -14,20 +14,20 @@ SMTP_PORT = 587
 EMAIL_ADDRESS = "vocalfreak525@gmail.com"
 EMAIL_PASSWORD = "frmu enzt celh dpvj"
 
-def send_email(subject, body, image_path, db_path):
+def send_email(subject, body, image_path, db_path, html_template_path):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("SELECT email FROM user")
+    cursor.execute("SELECT email, nonce FROM user")
     users = cursor.fetchall()
     conn.close()
 
-    html_template_path = r'C:\Users\chiam\Projects\WINpass-7-05\templates\email.html'
     with open(html_template_path, 'r', encoding='utf-8') as f:
-        html_content = f.read()
+        html_template = f.read()
 
-    for recipient_email_tuple in users:
-        recipient_email = recipient_email_tuple[0]
+    for (recipient_email, nonce) in users:
         try:
+            pre_registration_url = f"http://127.0.0.1:5000/Pre_Registration_page?token={nonce}"
+            html_content = html_template.replace("{{pre_registration_link}}", pre_registration_url)
             msg = MIMEMultipart('related')
             msg['From'] = EMAIL_ADDRESS
             msg['To'] = recipient_email

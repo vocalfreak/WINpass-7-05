@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hall Leaderboard</title>
+    <style>
+        body { font-family: Arial; background: #f4f4f4; padding: 20px; }
+        table { border-collapse: collapse; width: 100%; background: white; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }
+        th { background: #0056b3; color: white; }
+        form { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Hall Leaderboard</h1>
+    <table>
+        <tr><th>Rank</th><th>Hall</th><th>Points</th></tr>
+        {% for hall in halls %}
+<tr>
+    <td>{{ loop.index }}</td> 
+    <td>{{ hall[0] }}</td>
+    <td>{{ hall[1] }}</td>
+</tr>
+{% endfor %}
+    </table>
+
+    <form action="/update" method="post">
+        <h2>Update Points</h2>
+        <label for="hall">Hall:</label>
+        <select name="hall" required>
+            {% for hall in halls %}
+                <option value="{{ hall[0] }}">{{ hall[0] }}</option>
+            {% endfor %}
+        </select>
+        <label for="points">Points to Add:</label>
+        <input type="number" name="points" required>
+        <button type="submit">Update</button>
+    </form>
+</body>
+</html>
