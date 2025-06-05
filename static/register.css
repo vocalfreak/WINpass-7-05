@@ -308,3 +308,35 @@ h1 {
   cursor: pointer;
 }
 
+/* update_announcement.html */
+.Update_button_pg {
+  color: white;
+  background-color: #4f34e8;
+  border: none;
+  padding: 5px 10px;
+  margin: 10px auto;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 20px;
+  cursor: pointer;
+  display: block;
+}
+
+textarea {
+  background-color: white;
+  padding: 20px;
+  margin: 50px auto 5px auto;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  font-size: 19px;
+  color: #444;
+  width: 100%;
+  max-width: 600px;
+  border-radius: 6px;
+  font-family: Arial, sans-serif;
+  display: block;
+}
+ 
+textarea:hover {
+  border: 2px solid #4f34e8;
+  outline: none;
+}
