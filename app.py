@@ -389,6 +389,31 @@ def delete(id):
     conn.close()
     return redirect(url_for('announcement_admin'))
 
+@app.route('/update/<int:id>', methods=['GET','POST'])
+def update(id):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    if request.method == 'POST':
+        message = request.form['message']
+        try:
+            cursor.execute("UPDATE announcements SET message = ? WHERE id = ?", (message, id))
+            conn.commit()
+            flash("Updated successfully")
+        except Exception as e:
+            conn.close()
+            return f"Update failed: {e}"
+        conn.close()
+        return redirect(url_for('announcement_admin'))
+
+    else:
+        cursor.execute("SELECT * FROM announcements WHERE id = ?", (id,))
+        announcement = cursor.fetchone()
+        conn.close()
+        if announcement:
+            return render_template('update_announcement.html', announcement=announcement)
+        else:
+            return "Announcement not found", 404
+
 
 @app.route('/post_announcement', methods=['GET', 'POST'])
 def post_announcement():
