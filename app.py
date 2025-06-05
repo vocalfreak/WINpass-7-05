@@ -9,6 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 import os
 from werkzeug.utils import secure_filename
 from datetime import timedelta
+from utils.route_utils import hash_password, check_password, bcrypt
 
 app = Flask(__name__)
 
@@ -65,32 +66,30 @@ def login_users():
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
 
-        cursor.execute("SELECT name, email FROM admin WHERE mmu_id = ? AND password = ?", (mmu_id, password))
+        cursor.execute("SELECT name, email, password FROM admin WHERE mmu_id = ?", (mmu_id,))
         admin = cursor.fetchone()
 
-        if admin:
-            session.permanent = True
-            session['mmu_id'] = mmu_id
-            session['name'] = admin[0]
-            session['email'] = admin[1]
-            conn.close()
-            return redirect(url_for('admin_landing')) 
+        if admin and check_password(password, admin[2]):
+           session.permanent = True
+           session['mmu_id'] = mmu_id
+           session['name'] = admin[0]
+           session['email'] = admin[1]
+           conn.close()
+           return redirect(url_for('admin_landing')) 
 
-       
-        cursor.execute("SELECT id, name, email, career, faculty, hall FROM user WHERE mmu_id = ? AND password = ?", (mmu_id, password))
+        cursor.execute("SELECT id, name, email, career, faculty, hall, password FROM user WHERE mmu_id = ?", (mmu_id,))
         user = cursor.fetchone()
 
-        if user:
-            session.permanent = True
-            session['mmu_id'] = mmu_id
-            session['name'] = user[1]
-            session['email'] = user[2]
-            session['career'] = user[3]
-            session['faculty'] = user[4]
-            session['hall'] = user[5]
-
-            conn.close()
-            return redirect(url_for('homepage'))
+        if user and check_password(password, user[6]):
+           session.permanent = True
+           session['mmu_id'] = mmu_id
+           session['name'] = user[1]
+           session['email'] = user[2]
+           session['career'] = user[3]
+           session['faculty'] = user[4]
+           session['hall'] = user[5]
+           conn.close()
+           return redirect(url_for('homepage'))
 
         else:
             conn.close()
@@ -313,10 +312,10 @@ def self_service():
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
 
-        cursor.execute("SELECT id FROM user WHERE mmu_id = ? AND password = ?", (mmu_id, password))
-        user = cursor.fetchone() 
+        cursor.execute("SELECT id, password FROM user WHERE mmu_id = ?", (mmu_id,))
+        user = cursor.fetchone()
 
-        if user:
+        if user and check_password(password, user[1]):
             cursor.execute("UPDATE user SET ticket_status='colllected' WHERE mmu_id = ?", (mmu_id,))
             conn.commit()
             conn.close()
@@ -562,11 +561,11 @@ if __name__ == '__main__':
     qr_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\static\qr_codes"
     html_template_path = r'C:\Users\adria\Projects\WINpass-7-05\templates\email.html'
 
-    db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
-    image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
-    df_path = r"C:\Users\chiam\Projects\WINpass-7-05\Test_George.csv"
-    qr_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\static"
-    html_template_path = r'C:\Users\chiam\Projects\WINpass-7-05\templates\email.html'
+    #db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+    #image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
+    #df_path = r"C:\Users\chiam\Projects\WINpass-7-05\Test_George.csv"
+    #qr_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\static"
+    #html_template_path = r'C:\Users\chiam\Projects\WINpass-7-05\templates\email.html'
 
     # db_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
     # image_folder_path = r"C:\Mini IT\WINpass-7-05\winpass_training_set"

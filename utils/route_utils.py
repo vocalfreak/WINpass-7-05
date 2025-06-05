@@ -4,6 +4,13 @@ import sqlite3
 import numpy as np
 import cv2 
 import csv
+import bcrypt
+
+def hash_password(password):
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+def check_password(password, hashed):
+    return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
 
 def import_csv_init(df_path, db_path):
 
@@ -15,18 +22,19 @@ def import_csv_init(df_path, db_path):
             reader = csv.DictReader(csvfile)
 
             for row in reader:
-                cursor.execute("""
-                INSERT INTO user (mmu_id, name, password, career, faculty, campus, email)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    row['mmu_id'],
-                    row['name'],
-                    row['career'],
-                    row['password'],
-                    row['faculty'],
-                    row['campus'],
-                    row['email'],
-           ))
+             cursor.execute("""
+             INSERT INTO user (mmu_id, name, password, career, faculty, campus, email)
+             VALUES (?, ?, ?, ?, ?, ?, ?)
+             """, (
+                row['mmu_id'],
+                row['name'],
+                hash_password(row['password']),  # <-- hash here if CSV has plain-text
+                row['career'],
+                row['faculty'],
+                row['campus'],
+                row['email'],
+            ))
+
         
         conn.commit()
 
