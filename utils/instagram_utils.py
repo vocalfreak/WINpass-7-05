@@ -11,6 +11,7 @@ from apify_client import ApifyClient
 import datetime
 from models_utils import logistic_regression, get_title_date, extract_event_data, get_events_data
 import sqlite3
+import dateparser 
 
 def scrape_instagram(csv_folder_path):
 
@@ -112,55 +113,55 @@ def get_post_img(post_path):
         except Exception as e:
             print(f"Failed to download {post_id}: {e}")
 
-# def get_events_title(post_path):
-#     df = pd.read_csv(post_path, encoding='utf-8-sig')
-#     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-
-#     titles = []
-#     for _, row in df.iterrows():
-#         if row['predicted'] == 1:
-#             caption = row.get('caption', '')
-#             lines = [line.strip() for line in caption.split('\n') if line.strip()]
-#             if lines:
-#                 titles.append(lines[0])
-#             else:
-#                 titles.append('')
-#         else:
-#             titles.append(None)
-
-#     df["title"] = titles
-#     df.to_csv(post_path, index=False, encoding='utf-8-sig')
 
 def store_to_db(post_path, db_path):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    
     with open(post_path, 'r', encoding='utf-8-sig') as f:
         df = csv.DictReader(f)
 
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-
-    for row in df:
-        cursor.execute("""
-        INSERT INTO intagram (caption, alt, shortCode, displayUrl, locationName, ownerFullName, locationId, timestamp, predicted, details, title, date, time, location)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            row['caption'],
-            row['alt'],
-            row['shortCode'],
-            row['displayUrl'],
-            row['locationName'],
-            row['ownerFullName'],
-            row['locationId'],
-            row['timestamp'],
-            row['predicted'],
-            row['details'],
-            row['title'],
-            row['date'],
-            row['time'],
-            row['location'],
-        ))
+        for row in df:
+            cursor.execute("""
+            INSERT INTO instagram (caption, alt, shortCode, displayUrl, locationName, ownerFullName, locationId, timestamp, predicted, details, title, date, time, location)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                row['caption'],
+                row['alt'],
+                row['shortCode'],
+                row['displayUrl'],
+                row['locationName'],
+                row['ownerFullName'],
+                row['locationId'],
+                row['timestamp'],
+                row['predicted'],
+                row['details'],
+                row['title'],
+                row['date'],
+                row['time'],
+                row['location'],
+                ))
 
     conn.commit()
     conn.close()
+
+def parse_date(post_path):
+    df = pd.read_csv(post_path, encoding='utf-8-sig')
+    dates = df["date"]
+
+    parsedDates = []
+    for date in dates:
+        date = str(date)
+        dp = dateparser.parse(date)
+        if dp:
+            parsedDates.append(dp.strftime('%Y%m%d'))
+        else:
+            dp.append(None)
+
+    df["date"] = parsedDates 
+
+    df.to_csv(post_path, index=False, encoding="utf-8-sig")
+
     
 def data_pipeline():
     csv_filepath = scrape_instagram(csv_folder_path) 
@@ -181,12 +182,9 @@ def data_pipeline():
 
 
 # PATH
-post_path = r"C:\Users\chiam\Projects\WINpass-7-05\instagram_posts.csv"
+post_path = r"C:\Users\chiam\Projects\WINpass-7-05\weekly_scrapes_csv\instagram_posts.csv"
 captions_training_path = r"C:\Users\chiam\Projects\WINpass-7-05\captions_trainingset.csv"
 posts_img_path = r"C:\Users\chiam\Projects\WINpass-7-05\posts_img"
 csv_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\weekly_scrapes_csv"
 db_path = "winpass.db"
 
-
-#get_events_title(post_path)
-#get_post_img(post_path)

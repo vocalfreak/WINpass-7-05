@@ -5,6 +5,7 @@
   <title>Event Page</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <link href="https://fonts.googleapis.com/css?family=Trirong">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
   <header>
@@ -35,7 +36,6 @@
       </ul>
     </nav>
   </header>
-
   <div class="main-container">
     <aside class="sidebar">
       <h2>Search Events</h2>
@@ -52,10 +52,43 @@
       <h3>Categories</h3>
       <select><option>Select categories</option></select>
     </aside>
-
      <main class="events">
       <div class="events-header">
         <h1>Events</h1>
+        <button class="past-events-btn">Show Past Events</button>
+      </div>
+      <div class="events-grid">
+        {% for event in events %}
+        <div class="event-card" onclick="window.location.href='{{ url_for('event_detail', shortCode=event.shortCode) }}'">
+          <div class="event-image-wrapper">
+            <img src="{{ url_for('static', filename='posts_img/' ~ event.shortCode ~ '.jpg') }}" alt="{{ event.title }}" class="event-img">
+          </div>
+          <div class="event-content">
+            <h3 class="event-title">{{ event.title }}</h3>
+            <div class="event-details">
+              <div class="event-datetime">
+                <span class="event-icon"><i class="fa-solid fa-calendar"></i></span>
+                <span>{{ event.date }} {{ event.time }} +08</span>
+              </div>
+              <div class="event-location">
+                <span class="event-icon"><i class="fa-solid fa-location-dot"></i></span>
+                <span>{{ event.location }}</span>
+              </div>
+            </div>
+            <div class="event-organizer">
+              <div class="organizer-icon">
+                <img src="{{ url_for('static', filename='clubs_logo/' ~ event.host ~ '.png') }}" alt="{{ event.host[0] }}" class="event-img">
+              </div>
+              <span>{{ event.host }}</span>
+            </div>
+          </div>
+        </div>
+        {% else %}
+          <div class="no-events">
+            <h3>No events found</h3>
+            <p>Try adjusting your search filters or check back later for new events.</p>
+          </div>
+        {% endfor %}
       </div>
     </main>
   </div>
