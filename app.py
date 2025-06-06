@@ -551,11 +551,27 @@ def events_page():
 
 @app.route('/event/<shortCode>')
 def event_detail(shortCode):
-    return f"<h1>Event Detail Page for ShortCode: {shortCode}</h1>"
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
 
+    cursor.execute("SELECT caption, shortCode, details, title, date, time, location, ownerFullName FROM instagram WHERE shortCode = ?", (shortCode,))
+    rows = cursor.fetchall()
+    conn.close()
 
+    details = []
+    for row in rows:
+        details.append({
+            "caption": row[0],
+            "shortCode": row[1],
+            "details": row[2],
+            "title": row[3],
+            "date": row[4],
+            "time": row[5],
+            "location": row[6],
+            "host" : row[7]
+        })
 
-
+    return render_template("event_details.html", details=details)
 
 
 def get_leaderboard():

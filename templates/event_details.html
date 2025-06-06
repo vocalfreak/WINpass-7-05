@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Event Page</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css?family=Trirong">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <header>
+    <div class="top-bar">
+      <div class="logo-area">
+        <img src="{{ url_for('static', filename='img_mmu.png') }}" alt="MMU Logo" class="logo"/>
+        <span class="win">MMU<span class="pass">Sync</span></span>
+      </div>
+      <div class="user-icon">
+        {% if 'mmu_id' in session %}
+        <form action="{{ url_for('logout') }}" method="POST">
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+    {% else %}
+        <a href="{{ url_for('login_users') }}">
+            <img src="{{ url_for('static', filename='img_user.png') }}" alt="User Icon" class="user-avatar">
+        </a>
+    {% endif %}
+      </div>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="{{ url_for('homepage') }}">Home</a></li>
+        <li><a href="{{ url_for('student_profile') }}">Student Profile</a></li>
+        <li><a href="{{ url_for('booth_info') }}">Booth Information</a></li>
+        <li><a href="{{ url_for('digital_ticket') }}">Digital Ticket View</a></li>
+        <li><a href="{{ url_for('pre_registration_page') }}">Photobooth</a></li>
+      </ul>
+    </nav>
+  </header>
+ 
+      <div class="event-container">
+        <a href="/events" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+            Back to Events
+        </a>
+
+        <div class="event-header">
+            {% for detail in details %}
+            <img src="{{ url_for('static', filename='posts_img/' ~ detail.shortCode ~ '.jpg') }}" alt="{{ detail.title }}" class="event-image">
+            <div class="event-info">
+                <h1 class="detail-title">{{ detail.title }}</h1>
+                <div class="event-meta">
+                    <div class="meta-item">
+                        <i class="fas fa-calendar-alt meta-icon"></i>
+                        <span><strong>Date and Time:</strong> {{ detail.date }} {{ detail.time }} +08</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-map-marker-alt meta-icon"></i>
+                        <span><strong>Location:</strong> {{ detail.location }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="event-description">
+            <h2 class="section-title">Description</h2>
+            <p class="description-text">
+                {{ detail.caption }}
+            </p>
+        </div>
+
+        <div class="host-organization">
+            <h2 class="section-title">Host Organization</h2>
+            <div class="host-info">
+                <div class="host-logo">
+                    <img src="{{ url_for('static', filename='clubs_logo/' ~ detail.host ~ '.png') }}" alt="{{ detail.host[0] }}" class="host-logo">
+                </div>
+                <div class="host-details">
+                    <h3>{{ detail.host }}</h3>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
