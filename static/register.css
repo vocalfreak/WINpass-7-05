@@ -114,6 +114,15 @@ h1 {
 .Register label {
   background-color: #ffffff;
 }
+
+.Register-name{
+  font-size: 25px;
+  font-weight: bold;
+  color: #0047ba;
+  margin-top: 10px;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
    
 .Register form{
    background-color: #ffffff;

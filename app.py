@@ -430,7 +430,7 @@ def pre_registration_page():
 
         return "Form submitted successfully!"
 
-    return render_template('pre_registration_page.html', token=token)
+    return render_template('pre_registration_page.html', token=token, name=name)
 
 @app.route('/Announcement_student')
 def announcement_student():
