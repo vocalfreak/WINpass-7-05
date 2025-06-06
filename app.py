@@ -672,6 +672,6 @@ if __name__ == '__main__':
     
     DB_FILE = 'leaderboard.db'
 
-    app.run(debug=True)
+    app.run()
 
 
