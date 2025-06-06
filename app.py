@@ -357,6 +357,81 @@ def email_button():
     flash("Invitations sent to all users!", "success")
     return redirect(url_for('admin_page'))
 
+Picture_folder = 'winpass_training_set'
+app.config['UPLOAD_FOLDER'] = Picture_folder
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def update_user(nonce, face_data, size=None, timeslot=None):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE user set face_data = ?, size = ?, timeslot = ? WHERE nonce = ?", (face_data, size, timeslot, nonce))
+    conn.commit()
+    conn.close()
+
+@app.route('/Pre_Registration_page', methods=['POST', 'GET'])
+def pre_registration_page():
+    token = request.args.get('token') or request.form.get('token')
+    
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT mmu_id, name FROM user WHERE nonce = ?", (token,))
+    user = cursor.fetchone()
+    print(f"User full name: {user}")
+    conn.close()
+
+    if user is None:
+        return "Invalid token or user not found", 404
+    
+    mmu_id, name = user
+
+
+    if request.method == 'POST':
+        name = name.strip().replace(" ", "_")
+        size = request.form.get('size')
+        timeslot = request.form.get('timeslot')
+        image_folder_path = os.path.join(app.config['UPLOAD_FOLDER'], name)
+        os.makedirs(image_folder_path, exist_ok=True)
+        face_1 = request.files['filename1']
+        face_2 = request.files['filename2']
+
+        filepath_1 = filepath_2 = None
+
+        if face_1 and allowed_file(face_1.filename):
+            filename1 = f"{name}_0001.jpg"
+            filepath_1 = os.path.join(image_folder_path, filename1)
+            face_1.save(filepath_1)
+        else:
+            print("Unable to save the first picture")
+ 
+        if face_2 and allowed_file(face_2.filename):
+            filename2 = f"{name}_0002.jpg"
+            filepath_2 = os.path.join(image_folder_path, filename2)
+            face_2.save(filepath_2)
+        else:
+            print("Unable to save the second picture")
+
+        print(f"Student ID: {mmu_id}")
+        face_code = get_face_encodings_folders(image_folder_path)
+
+        if face_code is None:
+            print("No valid face encodings found.")
+            return "Error: Face not detected in one or both images.", 400
+
+        print(f"Combined face encoding: {face_code}")
+
+        face_data = face_code.tobytes()
+
+        update_user(token, face_data, size, timeslot)
+
+        return "Form submitted successfully!"
+
+    return render_template('pre_registration_page.html', token=token)
+
 @app.route('/Announcement_student')
 def announcement_student():
     conn = sqlite3.connect(db_path)
@@ -476,97 +551,6 @@ def scan_goodies():
 def scan_badge():
     badge_qr(db_path)
     return render_template('qr.html')
-
-
-Picture_folder = 'winpass_training_set'
-app.config['UPLOAD_FOLDER'] = Picture_folder
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def update_user(nonce, face_data, size=None, timeslot=None):
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute("UPDATE user set face_data = ?, size = ?, timeslot = ? WHERE nonce = ?", (face_data, size, timeslot, nonce))
-    cursor.execute("UPDATE user set face_data = ?, size = ?, timeslot = ? WHERE nonce = ?", (face_data, size, timeslot, nonce))
-    conn.commit()
-    conn.close()
-
-@app.route('/Pre_Registration_page', methods=['POST', 'GET'])
-def pre_registration_page():
-    token = request.args.get('token') or request.form.get('token')
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute("SELECT mmu_id, name FROM user WHERE nonce = ?", (token,))
-    user = cursor.fetchone()
-    print(f"User full name: {user}")
-    conn.close()
-
-    if user is None:
-        return "Invalid token or user not found", 404
-    
-    mmu_id, name = user
-
-    token = request.args.get('token') or request.form.get('token')
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute("SELECT mmu_id, name FROM user WHERE nonce = ?", (token,))
-    user = cursor.fetchone()
-    print(f"User full name: {user}")
-    conn.close()
-
-    if user is None:
-        return "Invalid token or user not found", 404
-    
-    mmu_id, name = user
-
-    if request.method == 'POST':
-        name = name.strip().replace(" ", "_")
-        name = name.strip().replace(" ", "_")
-        size = request.form.get('size')
-        timeslot = request.form.get('timeslot')
-        image_folder_path = os.path.join(app.config['UPLOAD_FOLDER'], name)
-        os.makedirs(image_folder_path, exist_ok=True)
-        face_1 = request.files['filename1']
-        face_2 = request.files['filename2']
-
-        filepath_1 = filepath_2 = None
-
-        if face_1 and allowed_file(face_1.filename):
-            filename1 = f"{name}_0001.jpg"
-            filepath_1 = os.path.join(image_folder_path, filename1)
-            face_1.save(filepath_1)
-        else:
-            print("Unable to save the first picture")
- 
-        if face_2 and allowed_file(face_2.filename):
-            filename2 = f"{name}_0002.jpg"
-            filepath_2 = os.path.join(image_folder_path, filename2)
-            face_2.save(filepath_2)
-        else:
-            print("Unable to save the second picture")
-
-        print(f"Student ID: {mmu_id}")
-        face_code = get_face_encodings_folders(image_folder_path)
-
-        if face_code is None:
-            print("No valid face encodings found.")
-            return "Error: Face not detected in one or both images.", 400
-
-        print(f"Combined face encoding: {face_code}")
-
-        face_data = face_code.tobytes()
-
-        update_user(token, face_data, size, timeslot)
-        update_user(token, face_data, size, timeslot)
-
-        return "Form submitted successfully!"
-
-    return render_template('pre_registration_page.html', token=token)
-    return render_template('pre_registration_page.html', token=token)
 
 
 @app.route('/Email')
