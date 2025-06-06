@@ -71,7 +71,7 @@ def photobooth():
 
         k=cv2.waitKey(1)
 
-        if k%256 == 27:
+        if k%256 == ord('q'):
             print("Escape hit, closing the app")
             break
         
