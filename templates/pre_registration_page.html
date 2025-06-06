@@ -15,13 +15,10 @@
         </div>
     </header>
     <h1>STUDENT PRE REGISTRATION FORM</h1>
+    <p class="Register-name">Welcome, {{name}}!</p>
     <section class="Register">
         <form name="pre-registration-form" action="/Pre_Registration_page" method="post" enctype="multipart/form-data">
             <input type="hidden" name="token" value="{{ token }}">
-            <!-- <label>ID number</label>
-            <input name="ID" type="text" placeholder="Enter your student ID" required>
-            <label>Full name</label>
-            <input name="name" type="text" placeholder="eg : Kwon_Jiyong" required> -->
             <label>Tshirt size</label>
             <select name="size" id="size" required>
                 <option value="XS">XS</option>
@@ -34,9 +31,9 @@
             <br>
             <label>Time Slot</label>
             <select name="timeslot" id="timeslot">
-                <option value="slot1">10:00-12:00</option>
-                <option value="slot2">12:00-14:00</option>
-                <option value="slot3">14:00-16:00</option>
+                <option value="slot1">10:00 am</option>
+                <option value="slot2">12:00 pm</option>
+                <option value="slot3">14:00 pm</option>
             </select>
             <label>Upload picture<br> Note: A smiling expression (with teeth showing)</label>
             <input type="file" name="filename1" required>
