@@ -189,4 +189,4 @@ csv_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\weekly_scrapes_csv"
 db_path = "winpass.db"
 
 
-posts_img_path = r"C:\Mini IT\WINpass-7-05\posts_img"
+posts_img_path = r"C:\Mini IT\WINpass-7-05\static\posts_img"
