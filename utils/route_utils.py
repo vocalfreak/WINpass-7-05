@@ -28,7 +28,7 @@ def import_csv_init(df_path, db_path):
              """, (
                 row['mmu_id'],
                 row['name'],
-                hash_password(row['password']),  # <-- hash here if CSV has plain-text
+                hash_password(row['password']),
                 row['career'],
                 row['faculty'],
                 row['campus'],

@@ -616,11 +616,11 @@ def update_points():
 if __name__ == '__main__':
 
     #Paths 
-    # df_path = r"C:\Users\adria\Projects\WINpass-7-05\Test_George.csv"
-    # db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
-    # image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
-    # qr_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\static\qr_codes"
-
+    df_path = r"C:\Users\adria\Projects\WINpass-7-05\Test_George.csv"
+    db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
+    image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
+    qr_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\static\qr_codes"
+    html_template_path = r'C:\Users\adria\Projects\WINpass-7-05\templates\email.html'
 
     # db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
     # image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
@@ -629,11 +629,11 @@ if __name__ == '__main__':
     # html_template_path = r'C:\Users\chiam\Projects\WINpass-7-05\templates\email.html'
 
 
-    db_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
-    image_folder_path = r"C:\Mini IT\WINpass-7-05\winpass_training_set"
-    html_template_path = r"C:\Mini IT\WINpass-7-05\templates\email.html"
-    qr_folder_path = r"C:\Mini IT\WINpass-7-05\static\qr_codes"
-    df_path = r"C:\Mini IT\WINpass-7-05\Test_George.csv"
+    #db_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
+    #image_folder_path = r"C:\Mini IT\WINpass-7-05\winpass_training_set"
+    #html_template_path = r"C:\Mini IT\WINpass-7-05\templates\email.html"
+    #qr_folder_path = r"C:\Mini IT\WINpass-7-05\static\qr_codes"
+    #df_path = r"C:\Mini IT\WINpass-7-05\Test_George.csv"
 
 
     # db_path = r"C:\Users\user\projects\WINpass-7-05\winpass.db"
