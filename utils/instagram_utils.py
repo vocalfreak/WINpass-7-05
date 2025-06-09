@@ -9,9 +9,10 @@ import io
 import sys
 from apify_client import ApifyClient
 import datetime
-from models_utils import logistic_regression, get_title_date, extract_event_data, get_events_data
+from utils.models_utils import logistic_regression, get_title_date, extract_event_data, get_events_data
 import sqlite3
-import dateparser 
+import dateparser
+from datetime import datetime, timedelta
 
 def scrape_instagram(csv_folder_path):
 
@@ -178,8 +179,14 @@ def data_pipeline():
 
     store_to_db(csv_filepath, db_path)
 
+def get_weekend_filter(today):
+    saturday = today + timedelta((5 - today.weekday()) % 7)
+    sunday = saturday + timedelta(days=1)
+    return saturday, sunday
 
-
+def get_tmr_filter(today):
+    tmr = today + timedelta(days=1)
+    return tmr 
 
 # PATH
 post_path = r"C:\Users\chiam\Projects\WINpass-7-05\weekly_scrapes_csv\instagram_posts.csv"
@@ -187,4 +194,3 @@ captions_training_path = r"C:\Users\chiam\Projects\WINpass-7-05\captions_trainin
 posts_img_path = r"C:\Users\chiam\Projects\WINpass-7-05\posts_img"
 csv_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\weekly_scrapes_csv"
 db_path = "winpass.db"
-
