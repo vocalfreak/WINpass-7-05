@@ -545,6 +545,11 @@ def events_page():
 
     events = []
     for row in rows:
+        date = row[4]
+
+        if not date:
+            continue 
+        
         eventdate = datetime.strptime(row[4], "%Y%m%d").date()  
         
         if filter_type == "past":
