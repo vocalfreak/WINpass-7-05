@@ -689,6 +689,17 @@ section {
   background-color: #f8f9fa;
 }
 
+.past-events {
+  background-color: #fff3cd;    
+  color: #856404;            
+  padding: 6px 12px;           
+  font-size: 14px;            
+  border: 1px solid #ffeeba;    
+  border-radius: 4px;          
+  text-align: center;
+  margin-bottom: 16px;                 
+}
+
 .events-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -852,20 +863,18 @@ margin: 0 auto;
 padding: 20px;
 background-color: white;
 margin-top: 20px;
-box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .event-header {
 display: flex;
-gap: 30px;
+gap: 60px;
 margin-bottom: 30px;
 }
 
 .event-image {
-width: 400px;
-height: 280px;
+width: 600px;
+height: 300px;
 object-fit: cover;
-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .event-info {
@@ -876,14 +885,14 @@ flex: 1;
 font-size: 32px;
 font-weight: bold;
 color: #333;
-margin-bottom: 20px;
+margin-bottom: 50px;
 line-height: 1.2;
 }
 
 .event-meta {
 display: flex;
 flex-direction: column;
-gap: 15px;
+gap: 40px;
 }
 
 .meta-item {
@@ -898,45 +907,6 @@ color: #333;
 width: 20px;
 color: #666;
 text-align: center;
-}
-
-.rsvp-section {
-margin-top: 30px;
-padding: 20px;
-background-color: #f8f9fa;
-border-radius: 8px;
-border-left: 4px solid #0047ba;
-}
-
-.rsvp-title {
-font-size: 20px;
-font-weight: bold;
-color: #333;
-margin-bottom: 15px;
-}
-
-.rsvp-button {
-background-color: #0047ba;
-color: white;
-padding: 12px 24px;
-border: none;
-border-radius: 8px;
-font-size: 16px;
-font-weight: bold;
-cursor: pointer;
-transition: background-color 0.3s ease;
-}
-
-.rsvp-button:hover {
-background-color: #003d9a;
-}
-
-.rsvp-button.registered {
-background-color: #28a745;
-}
-
-.rsvp-button.registered:hover {
-background-color: #218838;
 }
 
 .event-description {

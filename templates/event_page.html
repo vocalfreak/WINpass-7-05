@@ -17,7 +17,7 @@
       <div class="user-icon">
         {% if 'mmu_id' in session %}
         <form action="{{ url_for('logout') }}" method="POST">
-            <button type="submit" class="logout-btn">Logout</button>
+            <button type="submit" class="logout-btn" >Logout</button>
         </form>
     {% else %}
         <a href="{{ url_for('login_users') }}">
@@ -38,25 +38,22 @@
   </header>
   <div class="main-container">
     <aside class="sidebar">
-      <h2>Search Events</h2>
-      <input type="text" placeholder="Search..." />
       <h3>Dates</h3>
-      <label><input type="radio" name="date"> Tomorrow</label><br>
-      <label><input type="radio" name="date"> This Weekend</label><br>
-      <input type="date" />
-      <label class="event-checkbox-label"> <input type="checkbox" class="event-checkbox" />Online</label>
-      <h3>Branches</h3>
-      <select><option>Select branches</option></select>
-      <h3>Themes</h3>
-      <select><option>Select themes</option></select>
-      <h3>Categories</h3>
-      <select><option>Select categories</option></select>
+      <label><input type="radio" name="date" onchange="applyFilter('all')"> All</label><br>
+      <label><input type="radio" name="date" onchange="applyFilter('tomorrow')"> Tomorrow</label><br>
+      <label><input type="radio" name="date" onchange="applyFilter('weekend')"> This Weekend</label><br>
     </aside>
      <main class="events">
       <div class="events-header">
         <h1>Events</h1>
-        <button class="past-events-btn">Show Past Events</button>
+        <button class="past-events-btn" onclick="applyFilter('past')">Show Past Events</button>
       </div>
+      {% if past_view %}
+      <div class="past-events">
+        <h2>The following events have ended.</h2>
+      </div>
+      {% endif %}
+      
       <div class="events-grid">
         {% for event in events %}
         <div class="event-card" onclick="window.location.href='{{ url_for('event_detail', shortCode=event.shortCode) }}'">
@@ -92,6 +89,10 @@
       </div>
     </main>
   </div>
+
+  <script>
+  function applyFilter(filter) {window.location.href = "/events?filter=" + filter;}
+  </script>
 </body>
 </html>
    

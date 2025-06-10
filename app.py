@@ -1,9 +1,8 @@
 from utils.route_utils import import_csv_init, photobooth, get_timeslot, get_timeslot_status, get_queue_time 
-from utils.image_utils import real_time_recognition, get_winpass_info
-from utils.image_utils import get_face_encodings_folders
-from utils.image_utils import badge_qr, goodies_qr
+from utils.image_utils import real_time_recognition, get_winpass_info, badge_qr, get_face_encodings_folders, goodies_qr
 from utils.email_utils import send_email
 from datetime import datetime
+from utils.instagram_utils import get_weekend_filter, get_tmr_filter
 from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory, session 
 import sqlite3
 from flask_sqlalchemy import SQLAlchemy
@@ -570,6 +569,9 @@ def get_student_avatar(name, mmu_id, image_folder_path):
 
 @app.route('/events')
 def events_page():
+    filter_type = request.args.get("filter")
+    today = datetime.today().date()
+
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
@@ -577,8 +579,36 @@ def events_page():
     rows = cursor.fetchall()
     conn.close()
 
+    if filter_type == "tomorrow":   
+        daterange = [get_tmr_filter(today)]
+    elif filter_type == "weekend":
+        daterange = get_weekend_filter(today)
+    else:
+        daterange = None
+
     events = []
     for row in rows:
+        date = row[4]
+
+        if not date:
+            continue 
+        
+        eventdate = datetime.strptime(row[4], "%Y%m%d").date()  
+        
+        if filter_type == "past":
+            if eventdate >= today:
+                continue
+        
+        elif filter_type == "all":
+            if eventdate <= today:
+                continue 
+
+        else: 
+            if daterange and eventdate not in daterange:
+                continue
+
+        days_ago = (today - eventdate).days
+
         events.append({
             "caption": row[0],
             "shortCode": row[1],
@@ -587,10 +617,11 @@ def events_page():
             "date": row[4],
             "time": row[5],
             "location": row[6],
+            "days_ago": days_ago,
             "host" : row[7]
         })
 
-    return render_template("event_page.html", events=events)
+    return render_template("event_page.html", events=events, past_view=(filter_type == "past"))
 
 @app.route('/event/<shortCode>')
 def event_detail(shortCode):

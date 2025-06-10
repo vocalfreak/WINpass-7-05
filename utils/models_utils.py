@@ -14,20 +14,19 @@ def logistic_regression(captions_train_path, test_set_path):
     df = pd.read_csv(captions_train_path)
     ds = pd.read_csv(test_set_path)
 
-    X_train = df["caption"].values
+    X_train = df["caption"].fillna("").values  
     y_train = df["is_event"].values
-
-    X_test = ds["caption"].values
-
+    
+    X_test = ds["caption"].fillna("").values   
+    
     model = Pipeline(steps=[
-    ('tfidf', TfidfVectorizer()),               
-    ('clf', LogisticRegression(max_iter=1000))  
-   ])
-
+        ('tfidf', TfidfVectorizer()),              
+        ('clf', LogisticRegression(max_iter=1000))  
+    ])
+    
     model.fit(X_train, y_train)
-
     y_pred = model.predict(X_test)
-
+    
     ds["predicted"] = y_pred
     ds.to_csv(test_set_path, index=False, encoding="utf-8-sig")
 
@@ -170,7 +169,6 @@ def get_events_data(test_set_path):
 
     for detail in details:
         result = extract_event_data(detail)
-        print(result)
         titles.append(result["title"])
         dates.append(result["date"])
         times.append(result["time"])

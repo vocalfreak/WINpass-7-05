@@ -9,9 +9,10 @@ import io
 import sys
 from apify_client import ApifyClient
 import datetime
-from models_utils import logistic_regression, get_title_date, extract_event_data, get_events_data
+from utils.models_utils import logistic_regression, get_title_date, extract_event_data, get_events_data
 import sqlite3
-import dateparser 
+import dateparser
+from datetime import datetime, timedelta
 
 def scrape_instagram(csv_folder_path):
 
@@ -19,7 +20,7 @@ def scrape_instagram(csv_folder_path):
 
     run_input = {
   "resultsLimit": 2,
-  "skipPinnedPosts": true,
+  "skipPinnedPosts": True,
   "username": [
     "itsocietymmu",
     "acsmmu",
@@ -74,19 +75,19 @@ def scrape_instagram(csv_folder_path):
     csv_filename = f"instagram_posts_{time}.csv"
 
     csv_filepath = os.path.join(csv_folder_path, csv_filename)
-    with open(csv_filepath, 'w', encoding='utf-8-sig') as f:
-        ds = pd.read_csv(f)
 
-    ds["caption"] = df["caption"]
-    ds["alt"] = df["alt"]
-    ds["shortCode"] = df["shortCode"]
-    ds["displayUrl"] = df["displayUrl"]
-    ds["locationName"] = df["locationName"]
-    ds["ownerFullName"] = df["ownerFullName"]
-    ds["locationId"] = df["locationId"]
-    ds["timestamp"] = df["timestamp"]
+    output_df = pd.DataFrame({
+        "caption": df.get("caption", ""),
+        "alt": df.get("alt", ""),
+        "shortCode": df.get("shortCode", ""),
+        "displayUrl": df.get("displayUrl", ""),
+        "locationName": df.get("locationName", ""),
+        "ownerFullName": df.get("ownerFullName", ""),
+        "locationId": df.get("locationId", ""),
+        "timestamp": df.get("timestamp", "")
+    })
     
-    ds.to_csv(csv_filepath, index=False)
+    output_df.to_csv(csv_filepath, index=False, encoding='utf-8-sig')
     return csv_filepath
 
 
@@ -107,40 +108,52 @@ def get_post_img(post_path):
                 ext = image_url.split('.')[-1].split('?')[0]
                 if len(ext) > 5 or '/' in ext:
                     ext = "jpg"
-                file_path = os.path.join("posts_img", f"{post_id}.{ext}")
+                file_path = os.path.join("static\posts_img", f"{post_id}.{ext}")
                 with open(file_path, "wb") as img_file:
                     img_file.write(response.content)
         except Exception as e:
             print(f"Failed to download {post_id}: {e}")
 
-
-def store_to_db(post_path, db_path):
+def store_to_db(csv_filepath, db_path):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     
-    with open(post_path, 'r', encoding='utf-8-sig') as f:
-        df = csv.DictReader(f)
+    existing_shortcodes = set()
 
-        for row in df:
-            cursor.execute("""
-            INSERT INTO instagram (caption, alt, shortCode, displayUrl, locationName, ownerFullName, locationId, timestamp, predicted, details, title, date, time, location)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                row['caption'],
-                row['alt'],
-                row['shortCode'],
-                row['displayUrl'],
-                row['locationName'],
-                row['ownerFullName'],
-                row['locationId'],
-                row['timestamp'],
-                row['predicted'],
-                row['details'],
-                row['title'],
-                row['date'],
-                row['time'],
-                row['location'],
-                ))
+    cursor.execute("SELECT shortCode FROM INSTAGRAM")
+    results = cursor.fetchall()
+
+    for result in results:
+        existing_shortcodes.add(result[0])
+
+    with open(csv_filepath, 'r', encoding='utf-8-sig') as f:
+        df = pd.read_csv(f, dtype={'date': str})
+
+    for index, row in df.iterrows():
+        shortcode = row.get('shortCode')
+
+        if shortcode in existing_shortcodes:
+            continue 
+
+        cursor.execute("""
+        INSERT INTO instagram (caption, alt, shortCode, displayUrl, locationName, ownerFullName, locationId, timestamp, predicted, details, title, date, time, location)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            row['caption'],
+            row['alt'],
+            row['shortCode'],
+            row['displayUrl'],
+            row['locationName'],
+            row['ownerFullName'],
+            row['locationId'],
+            row['timestamp'],
+            row['predicted'],
+            row['details'],
+            row['title'],
+            row['date'],
+            row['time'],
+            row['location'],
+        ))
 
     conn.commit()
     conn.close()
@@ -151,12 +164,16 @@ def parse_date(post_path):
 
     parsedDates = []
     for date in dates:
-        date = str(date)
+        if pd.isna(date):
+            parsedDates.append(None)
+            continue 
+
+        date = str(date).split('.')[0]
         dp = dateparser.parse(date)
         if dp:
             parsedDates.append(dp.strftime('%Y%m%d'))
         else:
-            dp.append(None)
+            parsedDates.append(None)
 
     df["date"] = parsedDates 
 
@@ -166,7 +183,7 @@ def parse_date(post_path):
 def data_pipeline():
     csv_filepath = scrape_instagram(csv_folder_path) 
 
-    logistic_regression(csv_filepath, captions_training_path)
+    logistic_regression(captions_training_path, csv_filepath)
 
     get_post_img(csv_filepath)
 
@@ -176,10 +193,18 @@ def data_pipeline():
 
     get_events_data(csv_filepath)
 
+    parse_date(csv_filepath)
+
     store_to_db(csv_filepath, db_path)
 
+def get_weekend_filter(today):
+    saturday = today + timedelta((5 - today.weekday()) % 7)
+    sunday = saturday + timedelta(days=1)
+    return saturday, sunday
 
-
+def get_tmr_filter(today):
+    tmr = today + timedelta(days=1)
+    return tmr 
 
 # PATH
 # post_path = r"C:\Users\chiam\Projects\WINpass-7-05\weekly_scrapes_csv\instagram_posts.csv"
@@ -191,10 +216,7 @@ def data_pipeline():
 
 # posts_img_path = r"C:\Mini IT\WINpass-7-05\static\posts_img"
 
-post_path = "instagram_posts.csv"
+post_path = "weekly_scrapes_csv\instagram_posts_20250609.csv"
 captions_training_path = "captions_trainingset.csv"
 csv_folder_path = "weekly_scrapes_csv"
 db_path = "winpass.db"
-
-
-posts_img_path = "posts_img"
