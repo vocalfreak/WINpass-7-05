@@ -1,18 +1,20 @@
 from utils.route_utils import import_csv_init, photobooth, get_timeslot, get_timeslot_status, get_queue_time 
-from utils.image_utils import real_time_recognition, get_winpass_info, badge_qr, get_face_encodings_folders
+from utils.image_utils import real_time_recognition, get_winpass_info, badge_qr, get_face_encodings_folders, goodies_qr
 from utils.email_utils import send_email
+from datetime import datetime
 from utils.instagram_utils import get_weekend_filter, get_tmr_filter
 from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory, session 
 import sqlite3
 from flask_sqlalchemy import SQLAlchemy
 import os
 from werkzeug.utils import secure_filename
-from datetime import datetime, timedelta
+from datetime import timedelta
+from utils.route_utils import hash_password, check_password, bcrypt
 
 app = Flask(__name__)
 
 app.secret_key = 'xp9nfcZcGQuDuoG4'
-app.permanent_session_lifetime = timedelta(minutes=1) 
+app.permanent_session_lifetime = timedelta(minutes=20) 
 
 @app.route('/')
 def homepage():
@@ -64,32 +66,30 @@ def login_users():
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
 
-        cursor.execute("SELECT name, email FROM admin WHERE mmu_id = ? AND password = ?", (mmu_id, password))
+        cursor.execute("SELECT name, email, password FROM admin WHERE mmu_id = ?", (mmu_id,))
         admin = cursor.fetchone()
 
-        if admin:
-            session.permanent = True
-            session['mmu_id'] = mmu_id
-            session['name'] = admin[0]
-            session['email'] = admin[1]
-            conn.close()
-            return redirect(url_for('admin_landing')) 
+        if admin and check_password(password, admin[2]):
+           session.permanent = True
+           session['mmu_id'] = mmu_id
+           session['name'] = admin[0]
+           session['email'] = admin[1]
+           conn.close()
+           return redirect(url_for('admin_landing')) 
 
-       
-        cursor.execute("SELECT id, name, email, career, faculty, hall FROM user WHERE mmu_id = ? AND password = ?", (mmu_id, password))
+        cursor.execute("SELECT id, name, email, career, faculty, hall, password FROM user WHERE mmu_id = ?", (mmu_id,))
         user = cursor.fetchone()
 
-        if user:
-            session.permanent = True
-            session['mmu_id'] = mmu_id
-            session['name'] = user[1]
-            session['email'] = user[2]
-            session['career'] = user[3]
-            session['faculty'] = user[4]
-            session['hall'] = user[5]
-
-            conn.close()
-            return redirect(url_for('homepage'))
+        if user and check_password(password, user[6]):
+           session.permanent = True
+           session['mmu_id'] = mmu_id
+           session['name'] = user[1]
+           session['email'] = user[2]
+           session['career'] = user[3]
+           session['faculty'] = user[4]
+           session['hall'] = user[5]
+           conn.close()
+           return redirect(url_for('homepage'))
 
         else:
             conn.close()
@@ -312,10 +312,10 @@ def self_service():
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
 
-        cursor.execute("SELECT id FROM user WHERE mmu_id = ? AND password = ?", (mmu_id, password))
-        user = cursor.fetchone() 
+        cursor.execute("SELECT id, password FROM user WHERE mmu_id = ?", (mmu_id,))
+        user = cursor.fetchone()
 
-        if user:
+        if user and check_password(password, user[1]):
             cursor.execute("UPDATE user SET ticket_status='colllected' WHERE mmu_id = ?", (mmu_id,))
             conn.commit()
             conn.close()
@@ -356,68 +356,6 @@ def email_button():
     flash("Invitations sent to all users!", "success")
     return redirect(url_for('admin_page'))
 
-@app.route('/Announcement')
-def announcement():
-    return render_template('announcement.html')
-
-@app.route('/post_announcement', methods=['GET', 'POST'])
-def post_announcement():
-    if request.method == 'POST':
-        message = request.form.get('message', '').strip()
-        if message:
-            conn = sqlite3.connect(db_path)
-            cursor = conn.cursor()
-            cursor.execute("INSERT INTO announcements (message) VALUES (?)", (message,))
-            conn.commit()
-            conn.close()
-    return render_template('post_announcement.html')
-
-
-@app.route('/Checklist_page', methods=['POST', 'GET'])
-def register_checklist():
-    if request.method == 'POST':
-        mmu_id = request.form.get('ID')
-        goodies_status = request.form.get('goodies_status', 'Pending')
-        badge_status = request.form.get('badge_status', 'Pending')
-
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        cursor.execute("UPDATE user set goodies_status = ?, badge_status = ? WHERE mmu_id = ?", (goodies_status, badge_status, mmu_id))
-        conn.commit()
-        conn.close()
-
-        return "Checklist updated successfully!"
-    return render_template('qr.html')
-
-
-@app.route('/Scan_goodies')
-def scan_goodies():
-    mmu_id = goodies_qr(db_path)
-
-    if not mmu_id:
-        return "No QR code detected or failed to update database."
-
-    try:
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        cursor.execute("SELECT size FROM user WHERE mmu_id = ?", (mmu_id,))
-        result = cursor.fetchone()
-        conn.close()
-
-        size = result[0] if result else "Not Found"
-        return f"T-shirt size for {mmu_id}: {size}"
-
-    except Exception as e:
-        print("Database error:", e)
-        return "Failed to fetch T-shirt size."
-
-
-@app.route('/Scan_badge')
-def scan_badge():
-    badge_qr(db_path)
-    return render_template('qr.html')
-
-
 Picture_folder = 'winpass_training_set'
 app.config['UPLOAD_FOLDER'] = Picture_folder
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -431,13 +369,13 @@ def update_user(nonce, face_data, size=None, timeslot=None):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute("UPDATE user set face_data = ?, size = ?, timeslot = ? WHERE nonce = ?", (face_data, size, timeslot, nonce))
-    cursor.execute("UPDATE user set face_data = ?, size = ?, timeslot = ? WHERE nonce = ?", (face_data, size, timeslot, nonce))
     conn.commit()
     conn.close()
 
 @app.route('/Pre_Registration_page', methods=['POST', 'GET'])
 def pre_registration_page():
     token = request.args.get('token') or request.form.get('token')
+    
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute("SELECT mmu_id, name FROM user WHERE nonce = ?", (token,))
@@ -450,21 +388,8 @@ def pre_registration_page():
     
     mmu_id, name = user
 
-    token = request.args.get('token') or request.form.get('token')
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute("SELECT mmu_id, name FROM user WHERE nonce = ?", (token,))
-    user = cursor.fetchone()
-    print(f"User full name: {user}")
-    conn.close()
-
-    if user is None:
-        return "Invalid token or user not found", 404
-    
-    mmu_id, name = user
 
     if request.method == 'POST':
-        name = name.strip().replace(" ", "_")
         name = name.strip().replace(" ", "_")
         size = request.form.get('size')
         timeslot = request.form.get('timeslot')
@@ -501,12 +426,130 @@ def pre_registration_page():
         face_data = face_code.tobytes()
 
         update_user(token, face_data, size, timeslot)
-        update_user(token, face_data, size, timeslot)
 
         return "Form submitted successfully!"
 
-    return render_template('pre_registration_page.html', token=token)
-    return render_template('pre_registration_page.html', token=token)
+    return render_template('pre_registration_page.html', token=token, name=name)
+
+@app.route('/Announcement_student')
+def announcement_student():
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT message FROM announcements ORDER BY time DESC")
+    announcements = cursor.fetchall()
+    conn.close()
+    return render_template('announcement_student.html', announcements=announcements)
+
+@app.route('/Announcement_admin')
+def announcement_admin():
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, message FROM announcements ORDER BY time DESC")
+    announcements = cursor.fetchall()
+    conn.close()
+    return render_template('announcement_admin.html', announcements=announcements)
+
+@app.route('/delete/<int:id>')
+def delete(id):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM announcements WHERE id = ?", (id,))
+        conn.commit()
+    except Exception as e:
+        conn.close()
+        return f"Deletion failed: {e}"
+    conn.close()
+    return redirect(url_for('announcement_admin'))
+
+@app.route('/update/<int:id>', methods=['GET','POST'])
+def update(id):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    if request.method == 'POST':
+        message = request.form['message']
+        try:
+            cursor.execute("UPDATE announcements SET message = ? WHERE id = ?", (message, id))
+            conn.commit()
+            flash("Updated successfully")
+        except Exception as e:
+            conn.close()
+            return f"Update failed: {e}"
+        conn.close()
+        return redirect(url_for('announcement_admin'))
+
+    else:
+        cursor.execute("SELECT * FROM announcements WHERE id = ?", (id,))
+        announcement = cursor.fetchone()
+        conn.close()
+        if announcement:
+            return render_template('update_announcement.html', announcement=announcement)
+        else:
+            return "Announcement not found", 404
+
+
+@app.route('/post_announcement', methods=['GET', 'POST'])
+def post_announcement():
+    if request.method == 'POST':
+        message = request.form.get('message', '').strip()
+        if message:
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO announcements (message) VALUES (?)", (message,))
+            conn.commit()
+            conn.close()
+            return redirect(url_for('announcement_admin'))
+    return render_template('post_announcement.html')
+
+
+@app.route('/Checklist_page', methods=['POST', 'GET'])
+def register_checklist():
+    if request.method == 'POST':
+        mmu_id = request.form.get('ID')
+        goodies_status = request.form.get('goodies_status')
+        badge_status = request.form.get('badge_status')
+        ticket_status = request.form.get('ticket_status')
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        if goodies_status is not None:
+            cursor.execute("UPDATE user set goodies_status = ? WHERE mmu_id = ?", (goodies_status, mmu_id))
+        if badge_status is not None:
+            cursor.execute("UPDATE user set badge_status = ? WHERE mmu_id = ?", (badge_status, mmu_id))
+        if ticket_status is not None:
+            cursor.execute("UPDATE user set ticket_status = ? WHERE mmu_id = ?", (ticket_status, mmu_id))
+        conn.commit()
+        conn.close()
+
+        return "Checklist updated successfully!"
+    return render_template('qr.html')
+
+
+@app.route('/Scan_goodies')
+def scan_goodies():
+    mmu_id = goodies_qr(db_path)
+
+    if not mmu_id:
+        return "No QR code detected or failed to update database."
+
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT size FROM user WHERE mmu_id = ?", (mmu_id,))
+        result = cursor.fetchone()
+        conn.close()
+
+        size = result[0] if result else "Not Found"
+        return f"T-shirt size for {mmu_id}: {size}"
+
+    except Exception as e:
+        print("Database error:", e)
+        return "Failed to fetch T-shirt size."
+
+
+@app.route('/Scan_badge')
+def scan_badge():
+    badge_qr(db_path)
+    return render_template('qr.html')
 
 
 @app.route('/Email')
@@ -632,23 +675,35 @@ def update_points():
 
 if __name__ == '__main__':
 
+    #Paths 
     # df_path = r"C:\Users\adria\Projects\WINpass-7-05\Test_George.csv"
     # db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
     # image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
     # qr_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\static\qr_codes"
+    # html_template_path = r'C:\Users\adria\Projects\WINpass-7-05\templates\email.html'
 
-    db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
-    image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
-    df_path = r"C:\Users\chiam\Projects\WINpass-7-05\Test_George.csv"
-    qr_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\static"
-    html_template_path = r'C:\Users\chiam\Projects\WINpass-7-05\templates\email.html'
+    # db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
+    # image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
+    # df_path = r"C:\Users\chiam\Projects\WINpass-7-05\Test_George.csv"
+    # qr_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\static\qr_codes"
+    # html_template_path = r'C:\Users\chiam\Projects\WINpass-7-05\templates\email.html'
 
-    # db_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
-    # image_folder_path = r"C:\Mini IT\WINpass-7-05\winpass_training_set"
-    # html_template_path = r'C:\Mini IT\WINpass-7-05\templates\email.html'
+
+    db_path = "winpass.db"
+    image_folder_path = "winpass_training_set"
+    html_template_path = "templates/email.html"
+    qr_folder_path = "static/qr_codes"
+    df_path = "Test_George.csv"
+
+
+
+    # db_path = r"C:\Users\user\projects\WINpass-7-05\winpass.db"
+    # db_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\leaderboard.db"
+
+
     
     DB_FILE = 'leaderboard.db'
 
-    app.run(debug=True)
+    app.run()
 
 

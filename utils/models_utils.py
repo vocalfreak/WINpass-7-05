@@ -183,8 +183,11 @@ def get_events_data(test_set_path):
 
 
 # paths 
-captions_train_path = r"C:\Users\chiam\Projects\WINpass-7-05\captions_trainingset.csv"
-test_set_path = r"C:\Users\chiam\Projects\WINpass-7-05\instagram_posts.csv"
+# captions_train_path = r"C:\Users\chiam\Projects\WINpass-7-05\captions_trainingset.csv"
+# test_set_path = r"C:\Users\chiam\Projects\WINpass-7-05\instagram_posts.csv"
+
+captions_train_path = "captions_trainingset.csv"
+test_set_path = "instagram_posts.csv"
 
 #logistic_regression(captions_train_path, test_set_path)
 #get_title_date(test_set_path, test_set_path)

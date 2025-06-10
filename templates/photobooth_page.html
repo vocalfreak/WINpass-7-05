@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Photobooth</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='camera.css') }}">
     <link href="https://fonts.googleapis.com/css?family=Trirong">
 </head>
 <body>
@@ -31,7 +31,7 @@
           <button>START!</button>
         </a>
 
-        <h4>Press <strong>Spacebar</strong> to capture your photo,<br> and <strong>Esc</strong> to exit the camera.</h4>
+        <h4>Press <strong>Spacebar</strong> to capture your photo,<br> and <strong>Q</strong> to exit the camera.</h4>
         <br>
 
         <a href="{{ url_for('editing_page') }}">

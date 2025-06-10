@@ -207,8 +207,16 @@ def get_tmr_filter(today):
     return tmr 
 
 # PATH
-post_path = r"C:\Users\chiam\Projects\WINpass-7-05\weekly_scrapes_csv\instagram_posts_20250609.csv"
-captions_training_path = r"C:\Users\chiam\Projects\WINpass-7-05\captions_trainingset.csv"
-posts_img_path = r"C:\Users\chiam\Projects\WINpass-7-05\static\posts_img"
-csv_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\weekly_scrapes_csv"
+# post_path = r"C:\Users\chiam\Projects\WINpass-7-05\weekly_scrapes_csv\instagram_posts.csv"
+# captions_training_path = r"C:\Users\chiam\Projects\WINpass-7-05\captions_trainingset.csv"
+# # posts_img_path = r"C:\Users\chiam\Projects\WINpass-7-05\posts_img"
+# csv_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\weekly_scrapes_csv"
+# db_path = "winpass.db"
+
+
+# posts_img_path = r"C:\Mini IT\WINpass-7-05\static\posts_img"
+
+post_path = "weekly_scrapes_csv\instagram_posts_20250609.csv"
+captions_training_path = "captions_trainingset.csv"
+csv_folder_path = "weekly_scrapes_csv"
 db_path = "winpass.db"
