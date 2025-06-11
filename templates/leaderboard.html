@@ -1,70 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Hall Leaderboard</title>
+    <meta charset="UTF-8">
+    <title>WIN Week Leaderboard</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: white;
-            padding: 40px;
-        }
-        h1 {
-            text-align: center;
-        }
-        table {
-            margin: auto;
-            border-collapse: collapse;
-            width: 80%;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: center;
-        }
-        th {
-            background-color: #2a0fdf;
-            color: white;
-        }
-        tr:nth-child(even){background-color: #f2f2f2;}
-        .form-btn {
-            margin-top: 10px;
-        }
+        body { font-family: Arial; background: #f4f4f4; padding: 20px; }
+        table { border-collapse: collapse; width: 100%; background: white; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }
+        th { background: #cadef3; color: white; }
+        form { margin-top: 20px; }
     </style>
 </head>
 <body>
-    <h1> Hall Leaderboard</h1>
+    <h1>WIN Week Hall Leaderboard</h1>
 
-    <table>
-        <tr>
-            <th>Rank</th>
-            <th>Hall</th>
-            <th>Gold</th>
-            <th>Silver</th>
-            <th>Bronze</th>
-            <th>Points</th>
-            <th>Update</th>
-        </tr>
-        {% for hall in halls %}
-        <tr>
-            <td>{{ loop.index }}</td>
-            <td>{{ hall[1] }}</td>
-            <td>{{ hall[2] }}</td>
-            <td>{{ hall[3] }}</td>
-            <td>{{ hall[4] }}</td>
-            <td>{{ hall[5] }}</td>
-            <td>
-                <form action="/update" method="post">
-                    <input type="hidden" name="hall" value="{{ hall[1] }}">
-                    <select name="medal">
-                        <option value="gold">Gold</option>
-                        <option value="silver">Silver</option>
-                        <option value="bronze">Bronze</option>
-                    </select>
-                    <button type="submit" class="form-btn">+ Add</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
+   <table>
+    <tr><th>Rank</th><th>Hall Name</th><th>Points</th></tr>
+    {% for hall in halls %}
+    <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ hall[0] }}</td>
+        <td>{{ hall[1] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+    <form action="/update" method="post">
+        <h2>Update Points</h2>
+        <label for="hall">Hall:</label>
+        <select name="hall" required>
+            {% for hall in halls %}
+                <option value="{{ hall[0] }}">{{ hall[0] }}</option>
+            {% endfor %}
+        </select>
+        <label for="points">Points to Add:</label>
+        <input type="number" name="points" required>
+        <button type="submit">Update</button>
+    </form>
 </body>
 </html>

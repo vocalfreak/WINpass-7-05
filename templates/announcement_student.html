@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ANNOUNCEMENT</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='register.css') }}">
+  <link href="https://fonts.googleapis.com/css?family=Trirong">
+</head>
+<body>
+    <header>
+     <div class="top-bar">
+       <div class="logo-area">
+         <img src="{{ url_for('static', filename='img_mmu.png') }}" alt="MMU Logo" class="logo"/>
+         <span class="win">WIN<span class="pass">pass</span></span>
+       </div>
+     </div>
+     <nav>
+       <ul>
+         <li><a href="{{ url_for('admin_landing') }}">Home</a></li>
+         <li><a href="{{ url_for('face_verification') }}">Face Verification</a></li>
+         <li><a href="{{ url_for('events_page') }}">Event Page</a></li>
+         <li><a href="{{ url_for('student_profile') }}">Student Profile</a></li>
+       </ul>
+     </nav>
+   </header>
+   <section class="Announcement">
+      <h1>Announcements</h1>
+      {% if announcements %}
+      <ul>
+        {% for message in announcements %}
+          <li>{{ message[0] }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No announcements yet.</p>
+    {% endif %}
+    </section>
+</body>
+</html>

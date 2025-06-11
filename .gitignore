@@ -10,9 +10,19 @@ winpass_training_set
 .env
 
 posts_img
-dataset_instagram-post-scraper_2025-05-07_08-55-02-774.json
-
-winpass.db
+dataset_instagram-post-scraper_2025-05-12_09-02-09-852.json
 
 qr_codes
 face
+
+instagram_posts_cleaned.csv
+captions.csv
+
+prediction_results.csv
+test_results.csv
+
+Test_George.csv
+captions_trainingset.csv
+
+winpass.db
+winpass.db-journal

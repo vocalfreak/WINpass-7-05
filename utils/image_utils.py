@@ -5,9 +5,11 @@ import sqlite3
 import numpy as np
 import cv2 
 import qrcode
+import requests
 from flask import current_app
+from urllib.parse import urlparse
 
-def resize_img_face(img_path, size=(250, 250), fill_color=(0, 0, 0)):
+def resize_image(img_path, size=(250, 250), fill_color=(0, 0, 0)):
 
     img = Image.open(img_path)
     img.thumbnail(size, Image.LANCZOS)
@@ -15,20 +17,6 @@ def resize_img_face(img_path, size=(250, 250), fill_color=(0, 0, 0)):
     delta_h = size[1] - img.size[1]
     padding = (delta_w // 2, delta_h // 2, delta_w - delta_w // 2, delta_h - delta_h // 2)
     return ImageOps.expand(img, padding, fill=fill_color)
-
-def resize_img_post(post_folder_path, size=(224, 224), fill_color=(0, 0, 0)):
-    for filename in os.listdir(post_folder_path):
-        if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
-            img_path = os.path.join(post_folder_path, filename)
-            img = Image.open(img_path)
-            img.thumbnail(size, Image.LANCZOS)
-
-            delta_w = size[0] - img.size[0]
-            delta_h = size[1] - img.size[1]
-            padding = (delta_w // 2, delta_h // 2, delta_w - delta_w // 2, delta_h - delta_h // 2)
-            new_img = ImageOps.expand(img, padding, fill=fill_color)
-
-            new_img.save(img_path)
 
 def generate_qr(mmu_id, data):
     qr = qrcode.make(data).resize((160, 160))
@@ -57,7 +45,7 @@ def check_ticket_status(db_path):
     except Exception as e:
         print(f"Error fetching ticket status: {e}")
         
-def get_winpass_info(name, mmu_id, db_path, image_folder_path):
+def generate_winpass(name, mmu_id, db_path, image_folder_path):
     person_folder_path = os.path.join(image_folder_path, name.replace(' ', '_'))
     if os.path.exists(person_folder_path):
         image_files = [f for f in os.listdir(person_folder_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))][:1]
@@ -82,8 +70,24 @@ def get_winpass_info(name, mmu_id, db_path, image_folder_path):
             except Exception as e:
                 print(f"Error displaying image {img_path}: {e}")
 
+def get_winpass_info(mmu_id, db_path, image_folder_path):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT name, hall, career FROM user WHERE mmu_id = ?", (mmu_id,))
+    name, hall, career = cursor.fetchone()
+    conn.close()
+
+    person_folder_path = os.path.join(image_folder_path, name.replace(' ', '_'))
+    if os.path.exists(person_folder_path):
+        image_files = [f for f in os.listdir(person_folder_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))][:1]
+
+        for i, img_file in enumerate(image_files):
+            img_path = os.path.join(person_folder_path, img_file)
     
-def get_face_encodings_folders(image_folder_path, db_path):
+    return name, mmu_id, hall, career, img_path
+    
+def get_face_encodings_batch(image_folder_path, db_path):
 
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
@@ -143,6 +147,41 @@ def get_face_encodings_folders(image_folder_path, db_path):
     conn.commit()
     conn.close()
     print(f"\nTotal encodings collected and stored: {total_encodings}")
+
+
+
+def get_face_encodings_folders(image_folder_path):
+    face_encodings = []
+
+    for image_name in sorted(os.listdir(image_folder_path)):
+        image_path = os.path.join(image_folder_path, image_name)
+        try:
+            img = cv2.imread(image_path)
+            if img is None:
+                print(f"Could not read image: {image_path}")
+                continue
+
+            rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            encodings = fr.face_encodings(rgb_img)
+
+            if encodings:
+                face_encodings.append(encodings[0])
+                print(f"[+] Found encoding for {image_name}")
+            else:
+                print(f"[-] No face found in {image_name}")
+
+        except Exception as e:
+            print(f"Error processing {image_name}: {e}")
+
+    valid_encodings = [encoding for encoding in face_encodings if encoding is not None]
+    
+    if len(valid_encodings) < 2:
+        return None
+
+    combined_encoding = np.mean(valid_encodings, axis=0)
+    
+    return combined_encoding
+
 
 def get_decode_face_data(db_path):
     
@@ -227,7 +266,7 @@ def real_time_recognition(db_path, image_folder_path):
                                 cv2.waitKey(0)
                                 cv2.destroyAllWindows()
 
-                                return get_winpass_info(name, mmu_id, db_path, image_folder_path)
+                                return generate_winpass(name, mmu_id, db_path, image_folder_path)
                                                                 
                         face_names.append(name)
                         mmu_ids.append(mmu_id)
@@ -260,18 +299,119 @@ def real_time_recognition(db_path, image_folder_path):
     video_capture.release()
     cv2.destroyAllWindows()
 
+
+def goodies_qr( db_path):
+    print(f"Using database path: {db_path}")
+    cap = cv2.VideoCapture(0)
+    detector = cv2.QRCodeDetector()
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+    
+        data, bbox, _ = detector.detectAndDecode(frame)
+
+        if bbox is not None:
+            points = bbox.astype(int)
+            frame = cv2.polylines(frame, [points], isClosed=True, color=(0, 255, 0), thickness=3)
+
+            if data:
+                frame = cv2.putText(frame, data, (points[0][0][0], points[0][0][1] - 10),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+                print(f"QR Code Detected: {data}")
+
+                parsed = urlparse(data.strip())
+                mmu_id = parsed.path.lstrip('/')
+                print(f"Parsed data: {parsed}")
+                print(f"QR Code Detected: {mmu_id}")
+
+                try:
+                    conn = sqlite3.connect(db_path)
+                    cursor = conn.cursor()
+                    cursor.execute("UPDATE user SET goodies_status = ? WHERE mmu_id = ?", ('collected', mmu_id))
+                    conn.commit()
+                    conn.close()
+                    
+                    print(f"Updated database for MMU ID: {mmu_id}")
+                    break
+                except Exception as e:
+                    print("Failed to connect to server:", e)
+
+        cv2.imshow("QR Scanner", frame)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+    return mmu_id
+
+
+
+def badge_qr( db_path):
+    print(f"Using database path: {db_path}")
+    cap = cv2.VideoCapture(0)
+    detector = cv2.QRCodeDetector()
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+    
+        data, bbox, _ = detector.detectAndDecode(frame)
+
+        if bbox is not None:
+            points = bbox.astype(int)
+            frame = cv2.polylines(frame, [points], isClosed=True, color=(0, 255, 0), thickness=3)
+
+            if data:
+                frame = cv2.putText(frame, data, (points[0][0][0], points[0][0][1] - 10),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+                print(f"QR Code Detected: {data}")
+
+                parsed = urlparse(data.strip())
+                mmu_id = parsed.path.lstrip('/')
+                print(f"Parsed data: {parsed}")
+                print(f"QR Code Detected: {mmu_id}")
+
+                try:
+                    conn = sqlite3.connect(db_path)
+                    cursor = conn.cursor()
+                    print(f"Executing query: UPDATE user SET badge_status = 'collected' WHERE mmu_id = {mmu_id}")
+                    cursor.execute("UPDATE user SET badge_status = ? WHERE mmu_id = ?", ('collected', mmu_id))
+                    conn.commit()
+                    conn.close()
+                    
+                    print(f"Updated database for MMU ID: {mmu_id}")
+                    break
+                except Exception as e:
+                    print("Failed to connect to server:", e)
+
+        cv2.imshow("QR Scanner", frame)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+
 # Paths
-dataset_path = r"C:\Users\chiam\Downloads\winpass_training_set"
+dataset_path = "winpass_training_set"
 database_path = "winpass.db"
-image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
-post_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\posts_img"
+image_folder_path = "winpass_training_set"
+
+#database_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
+#db_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
+#image_folder_path = r"C:\Mini IT\WINpass-7-05\winpass_training_set"
+
 
 db_path = database_path 
 
-if __name__ == "__main__":
-    #get_face_encodings_folders(dataset_path, db_path)
-    #real_time_recognition(db_path, image_folder_path)
-    resize_img_post(post_folder_path)
+#get_face_encodings_batch(image_folder_path, db_path)
+
+
 
 
 

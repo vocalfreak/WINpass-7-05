@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MMU Winpass</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@600;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='digital_ticket.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="ticket-container">
+            <div class="ticket-header">
+                <h1 class="student-name">{{ student.name }}</h1>
+                <div class="student-info">
+                    <div class="student-details">
+                        <p class="student-id">{{ student.mmu_id }}</p>
+                        <p class="career">{{ student.career }}</p>
+                    </div>
+                    <div class="student-photo">
+                        <img src="{{ student.photo_path }}" alt="Student Photo">
+                    </div>
+                </div>
+            </div>
+            <div class="batik-container">
+                <img class="batik-image" src="{{ url_for('static', filename='images/' ~ student.hall ~ '_batik.png') }}" alt="Batik-Image">
+                <div class="qr-code-container">
+                    <img class="qr-code" img src="{{ url_for('static', filename=student.qr_path) }}", alt="Qr Code">
+                </div>
+            </div>
+            <div class="footer">
+                <img class="mmu-logo" src="{{ url_for('static', filename='img_mmu.png') }}" alt="MMU Logo">
+                <img class="hall-logo" src="{{ url_for('static', filename='images/' ~ student.hall ~ '_logo.png') }}" alt="Hall Logo">
+            </div>
+        </div>
+        
+        <div class="status-buttons">
+            <form action="{{ url_for('comfirm_button') }}" method="get">
+                <button type="submit" class="comfirm-button">✓</button>
+             </form>
+            
+            <form action="{{ url_for('reject_button') }}" method="get">
+                <button type="submit" class="reject-button">✕</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

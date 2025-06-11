@@ -1,0 +1,87 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+  }
+
+h2 {
+  color: red;
+  text-align: center;
+  margin-top: 50px;
+  font-weight: bolder;
+}
+
+.edit-student-form {
+  max-width: 500px;
+  margin: 2rem auto;
+  background-color: #f8f8f8;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  font-family: 'Trirong', serif;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-top: 12px;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.btn {
+  padding: 10px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-primary {
+  background-color: #0077cc;
+  color: white;
+}
+
+.btn-secondary {
+  background-color: #ccc;
+  color: #333;
+  text-decoration: none;
+  text-align: center;
+  line-height: 18px;
+}
+
+.btn-danger {
+    background-color: #94212c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+   
+}
+
+.btn-danger:hover {
+    background-color: #772e35;
+}

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ANNOUNCEMENT</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='register.css') }}">
+  <link href="https://fonts.googleapis.com/css?family=Trirong">
+</head>
+<body>
+    <header>
+     <div class="top-bar">
+       <div class="logo-area">
+         <img src="{{ url_for('static', filename='img_mmu.png') }}" alt="MMU Logo" class="logo"/>
+         <span class="win">WIN<span class="pass">pass</span></span>
+       </div>
+     </div>
+     <nav>
+       <ul>
+         <li><a href="{{ url_for('admin_landing') }}">Home</a></li>
+         <li><a href="{{ url_for('face_verification') }}">Face Verification</a></li>
+         <li><a href="{{ url_for('post_announcement') }}">Post Announcement</a></li>
+         <li><a href="{{ url_for('admin_page') }}">Admin Page</a></li>
+         <li><a href="{{ url_for('events_page') }}">Event Page</a></li>
+       </ul>
+     </nav>
+   </header>
+   <section class="Announcement">
+    <h1>Update Announcement</h1>
+    {% if announcement %}
+        <form method="post">
+            <textarea name="message" rows="5" cols="50">{{ announcement[1] }}</textarea><br><br>
+            <input type="submit" value="Update" class="Update_button_pg">
+        </form>
+    {% else %}
+        <p>Announcement not found.</p>
+    {% endif %}
+    </section>
+</body>
+</html>
