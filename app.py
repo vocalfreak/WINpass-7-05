@@ -673,7 +673,44 @@ def update_points():
 
     return redirect('/leaderboard')
 
+app.config['UPLOAD_FOLDER'] = 'static/uploads'
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  
+
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+def init_db():
+    with sqlite3.connect("hall_fame.db") as conn:
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS posts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                image TEXT NOT NULL,
+                caption TEXT,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        file = request.files['image']
+        caption = request.form['caption']
+
+        if file:
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+
+            with sqlite3.connect("hall_fame.db") as conn:
+                conn.execute("INSERT INTO posts (image, caption) VALUES (?, ?)", (filename, caption))
+
+        return redirect(url_for('index'))
+    with sqlite3.connect("hall_fame.db") as conn:
+        posts = conn.execute("SELECT * FROM posts ORDER BY timestamp DESC").fetchall()
+
+    return render_template('index.html', posts=posts)
+
 if __name__ == '__main__':
+    init_db()
+    app.run(debug=True)
 
     #Paths 
     # df_path = r"C:\Users\adria\Projects\WINpass-7-05\Test_George.csv"
@@ -703,7 +740,5 @@ if __name__ == '__main__':
 
     
     DB_FILE = 'leaderboard.db'
-
-    app.run()
 
 
