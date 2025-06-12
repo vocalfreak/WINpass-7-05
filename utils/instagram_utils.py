@@ -4,6 +4,7 @@ import os
 import csv
 import pandas as pd
 import subprocess as sp
+import logging
 from pathlib import Path 
 import io
 import sys
@@ -11,8 +12,13 @@ from apify_client import ApifyClient
 import datetime
 from utils.models_utils import logistic_regression, get_title_date, extract_event_data, get_events_data
 import sqlite3
+import time 
+import schedule
 import dateparser
 from datetime import datetime, timedelta
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 def scrape_instagram(csv_folder_path):
 
@@ -69,6 +75,10 @@ def scrape_instagram(csv_folder_path):
     run = client.actor("nH2AHrwxeTRJoN5hX").call(run_input=run_input)
 
     dataset_items = list(client.dataset(run["defaultDatasetId"]).iterate_items())
+
+    if not dataset_items:
+        return None
+    
     df = pd.DataFrame(dataset_items)
 
     time = datetime.now().strftime("%Y%m%d")
@@ -180,7 +190,7 @@ def parse_date(post_path):
     df.to_csv(post_path, index=False, encoding="utf-8-sig")
 
     
-def data_pipeline():
+def data_pipeline(captions_training_path, csv_folder_path, db_path):
     csv_filepath = scrape_instagram(csv_folder_path) 
 
     logistic_regression(captions_training_path, csv_filepath)
@@ -205,6 +215,20 @@ def get_weekend_filter(today):
 def get_tmr_filter(today):
     tmr = today + timedelta(days=1)
     return tmr 
+
+def schedule_weekly_pipeline(captions_training_path, csv_folder_path, db_path):
+    def run_scheduled_pipeline():
+        data_pipeline(captions_training_path, csv_folder_path, db_path)
+    
+    schedule.every().monday.at("09:00").do(run_scheduled_pipeline)
+    
+    logger.info("Weekly pipeline scheduled for every Monday at 12:00 AM")
+    
+
+    while True:
+        schedule.run_pending()
+        time.sleep(3600)  
+ 
 
 # PATH
 # post_path = r"C:\Users\chiam\Projects\WINpass-7-05\weekly_scrapes_csv\instagram_posts.csv"
