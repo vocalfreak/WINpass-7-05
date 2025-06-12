@@ -431,11 +431,16 @@ def pre_registration_page():
 
     return render_template('pre_registration_page.html', token=token, name=name)
 
+@app.template_filter('format_datetime')
+def format_datetime(value, format='%d %b %I:%M %p'):
+    dt = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+    return dt.strftime(format)
+
 @app.route('/Announcement_student')
 def announcement_student():
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("SELECT message FROM announcements ORDER BY time DESC")
+    cursor.execute("SELECT message, time FROM announcements ORDER BY time DESC")
     announcements = cursor.fetchall()
     conn.close()
     return render_template('announcement_student.html', announcements=announcements)
@@ -444,7 +449,7 @@ def announcement_student():
 def announcement_admin():
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, message FROM announcements ORDER BY time DESC")
+    cursor.execute("SELECT id, message, time FROM announcements ORDER BY time DESC")
     announcements = cursor.fetchall()
     conn.close()
     return render_template('announcement_admin.html', announcements=announcements)
