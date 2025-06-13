@@ -320,11 +320,8 @@ def self_service():
             conn.commit()
             conn.close()
             
-            # CHANGE TO TICKET PAGE LATER
             return redirect(url_for('homepage'))
-    
-    # UNCOMMENT ONCE self_service.html IS DONE
-    #return render_template('self_service.html')
+
 
 @app.route('/Import-CSV', methods=['POST'])
 def import_csv():
