@@ -1,6 +1,5 @@
 import os
 from PIL import Image, ImageOps
-import face_recognition as fr
 import sqlite3
 import numpy as np
 import cv2 
@@ -9,14 +8,6 @@ import requests
 from flask import current_app
 from urllib.parse import urlparse
 
-def resize_image(img_path, size=(250, 250), fill_color=(0, 0, 0)):
-
-    img = Image.open(img_path)
-    img.thumbnail(size, Image.LANCZOS)
-    delta_w = size[0] - img.size[0]
-    delta_h = size[1] - img.size[1]
-    padding = (delta_w // 2, delta_h // 2, delta_w - delta_w // 2, delta_h - delta_h // 2)
-    return ImageOps.expand(img, padding, fill=fill_color)
 
 def generate_qr(mmu_id, data):
     qr = qrcode.make(data).resize((160, 160))
@@ -28,22 +19,6 @@ def generate_qr(mmu_id, data):
 
     return f'qrcodes/{mmu_id}.png'
 
-def check_ticket_status(db_path):
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    
-    try:
-        cursor.execute("SELECT ticket_status FROM user")
-        ticket_status = cursor.fetchall()
-        conn.close()
-        for status in ticket_status:
-            if status == 'collected':
-                return False
-            else:
-                return True 
-    
-    except Exception as e:
-        print(f"Error fetching ticket status: {e}")
         
 def generate_winpass(name, mmu_id, db_path, image_folder_path):
     person_folder_path = os.path.join(image_folder_path, name.replace(' ', '_'))
@@ -208,97 +183,6 @@ def get_decode_face_data(db_path):
 
     print(f"Loaded {len(known_face_encodings)} face encodings from {len(users)} users")
     return known_face_encodings, known_face_names, known_mmu_ids
-
-def real_time_recognition(db_path, image_folder_path):
-    known_face_encodings, known_face_names, known_mmu_ids = get_decode_face_data(db_path)
-    
-    video_capture = cv2.VideoCapture(0)
-    
-    if not video_capture.isOpened():
-        print("Error: Could not open camera.")
-        return
-    
-    video_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-    video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-    
-    process_this_frame = True
-    
-    while True:
-        ret, frame = video_capture.read()
-        if not ret:
-            break
-        
-        if process_this_frame:
-            small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
-            
-            rgb_small_frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
-
-            face_locations = fr.face_locations(rgb_small_frame)
-            
-            face_names = []
-            mmu_ids = []
-            
-            if face_locations:
-                try:
-                    face_encodings = fr.face_encodings(rgb_small_frame, face_locations)
-                    
-                    for face_encoding in face_encodings:
-                        matches = fr.compare_faces(known_face_encodings, face_encoding, tolerance=0.4)
-                        name = "Unknown"
-                        mmu_id = None
-                        
-                        if True in matches:
-                            
-                            check_ticket_status(db_path)
-                            
-                            if True:
-                                first_match_index = matches.index(True)
-                                mmu_id = known_mmu_ids[first_match_index]
-                                name = known_face_names[first_match_index]
-
-                                print(f"Match found: {name} (MMU ID: {mmu_id})")
-
-                                video_capture.release()
-
-
-                                cv2.destroyAllWindows()
-
-                                cv2.waitKey(0)
-                                cv2.destroyAllWindows()
-
-                                return generate_winpass(name, mmu_id, db_path, image_folder_path)
-                                                                
-                        face_names.append(name)
-                        mmu_ids.append(mmu_id)
-                
-                except Exception as e:
-                    print(f"Error processing face encodings: {e}")
-                    face_names = ["Error"] * len(face_locations)
-                    mmu_ids = [None] * len(face_locations)
-            
-            for (top, right, bottom, left), name in zip(face_locations, face_names):
-                top *= 4
-                right *= 4
-                bottom *= 4
-                left *= 4
-                
-                cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
-                
-                cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (0, 255, 0), cv2.FILLED)
-                font = cv2.FONT_HERSHEY_DUPLEX
-                cv2.putText(frame, name, (left + 6, bottom - 6), font, 0.8, (255, 255, 255), 1)
-        
-        process_this_frame = not process_this_frame
-        
-        
-        cv2.imshow('Face Recognition', frame)
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    video_capture.release()
-    cv2.destroyAllWindows()
-
 
 def goodies_qr( db_path):
     print(f"Using database path: {db_path}")

@@ -1,5 +1,5 @@
 from utils.route_utils import import_csv_init, photobooth, get_timeslot, get_timeslot_status, get_queue_time 
-from utils.image_utils import real_time_recognition, get_winpass_info, badge_qr, get_face_encodings_folders, goodies_qr
+from utils.image_utils import get_winpass_info, badge_qr, get_face_encodings_folders, goodies_qr
 from utils.email_utils import send_email
 from datetime import datetime
 from utils.instagram_utils import get_weekend_filter, get_tmr_filter
@@ -179,29 +179,6 @@ def digital_ticket():
 def photos(filename):
     return send_from_directory(image_folder_path, filename)
 
-@app.route('/Face-Verification')
-def face_verification():
-    result = real_time_recognition(db_path, image_folder_path)
-    name, mmu_id, hall, career, img_path, qr_path = result
-
-    session['mmu_id'] = mmu_id
-
-    rel_path = os.path.relpath(img_path, start=image_folder_path).replace('\\','/')
-    photo_url = url_for('photos', filename=rel_path)
-
-    student = {
-        "name": name,
-        "mmu_id": mmu_id,
-        "hall": hall,       
-        "career": career,
-        "photo_path": photo_url,
-        "qr_path": qr_path
-    }
-
-    session['qr_path'] = qr_path
-
-    return render_template("digital_ticket_generation.html", student=student)
-
 @app.route('/Comfirm')
 def comfirm_button():
     mmu_id = (session['mmu_id'])
@@ -217,18 +194,6 @@ def comfirm_button():
     session.pop('qr_path', None)
 
     return redirect(url_for('admin_landing')) 
-
-@app.route('/Reject')
-def reject_button():
-    qr_path = session['qr_path']
-    
-    qr_path = os.path.join(qr_folder_path, qr_path)
-    os.remove(qr_path)
-    
-    session.pop( 'mmu_id', None)
-    session.pop('qr_path', None)
-
-    return face_verification()
 
 @app.route('/Admin-Page')
 def admin_page():
