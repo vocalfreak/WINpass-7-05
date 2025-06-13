@@ -680,7 +680,7 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 def init_db():
-    with sqlite3.connect("hall_fame.db") as conn:
+    with sqlite3.connect("leaderboard.db") as conn:
         conn.execute('''
             CREATE TABLE IF NOT EXISTS posts (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -701,11 +701,11 @@ def index():
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
 
-            with sqlite3.connect("hall_fame.db") as conn:
+            with sqlite3.connect("leaderboard.db") as conn:
                 conn.execute("INSERT INTO posts (image, caption) VALUES (?, ?)", (filename, caption))
 
         return redirect(url_for('index'))
-    with sqlite3.connect("hall_fame.db") as conn:
+    with sqlite3.connect("leaderboard.db") as conn:
         posts = conn.execute("SELECT * FROM posts ORDER BY timestamp DESC").fetchall()
 
     return render_template('index.html', posts=posts)
