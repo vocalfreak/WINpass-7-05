@@ -7,6 +7,8 @@ import qrcode
 import requests
 from flask import current_app
 from urllib.parse import urlparse
+import base64
+import mimetypes
 
 
 def generate_qr(mmu_id, data):
@@ -280,6 +282,14 @@ def badge_qr( db_path):
     cap.release()
     cv2.destroyAllWindows()
 
+def image_to_base64(image_path):
+    with open(image_path, "rb") as img_file:
+        mime_type, _ = mimetypes.guess_type(image_path)
+        if mime_type is None:
+            mime_type = 'image/png'  
+            
+        img_data = base64.b64encode(img_file.read()).decode('utf-8')
+        return f"data:{mime_type};base64,{img_data}"
 
 # Paths
 dataset_path = "winpass_training_set"

@@ -58,6 +58,3 @@ def send_email(subject, body, image_path, db_path, html_template_path):
                 )
         except Exception as e:
             print(f"Error sending to {recipient_email}: {e}")
-
-
-

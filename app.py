@@ -10,6 +10,7 @@ import os
 from werkzeug.utils import secure_filename
 from datetime import timedelta
 from utils.route_utils import hash_password, check_password, bcrypt
+from html2image import Html2Image
 
 app = Flask(__name__)
 
@@ -179,21 +180,7 @@ def digital_ticket():
 def photos(filename):
     return send_from_directory(image_folder_path, filename)
 
-@app.route('/Comfirm')
-def comfirm_button():
-    mmu_id = (session['mmu_id'])
-    
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
 
-    cursor.execute("UPDATE user SET ticket_status='collected' WHERE mmu_id = ?", (mmu_id,))
-    conn.commit()
-    conn.close()
-
-    session.pop( 'mmu_id', None)
-    session.pop('qr_path', None)
-
-    return redirect(url_for('admin_landing')) 
 
 @app.route('/Admin-Page')
 def admin_page():
@@ -676,6 +663,6 @@ if __name__ == '__main__':
     
     DB_FILE = 'leaderboard.db'
 
-    app.run()
+    app.run(debug=True)
 
 
