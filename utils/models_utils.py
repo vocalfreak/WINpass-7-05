@@ -7,13 +7,17 @@ import re
 import logging 
 import requests
 import time 
+from dotenv import load_dotenv
+import os 
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
 from transformers import T5Tokenizer, T5ForConditionalGeneration
 
-huggingface_token = "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"
+load_dotenv(dotenv_path='huggingface.env')
+
+huggingface_token = os.getenv('HUGGINGFACE_TOKEN')
 
 def call_huggingfaceapi(prompt, model="google/flan-t5-large", max_length=55):
 
