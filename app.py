@@ -1,6 +1,6 @@
 from utils.route_utils import import_csv_init, photobooth, get_timeslot, get_timeslot_status, get_queue_time 
-from utils.image_utils import real_time_recognition, get_winpass_info, badge_qr, get_face_encodings_folders, goodies_qr
-from utils.email_utils import send_email
+from utils.image_utils import real_time_recognition, get_winpass_info, badge_qr, get_face_encodings_folders, goodies_qr, image_to_base64
+from utils.email_utils import send_email, send_email_ticket
 from datetime import datetime
 from utils.instagram_utils import get_weekend_filter, get_tmr_filter
 from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory, session 
@@ -10,6 +10,7 @@ import os
 from werkzeug.utils import secure_filename
 from datetime import timedelta
 from utils.route_utils import hash_password, check_password, bcrypt
+from html2image import Html2Image
 
 app = Flask(__name__)
 
@@ -182,6 +183,7 @@ def photos(filename):
 @app.route('/Face-Verification')
 def face_verification():
     result = real_time_recognition(db_path, image_folder_path)
+    session['result'] = result
     name, mmu_id, hall, career, img_path, qr_path = result
 
     session['mmu_id'] = mmu_id
@@ -204,17 +206,65 @@ def face_verification():
 
 @app.route('/Comfirm')
 def comfirm_button():
-    mmu_id = (session['mmu_id'])
-    
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
+    result = (session['result'])
 
-    cursor.execute("UPDATE user SET ticket_status='collected' WHERE mmu_id = ?", (mmu_id,))
-    conn.commit()
-    conn.close()
+    if result:
+        name, mmu_id, hall, career, img_path, qr_path = result 
+
+        photo = image_to_base64(img_path)
+        qr = image_to_base64(os.path.join(f"static/qr_codes/{mmu_id}.png"))
+
+        app_dir = os.path.dirname(os.path.abspath(__file__))
+
+        batik_path = os.path.join(app_dir, "static", "images", f"{hall}_batik.png")
+        mmu_logo_path = f"static/img_mmu.png" 
+        hall_logo_path = os.path.join(app_dir, "static", "images", f"{hall}_logo.png")
+
+        batik = image_to_base64(batik_path)
+        mmu_logo = image_to_base64(mmu_logo_path)
+        hall_logo = image_to_base64(hall_logo_path)
+
+        student = {
+            "name": name,
+            "mmu_id": mmu_id,
+            "hall": hall,       
+            "career": career,
+            "photo_path": photo,
+            "qr_path": qr,
+            "batik_path": batik,
+            "mmu_logo_path": mmu_logo,
+            "hall_logo_path": hall_logo
+            }
+        
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+
+        cursor.execute("UPDATE user SET ticket_status='collected' WHERE mmu_id = ?", (mmu_id,))
+        conn.commit()
+
+        html_digital_ticket = render_template("digital_ticket_screenshot.html", student=student)
+
+        output_dir = "static/digital_tickets"
+        os.makedirs(output_dir, exist_ok=True)
+        image_filename = f"{mmu_id}_winpass.png"
+        image_path = os.path.join(output_dir, image_filename)
+
+        hti = Html2Image(output_path=output_dir)
+        hti.screenshot(html_str=html_digital_ticket, save_as=image_filename, size=(550, 600))
+
+        send_email_ticket(image_path, db_path, mmu_id, name)
+
+        conn.close()
+
+        session.pop('mmu_id', None)
+        session.pop('qr_path', None)
+        session.pop('result', None)
+
+        return redirect(url_for('admin_landing'))
 
     session.pop( 'mmu_id', None)
     session.pop('qr_path', None)
+    session.pop('result', None)
 
     return redirect(url_for('admin_landing')) 
 
@@ -227,6 +277,7 @@ def reject_button():
     
     session.pop( 'mmu_id', None)
     session.pop('qr_path', None)
+    session.pop('result', None)
 
     return face_verification()
 
@@ -704,6 +755,6 @@ if __name__ == '__main__':
     
     DB_FILE = 'leaderboard.db'
 
-    app.run()
+    app.run(debug=True)
 
 

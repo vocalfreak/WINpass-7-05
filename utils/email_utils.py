@@ -59,5 +59,45 @@ def send_email(subject, body, image_path, db_path, html_template_path):
         except Exception as e:
             print(f"Error sending to {recipient_email}: {e}")
 
+def send_email_ticket(image_path, db_path, mmu_id, name):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT email FROM user WHERE mmu_id = ?", (mmu_id,))
+    recipient = cursor.fetchall()
+    conn.close()  
+
+    for (recipient_email,) in recipient:
+        try:
+            msg = MIMEMultipart('related')
+            msg['From'] = EMAIL_ADDRESS
+            msg['To'] = recipient_email
+            msg['Subject'] = f"Heres your Winpass, {name}"
+            
+            if image_path and os.path.exists(image_path):
+                with open(image_path, 'rb') as img:
+                    img_data = img.read()
+                    img_type = imghdr.what(img.name)
+                    img_name = os.path.basename(img.name)
+                    image = MIMEImage(img_data, _subtype=img_type)
+                    image.add_header(
+                        'Content-Disposition',
+                        'attachment',
+                        filename=img_name
+                    )
+                    msg.attach(image)
+        
+            with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+                server.starttls()
+                server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+                server.sendmail(
+                    EMAIL_ADDRESS,
+                    recipient_email,
+                    msg.as_string()
+                )
+        except Exception as e:
+            print(f"Error sending to {recipient_email}: {e}")
+    
+
+
 
 
