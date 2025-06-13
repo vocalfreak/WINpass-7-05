@@ -25,5 +25,24 @@
         </nav>
       </header>
 
+      <div class="container">
+        <h1>Post a Picture !</h1>
+        <form method="POST" action="{{ url_for('index') }}" enctype="multipart/form-data">
+            <input type="file" name="image" required><br>
+            <input type="text" name="caption" placeholder="Write a caption..." required><br>
+            <button type="submit">Post</button>
+        </form>
+
+        <hr>
+        <h2>Photos</h2>
+        {% for post in posts %}
+            <div class="post">
+                <img src="{{ url_for('static', filename='uploads/' ~ post[1]) }}" alt="Image">
+                <p>{{ post[2] }}</p>
+                <small>{{ post[3] }}</small>
+            </div>
+        {% endfor %}
+    </div>
+
 </body>
 </html>

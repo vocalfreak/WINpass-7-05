@@ -18,6 +18,7 @@ app.permanent_session_lifetime = timedelta(minutes=20)
 
 @app.route('/')
 def homepage():
+    db_path = "winpass.db"
     slot_1, slot_2, slot_3, time_slots = get_timeslot(db_path)
 
     timeslot_status = get_timeslot_status(time_slots)
@@ -690,49 +691,48 @@ def init_db():
             )
         ''')
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/Editing_page', methods=['GET', 'POST'])
 def index():
+    print(f"Request method: {request.method} | URL: {request.url}")
     if request.method == 'POST':
         file = request.files['image']
         caption = request.form['caption']
-
+ 
         if file:
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
-
+ 
             with sqlite3.connect("leaderboard.db") as conn:
                 conn.execute("INSERT INTO posts (image, caption) VALUES (?, ?)", (filename, caption))
-
+ 
         return redirect(url_for('index'))
     with sqlite3.connect("leaderboard.db") as conn:
         posts = conn.execute("SELECT * FROM posts ORDER BY timestamp DESC").fetchall()
-
-    return render_template('index.html', posts=posts)
-
+ 
+    return render_template('editing_page.html', posts=posts)
+ 
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
 
     #Paths 
-    df_path = r"C:\Users\adria\Projects\WINpass-7-05\Test_George.csv"
-    db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
-    image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
-    qr_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\static\qr_codes"
-    html_template_path = r'C:\Users\adria\Projects\WINpass-7-05\templates\email.html'
+    #df_path = r"C:\Users\adria\Projects\WINpass-7-05\Test_George.csv"
+    #db_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass.db"
+    #image_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\winpass_training_set"
+    #  qr_folder_path = r"C:\Users\adria\Projects\WINpass-7-05\static\qr_codes"
+    #  html_template_path = r'C:\Users\adria\Projects\WINpass-7-05\templates\email.html'
 
     # db_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass.db"
     # image_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\winpass_training_set"
-    # df_path = r"C:\Users\chiam\Projects\WINpass-7-05\Test_George.csv"
+    #  df_path = r"C:\Users\chiam\Projects\WINpass-7-05\Test_George.csv"
     # qr_folder_path = r"C:\Users\chiam\Projects\WINpass-7-05\static\qr_codes"
     # html_template_path = r'C:\Users\chiam\Projects\WINpass-7-05\templates\email.html'
 
-
-    #db_path = "winpass.db"
-    image_folder_path = "winpass_training_set"
-    html_template_path = "templates/email.html"
-    qr_folder_path = "static/qr_codes"
-    df_path = "Test_George.csv"
+    # image_folder_path = "winpass_training_set"
+    # html_template_path = "templates/email.html"
+    # qr_folder_path = "static/qr_codes"
+    # df_path = "Test_George.csv"
     DB_FILE = 'leaderboard.db'
     
     # db_path = "winpass.db"
@@ -748,6 +748,9 @@ if __name__ == '__main__':
     #html_template_path = r"C:\Mini IT\WINpass-7-05\Test_George.csv"
 
 
-    # db_path = r"C:\Users\user\projects\WINpass-7-05\winpass.db"
-    # db_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\leaderboard.db"
+    db_path = r"C:\Users\user\projects\WINpass-7-05\winpass.db"
+    df_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\Test_George.csv"
+    image_folder_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\winpass_training_set"
+    html_template_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\Test_George.csv"
+    qr_folder_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\static\qr_codes"
 
