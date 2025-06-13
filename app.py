@@ -728,21 +728,18 @@ if __name__ == '__main__':
     # html_template_path = r'C:\Users\chiam\Projects\WINpass-7-05\templates\email.html'
 
 
-<<<<<<< HEAD
-    db_path = "winpass.db"
+    #db_path = "winpass.db"
     image_folder_path = "winpass_training_set"
     html_template_path = "templates/email.html"
     qr_folder_path = "static/qr_codes"
     df_path = "Test_George.csv"
     DB_FILE = 'leaderboard.db'
     
-=======
     # db_path = "winpass.db"
     # image_folder_path = "winpass_training_set"
     # html_template_path = "templates/email.html"
     # qr_folder_path = "static/qr_codes"
     # df_path = "Test_George.csv"
->>>>>>> 6533e5347d3b94b6a03cd86fef667e0b4aeb78df
 
     db_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
     image_folder_path = r"C:\Mini IT\WINpass-7-05\winpass_training_set"
