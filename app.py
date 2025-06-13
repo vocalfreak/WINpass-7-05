@@ -320,11 +320,8 @@ def self_service():
             conn.commit()
             conn.close()
             
-            # CHANGE TO TICKET PAGE LATER
             return redirect(url_for('homepage'))
-    
-    # UNCOMMENT ONCE self_service.html IS DONE
-    #return render_template('self_service.html')
+
 
 @app.route('/Import-CSV', methods=['POST'])
 def import_csv():
@@ -431,11 +428,16 @@ def pre_registration_page():
 
     return render_template('pre_registration_page.html', token=token, name=name)
 
+@app.template_filter('format_datetime')
+def format_datetime(value, format='%d %b %I:%M %p'):
+    dt = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+    return dt.strftime(format)
+
 @app.route('/Announcement_student')
 def announcement_student():
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("SELECT message FROM announcements ORDER BY time DESC")
+    cursor.execute("SELECT message, time FROM announcements ORDER BY time DESC")
     announcements = cursor.fetchall()
     conn.close()
     return render_template('announcement_student.html', announcements=announcements)
@@ -444,7 +446,7 @@ def announcement_student():
 def announcement_admin():
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, message FROM announcements ORDER BY time DESC")
+    cursor.execute("SELECT id, message, time FROM announcements ORDER BY time DESC")
     announcements = cursor.fetchall()
     conn.close()
     return render_template('announcement_admin.html', announcements=announcements)
@@ -726,6 +728,7 @@ if __name__ == '__main__':
     # html_template_path = r'C:\Users\chiam\Projects\WINpass-7-05\templates\email.html'
 
 
+<<<<<<< HEAD
     db_path = "winpass.db"
     image_folder_path = "winpass_training_set"
     html_template_path = "templates/email.html"
@@ -733,7 +736,19 @@ if __name__ == '__main__':
     df_path = "Test_George.csv"
     DB_FILE = 'leaderboard.db'
     
+=======
+    # db_path = "winpass.db"
+    # image_folder_path = "winpass_training_set"
+    # html_template_path = "templates/email.html"
+    # qr_folder_path = "static/qr_codes"
+    # df_path = "Test_George.csv"
+>>>>>>> 6533e5347d3b94b6a03cd86fef667e0b4aeb78df
 
+    db_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
+    image_folder_path = r"C:\Mini IT\WINpass-7-05\winpass_training_set"
+    df_path = r"C:\Mini IT\WINpass-7-05\Test_George.csv"
+    qr_folder_path = r"C:\Mini IT\WINpass-7-05\static\qr_codes"
+    html_template_path = r"C:\Mini IT\WINpass-7-05\Test_George.csv"
 
 
     # db_path = r"C:\Users\user\projects\WINpass-7-05\winpass.db"
