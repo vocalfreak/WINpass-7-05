@@ -168,7 +168,7 @@ h1 {
 .Post form {
   max-width: 600px;
   margin: 40px auto;
-  padding: 30px;
+  padding: 5px;
   background-color: #f9f9f9;
   border-radius: 10px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
@@ -177,13 +177,13 @@ h1 {
 
 .Post h1 {
   text-align: center;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #333;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
+  font-size: 50px;
 }
 
 .Post textarea {
-  width: 100%;
+  width: 90%;
   padding: 15px;
   font-size: 16px;
   font-family: Arial, sans-serif;
