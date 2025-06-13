@@ -731,14 +731,11 @@ if __name__ == '__main__':
     html_template_path = "templates/email.html"
     qr_folder_path = "static/qr_codes"
     df_path = "Test_George.csv"
+    DB_FILE = 'leaderboard.db'
+    
 
 
 
     # db_path = r"C:\Users\user\projects\WINpass-7-05\winpass.db"
     # db_path = r"C:\Users\user\Desktop\mini\WINpass-7-05\leaderboard.db"
-
-
-    
-    DB_FILE = 'leaderboard.db'
-
 
