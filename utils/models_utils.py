@@ -4,11 +4,44 @@ import csv
 import sys 
 import io
 import re
+import logging 
+import requests
+import time 
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
 from transformers import T5Tokenizer, T5ForConditionalGeneration
+
+huggingface_token = "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"
+
+def call_huggingfaceapi(prompt, model="google/flan-t5-large", max_length=55):
+
+    api_url = f"https://api-inference.huggingface.co/models/{model}"
+    headers = {"Authorization": f"Bearer {huggingface_token}"}
+
+    payload = {
+        "inputs": prompt,
+        "parameters": {
+            "max_length": max_length,
+            "do_sample": False,
+            "temperature": 0.1
+        }
+    }
+
+
+    response = requests.post(api_url, headers=headers, json=payload, timeout=30)
+
+    if response.status_code == 503: 
+        response = requests.post(api_url, headers=headers, json=payload, timeout=30)
+        time.sleep(20)
+    elif response.status_code == 200:
+        result = response.json()
+        if isinstance(result, list) and len(result) > 0:
+            return result[0].get('output', '')  
+        return result.get('output', '')
+    
+    return ""
 
 def logistic_regression(captions_train_path, test_set_path):
     df = pd.read_csv(captions_train_path)
@@ -43,8 +76,6 @@ def get_title_date(test_set_path):
     details = []
     for caption in df['caption']:
 
-        print(caption)
-
         input_text = f"""
         You are a data extraction model tasked with extracting event details from an instagram event caption.
         Extract the following details from the caption:
@@ -64,16 +95,9 @@ def get_title_date(test_set_path):
         caption:
         {caption}
         """
-        input_ids = tokenizer(input_text, return_tensors="pt").input_ids
-
-        tensor_output = model.generate(
-        input_ids,
-        max_length=55,
-        do_sample=False,
-        )
-
-        output = tokenizer.decode(tensor_output[0], skip_special_tokens=True)
+        output = call_huggingfaceapi(input_text)
         details.append(output)
+        time.sleep(1)
 
     df["details"] = details
     df.to_csv(test_set_path, index=False, encoding="utf-8-sig")
