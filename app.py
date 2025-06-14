@@ -132,7 +132,8 @@ def student_profile():
             'faculty': user[4],
             'hall': user[5],
         }
-
+        
+        image_folder_path = "winpass_training_set"
         avatar_rel_path = get_student_avatar(user_data['name'], user_data['mmu_id'], image_folder_path)
         if avatar_rel_path:
             session['avatar'] = avatar_rel_path
@@ -293,8 +294,10 @@ def photobooth_page():
 
 @app.route('/Photobooth_Camera')
 def photobooth_camera():
-    photobooth()
-    return render_template('photobooth_page.html')
+    # photobooth()
+    # return render_template('photobooth_page.html')
+    return render_template('editing_page.html')
+
 
 @app.route('/Editing_Page')
 def editing_page():

@@ -72,6 +72,7 @@ def goodies_qr( db_path):
     print(f"Using database path: {db_path}")
     cap = cv2.VideoCapture(0)
     detector = cv2.QRCodeDetector()
+    mmu_id = None
 
     while True:
         ret, frame = cap.read()
