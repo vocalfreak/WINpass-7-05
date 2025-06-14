@@ -5,6 +5,7 @@ from datetime import datetime
 from utils.instagram_utils import get_weekend_filter, get_tmr_filter
 from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory, session 
 import sqlite3
+import pytz
 from flask_sqlalchemy import SQLAlchemy
 import os
 from werkzeug.utils import secure_filename
@@ -546,9 +547,12 @@ def post_announcement():
     if request.method == 'POST':
         message = request.form.get('message', '').strip()
         if message:
+            tz = pytz.timezone('Asia/Kuala_Lumpur')
+            local_time = datetime.now(tz).strftime('%Y-%m-%d %H:%M:%S')
+
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO announcements (message) VALUES (?)", (message,))
+            cursor.execute("INSERT INTO announcements (message, time) VALUES (?,?)", (message, local_time))
             conn.commit()
             conn.close()
             return redirect(url_for('announcement_admin'))
