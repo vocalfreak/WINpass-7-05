@@ -1,6 +1,5 @@
 from utils.route_utils import import_csv_init, photobooth, get_timeslot, get_timeslot_status, get_queue_time 
 from utils.image_utils import get_winpass_info, badge_qr, goodies_qr
-# from utils.email_utils import send_email
 from datetime import datetime
 from utils.instagram_utils import get_weekend_filter, get_tmr_filter
 from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory, session 
@@ -10,7 +9,6 @@ import os
 from werkzeug.utils import secure_filename
 from datetime import timedelta
 from utils.route_utils import hash_password, check_password, bcrypt
-from html2image import Html2Image
 
 app = Flask(__name__)
 
@@ -588,17 +586,17 @@ if __name__ == '__main__':
     # html_template_path = r'C:\Users\chiam\Projects\WINpass-7-05\templates\email.html'
 
 
-    # db_path = "winpass.db"
-    # image_folder_path = "winpass_training_set"
-    # html_template_path = "templates/email.html"
-    # qr_folder_path = "static/qr_codes"
-    # df_path = "Test_George.csv"
+    db_path = "winpass.db"
+    image_folder_path = "winpass_training_set"
+    html_template_path = "templates/email.html"
+    qr_folder_path = "static/qr_codes"
+    df_path = "Test_George.csv"
 
-    db_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
-    image_folder_path = r"C:\Mini IT\WINpass-7-05\winpass_training_set"
-    df_path = r"C:\Mini IT\WINpass-7-05\Test_George.csv"
-    qr_folder_path = r"C:\Mini IT\WINpass-7-05\static\qr_codes"
-    html_template_path = r"C:\Mini IT\WINpass-7-05\Test_George.csv"
+    # db_path = r"C:\Mini IT\WINpass-7-05\winpass.db"
+    # image_folder_path = r"C:\Mini IT\WINpass-7-05\winpass_training_set"
+    # df_path = r"C:\Mini IT\WINpass-7-05\Test_George.csv"
+    # qr_folder_path = r"C:\Mini IT\WINpass-7-05\static\qr_codes"
+    # html_template_path = r"C:\Mini IT\WINpass-7-05\Test_George.csv"
 
 
     # db_path = r"C:\Users\user\projects\WINpass-7-05\winpass.db"
@@ -608,6 +606,6 @@ if __name__ == '__main__':
     
     DB_FILE = 'leaderboard.db'
 
-    app.run(debug=True)
+    app.run()
 
 
