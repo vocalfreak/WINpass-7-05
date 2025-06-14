@@ -391,10 +391,6 @@ def photobooth_camera():
     photobooth()
     return render_template('photobooth_page.html')
 
-@app.route('/Editing_Page')
-def editing_page():
-    return render_template('editing_page.html')
-
 @app.route('/Send-Email')
 def email_button():
     subject    = "Win MMU is approaching!"
