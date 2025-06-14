@@ -419,7 +419,6 @@ image_folder_path = "winpass_training_set"
 
 db_path = database_path 
 
-#get_face_encodings_batch(image_folder_path, db_path)
 
 
 
