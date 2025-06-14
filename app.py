@@ -17,6 +17,7 @@ app.permanent_session_lifetime = timedelta(minutes=20)
 
 @app.route('/')
 def homepage():
+    db_path = "winpass.db"
     slot_1, slot_2, slot_3, time_slots = get_timeslot(db_path)
 
     timeslot_status = get_timeslot_status(time_slots)
