@@ -238,7 +238,7 @@ def schedule_weekly_pipeline(captions_training_path, csv_folder_path, db_path):
 # db_path = "winpass.db"
 
 
-# posts_img_path = r"C:\Mini IT\WINpass-7-05\static\posts_img"
+posts_img_path = "posts_img"
 
 post_path = "weekly_scrapes_csv\instagram_posts_20250609.csv"
 captions_training_path = "captions_trainingset.csv"

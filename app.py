@@ -1,6 +1,6 @@
 from utils.route_utils import import_csv_init, photobooth, get_timeslot, get_timeslot_status, get_queue_time 
-from utils.image_utils import get_winpass_info, badge_qr, get_face_encodings_folders, goodies_qr
-from utils.email_utils import send_email
+from utils.image_utils import get_winpass_info, badge_qr, goodies_qr
+# from utils.email_utils import send_email
 from datetime import datetime
 from utils.instagram_utils import get_weekend_filter, get_tmr_filter
 from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory, session 
@@ -151,29 +151,32 @@ def booth_info():
 
 @app.route('/Digital-Ticket')
 def digital_ticket():
-    if 'mmu_id' not in session:
-        return redirect(url_for('login_users')) 
+    #UNCOMMENT IF FEATURE IS DONE
+    # if 'mmu_id' not in session:
+    #     return redirect(url_for('login_users')) 
     
-    mmu_id = (session['mmu_id'])
+    # mmu_id = (session['mmu_id'])
 
-    result = get_winpass_info(mmu_id, db_path, image_folder_path)
-    name, mmu_id, hall, career, img_path = result
+    # result = get_winpass_info(mmu_id, db_path, image_folder_path)
+    # name, mmu_id, hall, career, img_path = result
 
-    rel_path = os.path.relpath(img_path, start=image_folder_path).replace('\\','/')
-    photo_url = url_for('photos', filename=rel_path)
+    # rel_path = os.path.relpath(img_path, start=image_folder_path).replace('\\','/')
+    # photo_url = url_for('photos', filename=rel_path)
 
-    qr_path = f"qr_codes/{mmu_id}.png"
+    # qr_path = f"qr_codes/{mmu_id}.png"
 
-    student = {
-        "name": name,
-        "mmu_id": mmu_id,
-        "hall": hall,       
-        "career": career,
-        "photo_path": photo_url,
-        "qr_path": qr_path
-    }
+    # student = {
+    #     "name": name,
+    #     "mmu_id": mmu_id,
+    #     "hall": hall,       
+    #     "career": career,
+    #     "photo_path": photo_url,
+    #     "qr_path": qr_path
+    # }
 
-    return render_template("digital_ticket.html", student=student)
+    # return render_template("digital_ticket.html", student=student)
+    return render_template("editing_page.html")
+
 
 
 @app.route('/photos/<path:filename>')
@@ -295,15 +298,15 @@ def photobooth_camera():
 def editing_page():
     return render_template('editing_page.html')
 
-@app.route('/Send-Email')
-def email_button():
-    subject    = "Win MMU is approaching!"
-    body       = "We’re excited to see you at WIN 2025! Here are the details."
-    image_path = r"C:\Users\chiam\Projects\WINpass-7-05\static\email.png"
+# @app.route('/Send-Email')
+# def email_button():
+#     subject    = "Win MMU is approaching!"
+#     body       = "We’re excited to see you at WIN 2025! Here are the details."
+#     image_path = r"C:\Users\chiam\Projects\WINpass-7-05\static\email.png"
 
-    send_email(subject, body, image_path, db_path, html_template_path)
-    flash("Invitations sent to all users!", "success")
-    return redirect(url_for('admin_page'))
+#     send_email(subject, body, image_path, db_path, html_template_path)
+#     flash("Invitations sent to all users!", "success")
+#     return redirect(url_for('admin_page'))
 
 Picture_folder = 'winpass_training_set'
 app.config['UPLOAD_FOLDER'] = Picture_folder
@@ -321,64 +324,6 @@ def update_user(nonce, face_data, size=None, timeslot=None):
     conn.commit()
     conn.close()
 
-@app.route('/Pre_Registration_page', methods=['POST', 'GET'])
-def pre_registration_page():
-    token = request.args.get('token') or request.form.get('token')
-    
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute("SELECT mmu_id, name FROM user WHERE nonce = ?", (token,))
-    user = cursor.fetchone()
-    print(f"User full name: {user}")
-    conn.close()
-
-    if user is None:
-        return "Invalid token or user not found", 404
-    
-    mmu_id, name = user
-
-
-    if request.method == 'POST':
-        name = name.strip().replace(" ", "_")
-        size = request.form.get('size')
-        timeslot = request.form.get('timeslot')
-        image_folder_path = os.path.join(app.config['UPLOAD_FOLDER'], name)
-        os.makedirs(image_folder_path, exist_ok=True)
-        face_1 = request.files['filename1']
-        face_2 = request.files['filename2']
-
-        filepath_1 = filepath_2 = None
-
-        if face_1 and allowed_file(face_1.filename):
-            filename1 = f"{name}_0001.jpg"
-            filepath_1 = os.path.join(image_folder_path, filename1)
-            face_1.save(filepath_1)
-        else:
-            print("Unable to save the first picture")
- 
-        if face_2 and allowed_file(face_2.filename):
-            filename2 = f"{name}_0002.jpg"
-            filepath_2 = os.path.join(image_folder_path, filename2)
-            face_2.save(filepath_2)
-        else:
-            print("Unable to save the second picture")
-
-        print(f"Student ID: {mmu_id}")
-        face_code = get_face_encodings_folders(image_folder_path)
-
-        if face_code is None:
-            print("No valid face encodings found.")
-            return "Error: Face not detected in one or both images.", 400
-
-        print(f"Combined face encoding: {face_code}")
-
-        face_data = face_code.tobytes()
-
-        update_user(token, face_data, size, timeslot)
-
-        return "Form submitted successfully!"
-
-    return render_template('pre_registration_page.html', token=token, name=name)
 
 @app.template_filter('format_datetime')
 def format_datetime(value, format='%d %b %I:%M %p'):
