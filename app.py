@@ -38,6 +38,7 @@ def homepage():
 
 @app.route('/admin_landing')
 def admin_landing():
+    db_path = "winpass.db"
     slot_1, slot_2, slot_3, time_slots = get_timeslot(db_path)
 
     timeslot_status = get_timeslot_status(time_slots)
@@ -62,7 +63,7 @@ def login_users():
     if request.method == 'POST':
         mmu_id = request.form.get('mmu_id').strip()
         password = request.form.get('password').strip()
-
+        db_path = "winpass.db"
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
 
@@ -111,7 +112,7 @@ def logout():
 def student_profile():
     if 'mmu_id' not in session:
         return redirect(url_for('login_users')) 
-    
+    db_path = "winpass.db"
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
@@ -187,6 +188,7 @@ def photos(filename):
 @app.route('/Admin-Page')
 def admin_page():
     search_query = request.args.get('search' , '')
+    db_path = "winpass.db"
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
@@ -213,7 +215,7 @@ def edit_student():
     mmu_id = request.args.get('mmu_id')
     if not mmu_id:
         return redirect(url_for('admin_page'))
-
+    db_path = "winpass.db"
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
@@ -262,7 +264,7 @@ def self_service():
     if request.method == 'POST':
         mmu_id = request.form.get('mmu_id')
         password = request.form.get('password')
-
+        db_path = "winpass.db"
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
 
@@ -279,6 +281,7 @@ def self_service():
 
 @app.route('/Import-CSV', methods=['POST'])
 def import_csv():
+    db_path = "winpass.db"
     if request.method == 'POST':
         import_csv_init(df_path, db_path)
         flash('CSV imported successfully!', 'success')
@@ -317,6 +320,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def update_user(nonce, face_data, size=None, timeslot=None):
+    db_path = "winpass.db"
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute("UPDATE user set face_data = ?, size = ?, timeslot = ? WHERE nonce = ?", (face_data, size, timeslot, nonce))
@@ -331,6 +335,7 @@ def format_datetime(value, format='%d %b %I:%M %p'):
 
 @app.route('/Announcement_student')
 def announcement_student():
+    db_path = "winpass.db"
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute("SELECT message, time FROM announcements ORDER BY time DESC")
@@ -340,6 +345,7 @@ def announcement_student():
 
 @app.route('/Announcement_admin')
 def announcement_admin():
+    db_path = "winpass.db"
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute("SELECT id, message, time FROM announcements ORDER BY time DESC")
@@ -349,6 +355,7 @@ def announcement_admin():
 
 @app.route('/delete/<int:id>')
 def delete(id):
+    db_path = "winpass.db"
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     try:
@@ -362,6 +369,7 @@ def delete(id):
 
 @app.route('/update/<int:id>', methods=['GET','POST'])
 def update(id):
+    db_path = "winpass.db"
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     if request.method == 'POST':
@@ -391,6 +399,7 @@ def post_announcement():
     if request.method == 'POST':
         message = request.form.get('message', '').strip()
         if message:
+            db_path = "winpass.db"
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
             cursor.execute("INSERT INTO announcements (message) VALUES (?)", (message,))
@@ -407,6 +416,8 @@ def register_checklist():
         goodies_status = request.form.get('goodies_status')
         badge_status = request.form.get('badge_status')
         ticket_status = request.form.get('ticket_status')
+
+        db_path = "winpass.db"
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         if goodies_status is not None:
@@ -424,6 +435,7 @@ def register_checklist():
 
 @app.route('/Scan_goodies')
 def scan_goodies():
+    db_path = "winpass.db"
     mmu_id = goodies_qr(db_path)
 
     if not mmu_id:
@@ -446,6 +458,7 @@ def scan_goodies():
 
 @app.route('/Scan_badge')
 def scan_badge():
+    db_path = "winpass.db"
     badge_qr(db_path)
     return render_template('qr.html')
 
@@ -470,6 +483,7 @@ def events_page():
     filter_type = request.args.get("filter")
     today = datetime.today().date()
 
+    db_path = "winpass.db"
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
@@ -523,6 +537,7 @@ def events_page():
 
 @app.route('/event/<shortCode>')
 def event_detail(shortCode):
+    db_path = "winpass.db"
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
@@ -547,6 +562,7 @@ def event_detail(shortCode):
 
 
 def get_leaderboard():
+    DB_FILE = 'leaderboard.db'
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     cursor.execute("SELECT name, points FROM halls ORDER BY points DESC")
